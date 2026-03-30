@@ -2413,6 +2413,28 @@
             .canvas-tools {
                 bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
             }
+            
+            /* التعديلات الجديدة لإصلاح الهيدر العلوي */
+            .app-header {
+                padding: 0 var(--spacing-xs);
+            }
+            .header-right {
+                gap: 2px;
+            }
+            .header-btn {
+                width: 32px;
+                height: 32px;
+            }
+            .header-btn i {
+                font-size: 0.9rem;
+            }
+            .project-name {
+                padding: var(--spacing-xs);
+            }
+            .project-name input {
+                width: 75px;
+                font-size: 0.8rem;
+            }
         }
         
         @media (max-width: 480px) {
@@ -2943,10 +2965,10 @@
                             <div class="color-picker-section">
                                 <div class="color-picker-wrapper">
                                     <div class="color-preview" id="bg-color-preview">
-                                        <input type="color" id="bg-color-picker" value="#1f2937" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
-                                        <div class="color-preview-inner" style="background: #1f2937; position: absolute; inset: 0; pointer-events: none;"></div>
+                                        <input type="color" id="bg-color-picker" value="#ffffff" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
+                                        <div class="color-preview-inner" style="background: #ffffff; position: absolute; inset: 0; pointer-events: none;"></div>
                                     </div>
-                                    <input type="text" class="color-hex-input" id="bg-color-hex" value="#1F2937" maxlength="7">
+                                    <input type="text" class="color-hex-input" id="bg-color-hex" value="#FFFFFF" maxlength="7">
                                 </div>
                                 <div class="preset-colors" id="bg-preset-colors">
                                     <div class="preset-color" style="background: #ffffff" data-color="#ffffff"></div>
@@ -3181,6 +3203,33 @@
     </div>
 
     <!-- حاوية التنبيهات -->
+    <div class="modal-overlay active" id="startup-modal" style="z-index: 99999; background: var(--bg-primary);">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-plus-circle"></i>
+                    تصميم جديد
+                </h2>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: var(--spacing-lg);">حدد مقاسات مساحة العمل للبدء</p>
+                <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                    <div style="flex: 1;">
+                        <label class="slider-label" style="display: block; margin-bottom: 8px; text-align: center;">العرض (بكسل)</label>
+                        <input type="number" id="new-canvas-width" value="1080" class="text-input" style="min-height: 40px; padding: 8px; text-align: center;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="slider-label" style="display: block; margin-bottom: 8px; text-align: center;">الطول (بكسل)</label>
+                        <input type="number" id="new-canvas-height" value="1080" class="text-input" style="min-height: 40px; padding: 8px; text-align: center;">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="start-design-btn" style="padding: 12px; font-size: 1.1rem;">
+                    <i class="fas fa-paint-brush"></i> ابدأ التصميم
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toast-container"></div>
 
     <!-- الملفات الخارجية -->
