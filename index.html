@@ -2456,12 +2456,12 @@
         .home-screen {
             position: fixed;
             inset: 0;
-            background: #0f172a; /* لون كحلي داكن احترافي جداً */
-            z-index: 999999 !important; /* السحر هنا: تغطية التطبيق بالكامل وإخفاء الشريط السفلي */
+            background: #0f172a;
+            z-index: 999999 !important;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
-            padding-bottom: 50px; /* إعطاء مساحة مريحة للتمرير لأسفل */
+            overflow-y: auto !important;
+            padding-bottom: 120px !important; /* زيادة المساحة هنا لرفع الأزرار فوق حافة الهاتف */
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
         }
 
