@@ -2451,6 +2451,118 @@
         }
 
         /* ==========================================
+           🚀 التحديث الشامل: نظام InShot الإجباري
+        ========================================== */
+        /* 1. جعل مساحة العمل تأخذ الشاشة بالكامل */
+        .app-main {
+            flex-direction: column !important;
+            padding-bottom: var(--bottom-nav-height) !important;
+        }
+
+        /* 2. تحويل الشريط الجانبي إلى لوحة سفلية منبثقة (InShot Style) */
+        .sidebar {
+            position: absolute !important;
+            bottom: var(--bottom-nav-height) !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 45vh !important; /* اللوحة تأخذ نصف الشاشة السفلي */
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(15px) !important;
+            -webkit-backdrop-filter: blur(15px) !important;
+            border-top: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 24px 24px 0 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            z-index: var(--z-modal) !important;
+            transform: translateY(120%) !important; /* مخفية بالأسفل في البداية */
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) !important;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.6) !important;
+        }
+
+        .sidebar.active {
+            transform: translateY(0) !important; /* ترتفع بنعومة عند الضغط */
+        }
+
+        /* إخفاء التبويبات العلوية القديمة */
+        .sidebar-tabs {
+            display: none !important;
+        }
+
+        /* تصميم مؤشر السحب الأنيق (الخط الأبيض الصغير) */
+        .close-panel-btn {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 5px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* 3. إظهار وتصميم شريط الأدوات السفلي دائماً (مثل InShot تماماً) */
+        .bottom-nav {
+            display: flex !important;
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: var(--bottom-nav-height) !important;
+            background: #030712 !important; /* لون أسود فخم */
+            justify-content: flex-start !important;
+            overflow-x: auto !important;
+            align-items: center !important;
+            padding: 0 var(--spacing-sm) !important;
+            gap: 15px !important;
+            z-index: var(--z-fixed) !important;
+            border-top: 1px solid rgba(255,255,255,0.05) !important;
+            scrollbar-width: none !important;
+        }
+        
+        .bottom-nav::-webkit-scrollbar { display: none !important; }
+
+        /* تصميم أيقونات الشريط السفلي الدائرية */
+        .nav-item {
+            min-width: 65px !important;
+            background: transparent !important;
+            opacity: 0.6 !important;
+            padding: 0 !important;
+        }
+        
+        .nav-item.active {
+            opacity: 1 !important;
+        }
+        
+        .nav-item i {
+            background: rgba(255,255,255,0.05) !important;
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 auto 5px auto !important;
+            transition: all 0.3s !important;
+            font-size: 1.2rem !important;
+        }
+        
+        .nav-item.active i {
+            background: var(--gradient-primary) !important; /* تدرج لوني عند التحديد */
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
+            transform: translateY(-4px) !important;
+        }
+
+        /* إصلاح مشكلة اختفاء اللوحة في شاشات الموبايل */
+        @media (max-width: 768px) {
+            .sidebar.active {
+                display: flex !important;
+            }
+        }
+
+        /* ==========================================
            تصميم الشاشة الرئيسية الجديد
         ========================================== */
         .home-screen {
