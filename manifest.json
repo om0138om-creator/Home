@@ -1,0 +1,143 @@
+{
+    "name": "فونت ستوديو - Font Studio Pro",
+    "short_name": "فونت ستوديو",
+    "description": "تطبيق احترافي لتصميم الصور مع دعم كامل لخطوط OpenType Features - صمم صورك باحترافية مع أقوى محرر خطوط عربي",
+    "version": "1.0.0",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#030712",
+    "theme_color": "#6366f1",
+    "scope": "/",
+    "lang": "ar",
+    "dir": "rtl",
+    "categories": ["design", "graphics", "productivity", "utilities"],
+    "icons": [
+        {
+            "src": "icons/icon-72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "screenshots/screenshot-1.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "label": "الشاشة الرئيسية"
+        },
+        {
+            "src": "screenshots/screenshot-2.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "label": "محرر النصوص"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "تصميم جديد",
+            "short_name": "جديد",
+            "description": "إنشاء تصميم جديد",
+            "url": "/index.html?action=new",
+            "icons": [
+                {
+                    "src": "icons/shortcut-new.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "فتح مشروع",
+            "short_name": "فتح",
+            "description": "فتح مشروع محفوظ",
+            "url": "/index.html?action=open",
+            "icons": [
+                {
+                    "src": "icons/shortcut-open.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "share_target": {
+        "action": "/index.html",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": {
+            "files": [
+                {
+                    "name": "image",
+                    "accept": ["image/*"]
+                },
+                {
+                    "name": "font",
+                    "accept": [".ttf", ".otf", ".woff", ".woff2"]
+                }
+            ]
+        }
+    },
+    "file_handlers": [
+        {
+            "action": "/index.html",
+            "accept": {
+                "font/ttf": [".ttf"],
+                "font/otf": [".otf"],
+                "font/woff": [".woff"],
+                "font/woff2": [".woff2"],
+                "image/png": [".png"],
+                "image/jpeg": [".jpg", ".jpeg"]
+            }
+        }
+    ],
+    "protocol_handlers": [
+        {
+            "protocol": "web+fontstudio",
+            "url": "/index.html?project=%s"
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false
+}
