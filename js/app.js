@@ -231,10 +231,7 @@ class FontStudioApp {
         // Header buttons
         this.elements.undoBtn = document.getElementById('undo-btn');
         this.elements.redoBtn = document.getElementById('redo-btn');
-        this.elements.saveBtn = document.getElementById('save-btn');
         this.elements.exportBtn = document.getElementById('export-btn');
-        this.elements.themeToggle = document.getElementById('theme-toggle');
-        this.elements.settingsBtn = document.getElementById('settings-btn');
         this.elements.projectNameInput = document.getElementById('project-name-input');
         
         // Canvas tools
@@ -248,9 +245,9 @@ class FontStudioApp {
         this.elements.zoomValue = document.getElementById('zoom-value');
         this.elements.addTextBtn = document.getElementById('add-text-btn');
         
-        // Sidebar tabs
-        this.elements.sidebarTabs = document.querySelectorAll('.sidebar-tab');
+        // Bottom Panels (بديل الشريط الجانبي)
         this.elements.sidebarPanels = document.querySelectorAll('.sidebar-panel');
+        this.elements.closePanelBtn = document.getElementById('close-panel-btn');
         
         // Text panel
         this.elements.textInput = document.getElementById('text-input');
@@ -324,11 +321,17 @@ class FontStudioApp {
         // Toast container
         this.elements.toastContainer = document.getElementById('toast-container');
         
-        // Startup modal (نافذة البداية)
-        this.elements.startupModal = document.getElementById('startup-modal');
-        this.elements.newCanvasWidth = document.getElementById('new-canvas-width');
-        this.elements.newCanvasHeight = document.getElementById('new-canvas-height');
-        this.elements.startDesignBtn = document.getElementById('start-design-btn');
+        // Home Screen elements (عناصر الشاشة الرئيسية الجديدة)
+        this.elements.homeScreen = document.getElementById('home-screen');
+        this.elements.appContainer = document.getElementById('app');
+        this.elements.startEmptyBtn = document.getElementById('start-empty-btn');
+        this.elements.startImageBtn = document.getElementById('start-image-btn');
+        this.elements.presetCards = document.querySelectorAll('.preset-card');
+        this.elements.homeBgColor = document.getElementById('home-bg-color');
+        this.elements.homePresetColors = document.querySelectorAll('#home-preset-colors .preset-color');
+        
+        // إخفاء مساحة العمل في البداية حتى يتم اختيار مقاس
+        this.elements.appContainer.style.display = 'none';
         
         // Bottom nav (mobile)
         this.elements.bottomNavItems = document.querySelectorAll('.nav-item');
@@ -385,12 +388,21 @@ class FontStudioApp {
     // =====================================================
     
     setupEventListeners() {
-        // Theme toggle
-        this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
+        // إغلاق اللوحة السفلية (نظام InShot)
+        if (this.elements.closePanelBtn) {
+            this.elements.closePanelBtn.addEventListener('click', () => this.closeBottomPanel());
+        }
         
-        // Sidebar tabs
-        this.elements.sidebarTabs.forEach(tab => {
-            tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
+        // إغلاق اللوحة عند لمس مساحة العمل
+        this.elements.canvasContainer.addEventListener('mousedown', (e) => {
+            if (e.target === this.elements.canvasContainer || e.target === this.elements.selectionLayer) {
+                this.closeBottomPanel();
+            }
+        });
+        this.elements.canvasContainer.addEventListener('touchstart', (e) => {
+            if (e.target === this.elements.canvasContainer || e.target === this.elements.selectionLayer) {
+                this.closeBottomPanel();
+            }
         });
         
         // Bottom nav (mobile)
@@ -604,7 +616,6 @@ class FontStudioApp {
         // Header buttons
         this.elements.undoBtn.addEventListener('click', () => this.undo());
         this.elements.redoBtn.addEventListener('click', () => this.redo());
-        this.elements.saveBtn.addEventListener('click', () => this.saveProject());
         this.elements.exportBtn.addEventListener('click', () => this.openExportModal());
         
         // Export modal
@@ -635,30 +646,105 @@ class FontStudioApp {
         // Window resize
         window.addEventListener('resize', () => this.fitCanvasToViewport());
         
-        // Start new design (بدء تصميم جديد بالمقاسات المحددة)
-        if (this.elements.startDesignBtn) {
-            this.elements.startDesignBtn.addEventListener('click', () => {
-                const w = parseInt(this.elements.newCanvasWidth.value) || 1080;
-                const h = parseInt(this.elements.newCanvasHeight.value) || 1080;
-                
-                // تحديث الخصائص
-                this.canvasProperties.width = w;
-                this.canvasProperties.height = h;
-                
-                // تحديث الكانفاس الفعلي
-                this.elements.canvas.width = w;
-                this.elements.canvas.height = h;
-                
-                // إخفاء نافذة البداية
-                this.elements.startupModal.classList.remove('active');
-                
-                // إعادة ضبط العرض وحفظ الخطوة
+        // -----------------------------------------
+        // 🏠 برمجة الشاشة الرئيسية (Home Screen)
+        // -----------------------------------------
+        
+        let selectedWidth = 1080;
+        let selectedHeight = 1080;
+        let selectedBgColor = '#ffffff';
+        
+        // 1. اختيار المقاس من الكروت الجاهزة
+        this.elements.presetCards.forEach(card => {
+            card.addEventListener('click', () => {
+                this.elements.presetCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                selectedWidth = parseInt(card.dataset.width);
+                selectedHeight = parseInt(card.dataset.height);
+            });
+        });
+
+        // 2. اختيار لون الخلفية
+        this.elements.homeBgColor.addEventListener('input', (e) => {
+            selectedBgColor = e.target.value;
+            this.elements.homePresetColors.forEach(c => c.classList.remove('active'));
+        });
+
+        this.elements.homePresetColors.forEach(preset => {
+            preset.addEventListener('click', () => {
+                this.elements.homePresetColors.forEach(c => c.classList.remove('active'));
+                preset.classList.add('active');
+                selectedBgColor = preset.dataset.color;
+                this.elements.homeBgColor.value = selectedBgColor;
+            });
+        });
+
+        // 3. زر "مساحة فارغة" - الدخول للوحة التصميم
+        this.elements.startEmptyBtn.addEventListener('click', () => {
+            this.canvasProperties.width = selectedWidth;
+            this.canvasProperties.height = selectedHeight;
+            this.canvasProperties.backgroundColor = selectedBgColor;
+            
+            this.elements.canvas.width = selectedWidth;
+            this.elements.canvas.height = selectedHeight;
+            
+            // إظهار واجهة التصميم وإخفاء الشاشة الرئيسية
+            this.elements.appContainer.style.display = 'flex';
+            this.elements.homeScreen.classList.add('hidden-slide');
+            
+            setTimeout(() => {
                 this.fitCanvasToViewport();
                 this.render();
                 this.saveHistory();
-                this.showToast('جاهز للعمل', 'success', `تم إنشاء مساحة عمل مقاس ${w}x${h}`);
-            });
-        }
+            }, 100);
+        });
+
+        // 4. زر "من صورة" - اختيار صورة كخلفية والبدء فوراً
+        this.elements.startImageBtn.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            this.canvasProperties.width = img.width;
+                            this.canvasProperties.height = img.height;
+                            this.elements.canvas.width = img.width;
+                            this.elements.canvas.height = img.height;
+
+                            const layer = {
+                                id: `layer_bg_${Date.now()}`,
+                                type: 'image',
+                                name: `خلفية الصورة`,
+                                visible: true,
+                                locked: true,
+                                opacity: 1,
+                                image: img,
+                                x: 0, y: 0, width: img.width, height: img.height
+                            };
+                            this.state.layers = [layer]; // مسح أي طبقات قديمة ووضع الصورة
+
+                            this.elements.appContainer.style.display = 'flex';
+                            this.elements.homeScreen.classList.add('hidden-slide');
+                            
+                            setTimeout(() => {
+                                this.updateLayersList();
+                                this.fitCanvasToViewport();
+                                this.render();
+                                this.saveHistory();
+                            }, 100);
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        });
         
         // Mouse wheel zoom
         this.elements.canvasContainer.addEventListener('wheel', (e) => {
@@ -847,8 +933,12 @@ class FontStudioApp {
         
         ctx.save();
         
-        // Build OpenType feature settings
-        const featureSettings = this.buildOpenTypeFontFeatureSettings();
+        // ==========================================
+        // 🪄 سحر الأوبن تايب (OpenType Magic)
+        // تطبيق الخصائص على الكانفاس مباشرة لتدعم الزخارف والبدائل العربية
+        // ==========================================
+        this.elements.canvas.style.fontFeatureSettings = props.openTypeFeatures || 'normal';
+        this.elements.canvas.style.fontVariantLigatures = 'normal';
         
         // Build font string
         let fontStyle = '';
@@ -922,6 +1012,9 @@ class FontStudioApp {
         });
         
         ctx.restore();
+        
+        // إرجاع الكانفاس لحالته الطبيعية بعد الرسم حتى لا تتأثر الطبقات الأخرى بزخارف هذا النص
+        this.elements.canvas.style.fontFeatureSettings = 'normal';
     }
     
     drawTextLine(ctx, text, x, y, letterSpacing, isStroke) {
@@ -1502,19 +1595,27 @@ class FontStudioApp {
     }
     
     switchTab(tabName) {
-        // Update sidebar tabs
-        this.elements.sidebarTabs.forEach(tab => {
-            tab.classList.toggle('active', tab.dataset.tab === tabName);
-        });
-        
-        // Update panels
+        // إظهار اللوحة المناسبة
         this.elements.sidebarPanels.forEach(panel => {
             panel.classList.toggle('active', panel.id === `panel-${tabName}`);
         });
         
-        // Update bottom nav
+        // تلوين الأيقونة في الشريط السفلي
         this.elements.bottomNavItems.forEach(item => {
             item.classList.toggle('active', item.dataset.panel === tabName);
+        });
+        
+        // رفع اللوحة من الأسفل (السحر الحقيقي!)
+        this.elements.sidebar.classList.add('active');
+    }
+
+    closeBottomPanel() {
+        // إنزال اللوحة للأسفل
+        this.elements.sidebar.classList.remove('active');
+        
+        // إزالة التحديد من جميع أيقونات الشريط السفلي
+        this.elements.bottomNavItems.forEach(item => {
+            item.classList.remove('active');
         });
     }
     
