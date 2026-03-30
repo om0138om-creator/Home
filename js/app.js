@@ -2192,15 +2192,6 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// Prevent pull-to-refresh on mobile
-document.body.addEventListener('touchmove', (e) => {
-    if (e.target.closest('.sidebar-content') || e.target.closest('.font-list')) {
-        return;
-    }
-    if (window.scrollY === 0) {
-        e.preventDefault();
-    }
-}, { passive: false });
 
 // Handle app install prompt
 let deferredPrompt;
