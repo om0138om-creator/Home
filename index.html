@@ -2639,6 +2639,11 @@
             position: relative !important;
             height: calc(100% - var(--bottom-nav-height)) !important;
             padding-bottom: 0 !important;
+            z-index: 1 !important; /* السحر 1: وضع مساحة العمل في الخلف */
+        }
+
+        .canvas-container {
+            z-index: 1 !important; /* السحر 2: إجبار الكانفاس على البقاء خلف اللوحة */
         }
 
         /* 3. شريط الأدوات السفلي المظبوط بالملي */
@@ -2653,7 +2658,7 @@
             justify-content: space-around !important;
             align-items: center !important;
             padding: 0 var(--spacing-sm) !important;
-            z-index: 9999 !important;
+            z-index: 99999 !important; /* رقم ضخم ليغطي على كل شيء */
             border-top: 1px solid rgba(255,255,255,0.05) !important;
         }
 
@@ -2663,13 +2668,13 @@
             bottom: var(--bottom-nav-height) !important;
             left: 0 !important;
             width: 100% !important;
-            height: 45vh !important;
-            max-height: 400px !important;
+            height: 380px !important; /* السحر 3: طول ثابت حتى لا تدمرها لوحة المفاتيح عند فتحها */
+            max-height: 55vh !important;
             background: rgba(15, 23, 42, 0.98) !important;
             border-radius: 24px 24px 0 0 !important;
             display: flex !important;
             flex-direction: column !important;
-            z-index: 9998 !important;
+            z-index: 99998 !important; /* فوق الكانفاس وتحت الشريط السفلي */
             transform: translateY(120%) !important;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) !important;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.6) !important;
