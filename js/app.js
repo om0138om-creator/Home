@@ -870,10 +870,13 @@ class FontStudioApp {
             this.state.panX = 0;
             this.state.panY = 0;
             this.updateCanvasTransform();
-          
+        });
+    }
+
     // =====================================================
     // 🎨 Rendering
     // =====================================================
+
     
     render() {
         const ctx = this.elements.ctx;
