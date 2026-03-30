@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مولد أيقونات فونت ستوديو</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 40px;
+        }
+        
+        .icons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .icon-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .icon-card canvas {
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .icon-card h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .icon-card p {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+        
+        .download-all {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .download-all .btn {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+        }
+        
+        .instructions {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        
+        .instructions h2 {
+            color: #a5b4fc;
+            margin-bottom: 20px;
+        }
+        
+        .instructions ol {
+            padding-right: 25px;
+            line-height: 2;
+        }
+        
+        .instructions code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .splash-preview {
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .splash-preview canvas {
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+        
+        .progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .status {
+            text-align: center;
+            color: #22c55e;
+            font-weight: 600;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 مولد أيقونات فونت ستوديو</h1>
+        <p class="subtitle">اضغط على الزر لإنشاء وتحميل جميع الأيقونات المطلوبة</p>
+        
+        <div class="icons-grid" id="icons-grid">
+            <!-- سيتم إنشاء الأيقونات هنا -->
+        </div>
+        
+        <div class="progress" id="progress">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="status" id="status">✅ تم إنشاء جميع الأيقونات بنجاح!</div>
+        
+        <div class="download-all">
+            <button class="btn btn-success" onclick="downloadAllIcons()">
+                📥 تحميل جميع الأيقونات (ZIP)
+            </button>
+        </div>
+        
+        <div class="splash-preview">
+            <h2 style="margin-bottom: 20px;">شاشة البداية (Splash Screen)</h2>
+            <canvas id="splash-canvas" width="540" height="960"></canvas>
+            <br><br>
+            <button class="btn btn-primary" onclick="downloadSplash()">
+                📥 تحميل Splash Screen
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <h2>📋 تعليمات الاستخدام</h2>
+            <ol>
+                <li>اضغط على <strong>"تحميل جميع الأيقونات"</strong> لتحميل ملف ZIP</li>
+                <li>فك الضغط عن الملف</li>
+                <li>انسخ مجلد <code>icons</code> إلى مشروعك</li>
+                <li>الأيقونات جاهزة للاستخدام في التطبيق!</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- مكتبة JSZip لضغط الملفات -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <script>
+        // أحجام الأيقونات المطلوبة
+        const ICON_SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
+        const iconsData = {};
+        
+        // رسم الأيقونة
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            
+            // مسح الكانفاس
+            ctx.clearRect(0, 0, size, size);
+            
+            // الخلفية المتدرجة
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#6366f1');
+            gradient.addColorStop(0.5, '#8b5cf6');
+            gradient.addColorStop(1, '#a855f7');
+            
+            // رسم المربع المستدير
+            const radius = size * 0.2;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // رسم حرف "ف"
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.45}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('ف', size / 2, size / 2 + size * 0.05);
+            
+            // رسم دائرة الصح
+            const circleX = size * 0.82;
+            const circleY = size * 0.22;
+            const circleRadius = size * 0.12;
+            
+            ctx.beginPath();
+            ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#22c55e';
+            ctx.fill();
+            
+            // رسم علامة الصح
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = size * 0.025;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(circleX - circleRadius * 0.4, circleY);
+            ctx.lineTo(circleX - circleRadius * 0.1, circleY + circleRadius * 0.3);
+            ctx.lineTo(circleX + circleRadius * 0.5, circleY - circleRadius * 0.3);
+            ctx.stroke();
+            
+            return canvas.toDataURL('image/png');
+        }
+        
+        // رسم شاشة البداية
+        function drawSplashScreen() {
+            const canvas = document.getElementById('splash-canvas');
+            const ctx = canvas.getContext('2d');
+            const width = 1080;
+            const height = 1920;
+            
+            canvas.width = width;
+            canvas.height = height;
+            canvas.style.width = '270px';
+            canvas.style.height = '480px';
+            
+            // الخلفية
+            const bgGradient = ctx.createLinearGradient(0, 0, width, height);
+            bgGradient.addColorStop(0, '#1f2937');
+            bgGradient.addColorStop(0.5, '#111827');
+            bgGradient.addColorStop(1, '#030712');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // رسم الأيقونة في المنتصف
+            const iconSize = 300;
+            const iconX = (width - iconSize) / 2;
+            const iconY = height / 2 - iconSize / 2 - 100;
+            
+            // خلفية الأيقونة
+            const iconGradient = ctx.createLinearGradient(iconX, iconY, iconX + iconSize, iconY + iconSize);
+            iconGradient.addColorStop(0, '#6366f1');
+            iconGradient.addColorStop(0.5, '#8b5cf6');
+            iconGradient.addColorStop(1, '#a855f7');
+            
+            ctx.beginPath();
+            ctx.roundRect(iconX, iconY, iconSize, iconSize, 60);
+            ctx.fillStyle = iconGradient;
+            ctx.shadowColor = 'rgba(99, 102, 241, 0.5)';
+            ctx.shadowBlur = 60;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // حرف ف
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${iconSize * 0.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('ف', width / 2, iconY + iconSize / 2 + 15);
+            
+            // دائرة الصح
+            const checkX = iconX + iconSize * 0.82;
+            const checkY = iconY + iconSize * 0.22;
+            const checkR = iconSize * 0.12;
+            
+            ctx.beginPath();
+            ctx.arc(checkX, checkY, checkR, 0, Math.PI * 2);
+            ctx.fillStyle = '#22c55e';
+            ctx.fill();
+            
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(checkX - checkR * 0.4, checkY);
+            ctx.lineTo(checkX - checkR * 0.1, checkY + checkR * 0.3);
+            ctx.lineTo(checkX + checkR * 0.5, checkY - checkR * 0.3);
+            ctx.stroke();
+            
+            // اسم التطبيق
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 72px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('فونت ستوديو', width / 2, iconY + iconSize + 100);
+            
+            // الوصف
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '36px Arial';
+            ctx.fillText('صمم بإبداع', width / 2, iconY + iconSize + 170);
+            
+            // شريط التحميل
+            const barWidth = 400;
+            const barHeight = 8;
+            const barX = (width - barWidth) / 2;
+            const barY = height - 300;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth, barHeight, 4);
+            ctx.fill();
+            
+            // شريط التحميل المتحرك (50%)
+            const loadGradient = ctx.createLinearGradient(barX, 0, barX + barWidth, 0);
+            loadGradient.addColorStop(0, '#6366f1');
+            loadGradient.addColorStop(1, '#a855f7');
+            ctx.fillStyle = loadGradient;
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth * 0.6, barHeight, 4);
+            ctx.fill();
+            
+            return canvas.toDataURL('image/png');
+        }
+        
+        // إنشاء جميع الأيقونات
+        function generateAllIcons() {
+            const grid = document.getElementById('icons-grid');
+            grid.innerHTML = '';
+            
+            ICON_SIZES.forEach(size => {
+                const card = document.createElement('div');
+                card.className = 'icon-card';
+                
+                const canvas = document.createElement('canvas');
+                const displaySize = Math.min(size, 150);
+                canvas.style.width = displaySize + 'px';
+                canvas.style.height = displaySize + 'px';
+                
+                const dataUrl = drawIcon(canvas, size);
+                iconsData[`icon-${size}.png`] = dataUrl;
+                
+                card.innerHTML = `
+                    <h3>icon-${size}.png</h3>
+                    <p>${size} × ${size} بكسل</p>
+                `;
+                card.insertBefore(canvas, card.firstChild);
+                
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary';
+                btn.textContent = '📥 تحميل';
+                btn.onclick = () => downloadIcon(size, dataUrl);
+                card.appendChild(btn);
+                
+                grid.appendChild(card);
+            });
+            
+            // إنشاء splash screen
+            drawSplashScreen();
+        }
+        
+        // تحميل أيقونة واحدة
+        function downloadIcon(size, dataUrl) {
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = dataUrl;
+            link.click();
+        }
+        
+        // تحميل splash screen
+        function downloadSplash() {
+            const canvas = document.getElementById('splash-canvas');
+            const link = document.createElement('a');
+            link.download = 'splash-portrait.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // تحميل جميع الأيقونات كـ ZIP
+        async function downloadAllIcons() {
+            const progress = document.getElementById('progress');
+            const progressBar = document.getElementById('progress-bar');
+            const status = document.getElementById('status');
+            
+            progress.style.display = 'block';
+            status.style.display = 'none';
+            
+            const zip = new JSZip();
+            const iconsFolder = zip.folder('icons');
+            
+            let completed = 0;
+            const total = ICON_SIZES.length + 1; // +1 for splash
+            
+            // إضافة الأيقونات
+            for (const size of ICON_SIZES) {
+                const canvas = document.createElement('canvas');
+                drawIcon(canvas, size);
+                
+                const dataUrl = canvas.toDataURL('image/png');
+                const base64 = dataUrl.split(',')[1];
+                iconsFolder.file(`icon-${size}.png`, base64, { base64: true });
+                
+                completed++;
+                progressBar.style.width = (completed / total * 100) + '%';
+            }
+            
+            // إضافة splash screen
+            const splashCanvas = document.getElementById('splash-canvas');
+            // إعادة رسم بالحجم الكامل
+            const fullSplash = document.createElement('canvas');
+            fullSplash.width = 1080;
+            fullSplash.height = 1920;
+            const splashCtx = fullSplash.getContext('2d');
+            
+            // نسخ من canvas الأصلي بعد إعادة الرسم
+            drawSplashOnCanvas(fullSplash);
+            
+            const splashData = fullSplash.toDataURL('image/png').split(',')[1];
+            iconsFolder.file('splash-portrait.png', splashData, { base64: true });
+            
+            completed++;
+            progressBar.style.width = '100%';
+            
+            // إنشاء وتحميل الـ ZIP
+            const content = await zip.generateAsync({ type: 'blob' });
+            saveAs(content, 'font-studio-icons.zip');
+            
+            status.style.display = 'block';
+        }
+        
+        function drawSplashOnCanvas(canvas) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // نفس كود drawSplashScreen
+            const bgGradient = ctx.createLinearGradient(0, 0, width, height);
+            bgGradient.addColorStop(0, '#1f2937');
+            bgGradient.addColorStop(0.5, '#111827');
+            bgGradient.addColorStop(1, '#030712');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            const iconSize = 300;
+            const iconX = (width - iconSize) / 2;
+            const iconY = height / 2 - iconSize / 2 - 100;
+            
+            const iconGradient = ctx.createLinearGradient(iconX, iconY, iconX + iconSize, iconY + iconSize);
+            iconGradient.addColorStop(0, '#6366f1');
+            iconGradient.addColorStop(0.5, '#8b5cf6');
+            iconGradient.addColorStop(1, '#a855f7');
+            
+            ctx.beginPath();
+            ctx.roundRect(iconX, iconY, iconSize, iconSize, 60);
+            ctx.fillStyle = iconGradient;
+            ctx.shadowColor = 'rgba(99, 102, 241, 0.5)';
+            ctx.shadowBlur = 60;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${iconSize * 0.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('ف', width / 2, iconY + iconSize / 2 + 15);
+            
+            const checkX = iconX + iconSize * 0.82;
+            const checkY = iconY + iconSize * 0.22;
+            const checkR = iconSize * 0.12;
+            
+            ctx.beginPath();
+            ctx.arc(checkX, checkY, checkR, 0, Math.PI * 2);
+            ctx.fillStyle = '#22c55e';
+            ctx.fill();
+            
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(checkX - checkR * 0.4, checkY);
+            ctx.lineTo(checkX - checkR * 0.1, checkY + checkR * 0.3);
+            ctx.lineTo(checkX + checkR * 0.5, checkY - checkR * 0.3);
+            ctx.stroke();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 72px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('فونت ستوديو', width / 2, iconY + iconSize + 100);
+            
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '36px Arial';
+            ctx.fillText('صمم بإبداع', width / 2, iconY + iconSize + 170);
+            
+            const barWidth = 400;
+            const barHeight = 8;
+            const barX = (width - barWidth) / 2;
+            const barY = height - 300;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth, barHeight, 4);
+            ctx.fill();
+            
+            const loadGradient = ctx.createLinearGradient(barX, 0, barX + barWidth, 0);
+            loadGradient.addColorStop(0, '#6366f1');
+            loadGradient.addColorStop(1, '#a855f7');
+            ctx.fillStyle = loadGradient;
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth * 0.6, barHeight, 4);
+            ctx.fill();
+        }
+        
+        // إنشاء الأيقونات عند تحميل الصفحة
+        window.onload = generateAllIcons;
+    </script>
+</body>
+</html>
