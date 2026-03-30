@@ -353,8 +353,11 @@ class FontStudioApp {
         const container = this.elements.canvasContainer;
         const wrapper = this.elements.canvasWrapper;
         
+        wrapper.style.width = `${this.canvasProperties.width}px`;
+        wrapper.style.height = `${this.canvasProperties.height}px`;
+        
         const containerRect = container.getBoundingClientRect();
-        const padding = 60;
+        const padding = 40; 
         
         const availableWidth = containerRect.width - padding * 2;
         const availableHeight = containerRect.height - padding * 2;
@@ -363,6 +366,9 @@ class FontStudioApp {
         const scaleY = availableHeight / this.canvasProperties.height;
         
         this.state.zoom = Math.min(scaleX, scaleY, 1);
+        
+        this.state.panX = 0;
+        this.state.panY = 0;
         this.updateCanvasTransform();
     }
     
@@ -399,26 +405,20 @@ class FontStudioApp {
             item.addEventListener('click', () => this.switchTab(item.dataset.panel));
         });
         
-        // Text input (مطور لحل مشكلة النص الخفي)
+        // Text input (الإصدار المعصوم من الأخطاء)
         this.elements.textInput.addEventListener('input', (e) => {
-            // إذا لم يكن هناك أي طبقة نص، اصنع واحدة تلقائياً بلون أسود لكي تظهر!
             if (this.state.layers.length === 0 || !this.state.selectedElement) {
-                this.textProperties.color = '#000000'; // جعل النص أسود
-                this.elements.textColorPicker.value = '#000000'; // تغيير لون منتقي الألوان
-                if (document.getElementById('text-color-preview')) {
-                    document.getElementById('text-color-preview').querySelector('.color-preview-inner').style.background = '#000000';
-                }
-                this.addTextLayer(); // إنشاء الطبقة
+                this.textProperties.color = '#000000'; // إجبار اللون على الأسود
+                this.addTextLayer();
             }
             
             this.textProperties.text = e.target.value;
             this.elements.charCount.textContent = e.target.value.length;
             
-            // نقل النص للطبقة المحددة ليظهر فوراً على الكانفاس
             const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
             if (activeLayer && activeLayer.type === 'text') {
                 activeLayer.properties.text = e.target.value;
-                activeLayer.properties.color = this.textProperties.color;
+                activeLayer.properties.color = '#000000'; // رسم النص أسود فوراً لكي تراه
             }
             
             this.render();
@@ -669,8 +669,14 @@ class FontStudioApp {
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
         
-        // Window resize
-        window.addEventListener('resize', () => this.fitCanvasToViewport());
+        // Window resize (مطور ليتجاهل فتح لوحة المفاتيح)
+        let lastWidth = window.innerWidth;
+        window.addEventListener('resize', () => {
+            if (window.innerWidth !== lastWidth) {
+                lastWidth = window.innerWidth;
+                this.fitCanvasToViewport();
+            }
+        });
         
         // -----------------------------------------
         // 🏠 برمجة الشاشة الرئيسية (Home Screen)
@@ -707,11 +713,9 @@ class FontStudioApp {
 
         // 3. زر "مساحة فارغة" - الدخول للوحة التصميم
         this.elements.startEmptyBtn.addEventListener('click', () => {
-            // 1. مسح أي مشروع قديم للبدء على نظافة
-            this.state.layers = [];
+            this.state.layers = []; // تنظيف تام للطبقات القديمة
             this.state.selectedElement = null;
             
-            // 2. تحديث الخصائص الداخلية
             this.canvasProperties.width = selectedWidth;
             this.canvasProperties.height = selectedHeight;
             this.canvasProperties.backgroundColor = selectedBgColor;
@@ -719,11 +723,10 @@ class FontStudioApp {
             this.elements.canvas.width = selectedWidth;
             this.elements.canvas.height = selectedHeight;
             
-            // 3. السحر لحل مشكلة المربع: إجبار الـ CSS على أخذ المقاس الجديد
-            this.elements.canvas.style.width = `${selectedWidth}px`;
-            this.elements.canvas.style.height = `${selectedHeight}px`;
+            // ضبط أبعاد الغلاف الخارجي ليتطابق مع الاختيار
+            this.elements.canvasWrapper.style.width = `${selectedWidth}px`;
+            this.elements.canvasWrapper.style.height = `${selectedHeight}px`;
             
-            // إظهار واجهة التصميم وإخفاء الشاشة الرئيسية
             this.elements.appContainer.style.display = 'flex';
             this.elements.homeScreen.classList.add('hidden-slide');
             
