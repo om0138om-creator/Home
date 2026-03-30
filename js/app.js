@@ -183,22 +183,11 @@ class FontStudioApp {
         console.log(`🎨 ${CONFIG.APP_NAME} v${CONFIG.VERSION} - Initializing...`);
         
         try {
-            // Cache DOM elements
             this.cacheElements();
-            
-            // Setup canvas
             this.setupCanvas();
-            
-            // Setup event listeners
             this.setupEventListeners();
-            
-            // Setup touch gestures
             this.setupTouchGestures();
-            
-            // Load saved data
             await this.loadSavedData();
-            
-            // Generate stylistic sets UI
             this.generateStylisticSetsUI();
             
             // Hide splash screen
@@ -207,13 +196,13 @@ class FontStudioApp {
             // Initial render
             this.render();
             
-            // Show welcome toast
             this.showToast('مرحباً بك في فونت ستوديو!', 'success', 'تم تحميل التطبيق بنجاح');
-            
             console.log('✅ App initialized successfully');
         } catch (error) {
             console.error('❌ Initialization error:', error);
-            this.showToast('خطأ في التحميل', 'error', error.message);
+            // صمام الأمان: إخفاء الشاشة حتى لو حدث خطأ لكي لا يعلق المستخدم
+            this.hideSplashScreen();
+            this.showToast('تنبيه', 'warning', 'حدث خطأ بسيط أثناء التحميل');
         }
     }
     
@@ -2090,8 +2079,7 @@ class FontStudioApp {
     // =====================================================
     
     async loadSavedData() {
-        // Load theme
-        this.loadTheme();
+        // تم حذف loadTheme() لأننا نعتمد الآن على التصميم الليلي الفخم دائماً
         
         // Load fonts
         await this.loadFontsFromStorage();
