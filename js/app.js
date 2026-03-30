@@ -399,17 +399,54 @@ class FontStudioApp {
             item.addEventListener('click', () => this.switchTab(item.dataset.panel));
         });
         
-        // Text input
+        // Text input (مطور لحل مشكلة النص الخفي)
         this.elements.textInput.addEventListener('input', (e) => {
+            // إذا لم يكن هناك أي طبقة نص، اصنع واحدة تلقائياً بلون أسود لكي تظهر!
+            if (this.state.layers.length === 0 || !this.state.selectedElement) {
+                this.textProperties.color = '#000000'; // جعل النص أسود
+                this.elements.textColorPicker.value = '#000000'; // تغيير لون منتقي الألوان
+                if (document.getElementById('text-color-preview')) {
+                    document.getElementById('text-color-preview').querySelector('.color-preview-inner').style.background = '#000000';
+                }
+                this.addTextLayer(); // إنشاء الطبقة
+            }
+            
             this.textProperties.text = e.target.value;
             this.elements.charCount.textContent = e.target.value.length;
+            
+            // نقل النص للطبقة المحددة ليظهر فوراً على الكانفاس
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.text = e.target.value;
+                activeLayer.properties.color = this.textProperties.color;
+            }
+            
             this.render();
         });
+
         
         // Font size slider
         this.elements.fontSizeSlider.addEventListener('input', (e) => {
             this.textProperties.fontSize = parseInt(e.target.value);
             this.elements.fontSizeValue.textContent = `${e.target.value}px`;
+            
+            // نقل الحجم للطبقة المحددة
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.fontSize = parseInt(e.target.value);
+            }
+            this.render();
+        });
+
+        // Color pickers (تحديث لون النص في الطبقة)
+        this.elements.textColorPicker.addEventListener('input', (e) => {
+            this.textProperties.color = e.target.value;
+            this.updateColorPreview('text', e.target.value);
+            
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.color = e.target.value;
+            }
             this.render();
         });
         
@@ -670,6 +707,11 @@ class FontStudioApp {
 
         // 3. زر "مساحة فارغة" - الدخول للوحة التصميم
         this.elements.startEmptyBtn.addEventListener('click', () => {
+            // 1. مسح أي مشروع قديم للبدء على نظافة
+            this.state.layers = [];
+            this.state.selectedElement = null;
+            
+            // 2. تحديث الخصائص الداخلية
             this.canvasProperties.width = selectedWidth;
             this.canvasProperties.height = selectedHeight;
             this.canvasProperties.backgroundColor = selectedBgColor;
@@ -677,11 +719,16 @@ class FontStudioApp {
             this.elements.canvas.width = selectedWidth;
             this.elements.canvas.height = selectedHeight;
             
+            // 3. السحر لحل مشكلة المربع: إجبار الـ CSS على أخذ المقاس الجديد
+            this.elements.canvas.style.width = `${selectedWidth}px`;
+            this.elements.canvas.style.height = `${selectedHeight}px`;
+            
             // إظهار واجهة التصميم وإخفاء الشاشة الرئيسية
             this.elements.appContainer.style.display = 'flex';
             this.elements.homeScreen.classList.add('hidden-slide');
             
             setTimeout(() => {
+                this.updateLayersList();
                 this.fitCanvasToViewport();
                 this.render();
                 this.saveHistory();
