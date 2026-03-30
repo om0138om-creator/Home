@@ -1,0 +1,3189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="فونت ستوديو - تطبيق احترافي لتصميم الصور مع دعم كامل لخطوط OpenType">
+    
+    <title>فونت ستوديو | Font Studio Pro</title>
+    
+    <!-- أيقونات التطبيق -->
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- manifest للتطبيق -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- خطوط Google للواجهة -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- مكتبة OpenType.js للتعامل مع الخطوط -->
+    <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+    
+    <!-- مكتبة Hammer.js للـ Touch Gestures -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    
+    <!-- مكتبة html2canvas للتصدير -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- مكتبة FileSaver للحفظ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <!-- مكتبة JSZip للملفات المضغوطة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- مكتبة localForage للتخزين -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    
+    <style>
+        /*=====================================================
+          🎨 المتغيرات الأساسية - CSS Variables
+        =====================================================*/
+        :root {
+            /* الألوان الرئيسية */
+            --primary-50: #eef2ff;
+            --primary-100: #e0e7ff;
+            --primary-200: #c7d2fe;
+            --primary-300: #a5b4fc;
+            --primary-400: #818cf8;
+            --primary-500: #6366f1;
+            --primary-600: #4f46e5;
+            --primary-700: #4338ca;
+            --primary-800: #3730a3;
+            --primary-900: #312e81;
+            
+            /* ألوان ثانوية */
+            --secondary-50: #f0fdf4;
+            --secondary-100: #dcfce7;
+            --secondary-200: #bbf7d0;
+            --secondary-300: #86efac;
+            --secondary-400: #4ade80;
+            --secondary-500: #22c55e;
+            --secondary-600: #16a34a;
+            --secondary-700: #15803d;
+            --secondary-800: #166534;
+            --secondary-900: #14532d;
+            
+            /* ألوان تحذيرية */
+            --warning-50: #fffbeb;
+            --warning-100: #fef3c7;
+            --warning-200: #fde68a;
+            --warning-300: #fcd34d;
+            --warning-400: #fbbf24;
+            --warning-500: #f59e0b;
+            --warning-600: #d97706;
+            --warning-700: #b45309;
+            --warning-800: #92400e;
+            --warning-900: #78350f;
+            
+            /* ألوان الخطر */
+            --danger-50: #fef2f2;
+            --danger-100: #fee2e2;
+            --danger-200: #fecaca;
+            --danger-300: #fca5a5;
+            --danger-400: #f87171;
+            --danger-500: #ef4444;
+            --danger-600: #dc2626;
+            --danger-700: #b91c1c;
+            --danger-800: #991b1b;
+            --danger-900: #7f1d1d;
+            
+            /* ألوان محايدة */
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --gray-950: #030712;
+            
+            /* ألوان التدرج */
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            --gradient-secondary: linear-gradient(135deg, #22c55e 0%, #10b981 50%, #14b8a6 100%);
+            --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%);
+            --gradient-cool: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%);
+            --gradient-dark: linear-gradient(135deg, #1f2937 0%, #111827 50%, #030712 100%);
+            --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            
+            /* الظلال */
+            --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.4);
+            --shadow-glow-lg: 0 0 40px rgba(99, 102, 241, 0.6);
+            
+            /* الأبعاد */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-3xl: 2rem;
+            --radius-full: 9999px;
+            
+            /* الانتقالات */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            
+            /* الخطوط */
+            --font-primary: 'Cairo', 'Tajawal', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            
+            /* المسافات */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            --spacing-3xl: 4rem;
+            
+            /* Z-Index */
+            --z-dropdown: 100;
+            --z-sticky: 200;
+            --z-fixed: 300;
+            --z-modal-backdrop: 400;
+            --z-modal: 500;
+            --z-popover: 600;
+            --z-tooltip: 700;
+            --z-toast: 800;
+            --z-max: 9999;
+            
+            /* أبعاد الشاشة */
+            --header-height: 60px;
+            --sidebar-width: 320px;
+            --toolbar-height: 50px;
+            --bottom-nav-height: 70px;
+        }
+        
+        /* الوضع الداكن */
+        [data-theme="dark"] {
+            --bg-primary: var(--gray-900);
+            --bg-secondary: var(--gray-800);
+            --bg-tertiary: var(--gray-700);
+            --bg-card: rgba(31, 41, 55, 0.8);
+            --text-primary: var(--gray-50);
+            --text-secondary: var(--gray-300);
+            --text-muted: var(--gray-500);
+            --border-color: var(--gray-700);
+            --border-light: var(--gray-800);
+        }
+        
+        /* الوضع الفاتح */
+        [data-theme="light"] {
+            --bg-primary: var(--gray-50);
+            --bg-secondary: white;
+            --bg-tertiary: var(--gray-100);
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --text-primary: var(--gray-900);
+            --text-secondary: var(--gray-600);
+            --text-muted: var(--gray-400);
+            --border-color: var(--gray-200);
+            --border-light: var(--gray-100);
+        }
+        
+        /*=====================================================
+          🔄 Reset & Base Styles
+        =====================================================*/
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        body {
+            font-family: var(--font-primary);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: manipulation;
+        }
+        
+        /* إخفاء scrollbar مع الحفاظ على التمرير */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-400);
+            border-radius: var(--radius-full);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-500);
+        }
+        
+        /* Selection */
+        ::selection {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        /* روابط */
+        a {
+            color: var(--primary-500);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+        
+        a:hover {
+            color: var(--primary-600);
+        }
+        
+        /* صور */
+        img, video {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* أزرار */
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            background: none;
+            outline: none;
+        }
+        
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        /* حقول الإدخال */
+        input, textarea, select {
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            border: none;
+            background: transparent;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+        }
+        
+        /* قوائم */
+        ul, ol {
+            list-style: none;
+        }
+        
+        /*=====================================================
+          🏗️ Layout - التخطيط الرئيسي
+        =====================================================*/
+        #app {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+        
+        /* شاشة التحميل */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: var(--z-max);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        #splash-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: var(--spacing-xl);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        .splash-logo svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.5));
+        }
+        
+        .splash-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .splash-subtitle {
+            color: var(--gray-400);
+            font-size: 0.95rem;
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .splash-loader {
+            width: 200px;
+            height: 4px;
+            background: var(--gray-800);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .splash-loader::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 40%;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-full);
+            animation: loading-bar 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes loading-bar {
+            0% { left: -40%; }
+            100% { left: 100%; }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.5)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 50px rgba(99, 102, 241, 0.8)); }
+        }
+        
+        /*=====================================================
+          📱 Header - الهيدر
+        =====================================================*/
+        .app-header {
+            height: var(--header-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--spacing-md);
+            position: relative;
+            z-index: var(--z-sticky);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .app-logo {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .app-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        
+        .header-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .header-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .header-btn.active {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        .header-btn i {
+            font-size: 1.1rem;
+        }
+        
+        .header-btn .badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            background: var(--danger-500);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* اسم المشروع */
+        .project-name {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .project-name:hover {
+            background: var(--primary-100);
+        }
+        
+        .project-name input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            width: 120px;
+            text-align: center;
+        }
+        
+        .project-name i {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        /*=====================================================
+          🖼️ Main Content - المحتوى الرئيسي
+        =====================================================*/
+        .app-main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /*=====================================================
+          🎨 Canvas Area - منطقة العمل
+        =====================================================*/
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-900);
+            background-image: 
+                radial-gradient(circle at 25px 25px, var(--gray-800) 2px, transparent 0),
+                radial-gradient(circle at 75px 75px, var(--gray-800) 2px, transparent 0);
+            background-size: 100px 100px;
+            position: relative;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        .canvas-wrapper {
+            position: relative;
+            background: white;
+            box-shadow: var(--shadow-2xl);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            transform-origin: center center;
+            transition: transform 0.1s ease;
+        }
+        
+        #main-canvas {
+            display: block;
+            max-width: none;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        
+        /* طبقة التحديد */
+        .selection-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .selection-layer.active {
+            pointer-events: auto;
+        }
+        
+        /* عنصر محدد */
+        .selected-element {
+            position: absolute;
+            border: 2px dashed var(--primary-500);
+            background: rgba(99, 102, 241, 0.1);
+            cursor: move;
+            touch-action: none;
+        }
+        
+        .selected-element .resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 2px solid var(--primary-500);
+            border-radius: var(--radius-sm);
+        }
+        
+        .resize-handle.top-left { top: -6px; left: -6px; cursor: nwse-resize; }
+        .resize-handle.top-right { top: -6px; right: -6px; cursor: nesw-resize; }
+        .resize-handle.bottom-left { bottom: -6px; left: -6px; cursor: nesw-resize; }
+        .resize-handle.bottom-right { bottom: -6px; right: -6px; cursor: nwse-resize; }
+        .resize-handle.top-center { top: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+        .resize-handle.bottom-center { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+        .resize-handle.left-center { left: -6px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+        .resize-handle.right-center { right: -6px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+        
+        .rotate-handle {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            background: var(--primary-500);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+            cursor: grab;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .rotate-handle::before {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            width: 2px;
+            height: 12px;
+            background: var(--primary-500);
+        }
+        
+        /* أدوات الكانفاس */
+        .canvas-tools {
+            position: absolute;
+            bottom: var(--spacing-lg);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+        }
+        
+        .canvas-tool-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .canvas-tool-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .canvas-tool-btn:active {
+            transform: scale(0.9);
+        }
+        
+        .canvas-tool-btn.active {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        .canvas-tool-btn.primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: 0 var(--spacing-sm);
+            border-right: 1px solid var(--border-color);
+            border-left: 1px solid var(--border-color);
+            margin: 0 var(--spacing-xs);
+        }
+        
+        .zoom-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        /*=====================================================
+          📋 Sidebar - الشريط الجانبي
+        =====================================================*/
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100%;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: var(--z-sticky);
+            transition: transform var(--transition-normal);
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(100%);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                right: 0;
+                top: 0;
+                z-index: var(--z-modal);
+                box-shadow: var(--shadow-2xl);
+            }
+        }
+        
+        /* تبويبات الشريط الجانبي */
+        .sidebar-tabs {
+            display: flex;
+            background: var(--bg-tertiary);
+            padding: var(--spacing-xs);
+            gap: var(--spacing-xs);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-tab {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing-xs);
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: all var(--transition-fast);
+        }
+        
+        .sidebar-tab i {
+            font-size: 1rem;
+        }
+        
+        .sidebar-tab:hover {
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+        }
+        
+        .sidebar-tab.active {
+            color: var(--primary-500);
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* محتوى الشريط الجانبي */
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: var(--spacing-md);
+        }
+        
+        .sidebar-panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .sidebar-panel.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* قسم داخل البانل */
+        .panel-section {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-sm);
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .section-title i {
+            color: var(--primary-500);
+            font-size: 0.85rem;
+        }
+        
+        .section-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .section-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .section-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        /*=====================================================
+          ✏️ Text Panel - لوحة النص
+        =====================================================*/
+        .text-input-wrapper {
+            position: relative;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .text-input {
+            width: 100%;
+            min-height: 100px;
+            padding: var(--spacing-md);
+            background: var(--bg-tertiary);
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: vertical;
+            transition: all var(--transition-fast);
+        }
+        
+        .text-input:focus {
+            border-color: var(--primary-500);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        
+        .text-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .text-char-count {
+            position: absolute;
+            bottom: var(--spacing-sm);
+            left: var(--spacing-sm);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* أدوات تنسيق النص */
+        .text-format-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-sm);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+        }
+        
+        .format-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .format-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .format-btn.active {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        .format-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--border-color);
+            align-self: center;
+            margin: 0 var(--spacing-xs);
+        }
+        
+        /*=====================================================
+          🔤 Font Panel - لوحة الخطوط
+        =====================================================*/
+        .font-search-wrapper {
+            position: relative;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .font-search {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            padding-right: 40px;
+            background: var(--bg-tertiary);
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .font-search:focus {
+            border-color: var(--primary-500);
+            background: var(--bg-secondary);
+        }
+        
+        .font-search-icon {
+            position: absolute;
+            right: var(--spacing-sm);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        /* قائمة الخطوط */
+        .font-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .font-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .font-item:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .font-item.active {
+            background: var(--primary-100);
+            border: 1px solid var(--primary-300);
+        }
+        
+        [data-theme="dark"] .font-item.active {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid var(--primary-600);
+        }
+        
+        .font-item-preview {
+            flex: 1;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .font-item-name {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
+        .font-item-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+        
+        .font-item:hover .font-item-actions {
+            opacity: 1;
+        }
+        
+        .font-action-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .font-action-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--primary-500);
+        }
+        
+        .font-action-btn.delete:hover {
+            color: var(--danger-500);
+        }
+        
+        /* زر إضافة خطوط */
+        .add-fonts-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .add-fonts-area:hover {
+            border-color: var(--primary-500);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .add-fonts-area.dragging {
+            border-color: var(--primary-500);
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .add-fonts-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto var(--spacing-md);
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .add-fonts-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .add-fonts-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        /*=====================================================
+          ✨ OpenType Features Panel
+        =====================================================*/
+        .opentype-panel {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .opentype-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .opentype-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .opentype-title i {
+            color: var(--secondary-500);
+        }
+        
+        .opentype-badge {
+            padding: 2px 8px;
+            background: var(--secondary-500);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: var(--radius-full);
+        }
+        
+        .opentype-features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-sm);
+        }
+        
+        .opentype-feature {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 1px solid transparent;
+        }
+        
+        .opentype-feature:hover {
+            border-color: var(--primary-300);
+        }
+        
+        .opentype-feature.active {
+            background: var(--primary-100);
+            border-color: var(--primary-400);
+        }
+        
+        [data-theme="dark"] .opentype-feature.active {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .feature-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--gray-400);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+        
+        .opentype-feature.active .feature-checkbox {
+            background: var(--primary-500);
+            border-color: var(--primary-500);
+        }
+        
+        .feature-checkbox i {
+            color: white;
+            font-size: 0.7rem;
+            opacity: 0;
+            transform: scale(0);
+            transition: all var(--transition-fast);
+        }
+        
+        .opentype-feature.active .feature-checkbox i {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .feature-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .feature-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .feature-tag {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+        
+        /* Stylistic Sets */
+        .stylistic-sets-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-sm);
+        }
+        
+        .stylistic-set {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .stylistic-set:hover {
+            border-color: var(--primary-400);
+            color: var(--primary-500);
+        }
+        
+        .stylistic-set.active {
+            background: var(--primary-500);
+            border-color: var(--primary-500);
+            color: white;
+        }
+        
+        .stylistic-set.unavailable {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /*=====================================================
+          🎨 Colors Panel - لوحة الألوان
+        =====================================================*/
+        .color-picker-section {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .color-picker-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .color-preview {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-lg);
+            border: 3px solid var(--border-color);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+        }
+        
+        .color-preview:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-400);
+        }
+        
+        .color-preview::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(45deg, #ccc 25%, transparent 25%),
+                linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ccc 75%),
+                linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+            z-index: -1;
+        }
+        
+        .color-preview-inner {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .color-hex-input {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--bg-tertiary);
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        
+        .color-hex-input:focus {
+            border-color: var(--primary-500);
+        }
+        
+        /* لوحة الألوان المسبقة */
+        .preset-colors {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-sm);
+        }
+        
+        .preset-color {
+            aspect-ratio: 1;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+        
+        .preset-color:hover {
+            transform: scale(1.15);
+            z-index: 1;
+        }
+        
+        .preset-color.active {
+            border-color: var(--text-primary);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* تدرج الألوان */
+        .gradient-controls {
+            padding: var(--spacing-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            margin-top: var(--spacing-md);
+        }
+        
+        .gradient-preview {
+            height: 40px;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .gradient-stops {
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 16px;
+        }
+        
+        .gradient-stop {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: var(--radius-full);
+            border: 2px solid white;
+            box-shadow: var(--shadow-md);
+            cursor: grab;
+            transform: translateX(-50%);
+        }
+        
+        /*=====================================================
+          📐 Transform Panel - لوحة التحويل
+        =====================================================*/
+        .transform-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+        }
+        
+        .transform-control {
+            padding: var(--spacing-sm);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+        }
+        
+        .control-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .control-label i {
+            font-size: 0.7rem;
+        }
+        
+        .control-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .control-input {
+            flex: 1;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .control-input:focus {
+            border-color: var(--primary-500);
+        }
+        
+        .control-unit {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            width: 25px;
+        }
+        
+        /* شريط التمرير */
+        .slider-wrapper {
+            padding: var(--spacing-sm) 0;
+        }
+        
+        .slider-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .slider-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .slider-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary-500);
+            font-family: var(--font-mono);
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-full);
+            cursor: grab;
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-fast);
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        
+        .slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-full);
+            cursor: grab;
+            border: none;
+            box-shadow: var(--shadow-md);
+        }
+        
+        /*=====================================================
+          🖼️ Image Panel - لوحة الصور
+        =====================================================*/
+        .image-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .image-upload-area:hover {
+            border-color: var(--primary-500);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .image-upload-area.dragging {
+            border-color: var(--primary-500);
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--spacing-md);
+            background: var(--gradient-cool);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .upload-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .upload-hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .upload-formats {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+        
+        .format-badge {
+            padding: 4px 10px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        
+        /* قائمة الصور */
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-sm);
+        }
+        
+        .image-thumb {
+            aspect-ratio: 1;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+        
+        .image-thumb:hover {
+            border-color: var(--primary-400);
+            transform: scale(1.02);
+        }
+        
+        .image-thumb.active {
+            border-color: var(--primary-500);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .image-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .image-thumb-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+        
+        .image-thumb:hover .image-thumb-overlay {
+            opacity: 1;
+        }
+        
+        .image-thumb-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .thumb-action-btn {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-700);
+            font-size: 0.85rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .thumb-action-btn:hover {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        .thumb-action-btn.delete:hover {
+            background: var(--danger-500);
+        }
+        
+        /*=====================================================
+          📚 Layers Panel - لوحة الطبقات
+        =====================================================*/
+        .layers-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+        
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 2px solid transparent;
+        }
+        
+        .layer-item:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .layer-item.active {
+            border-color: var(--primary-500);
+            background: var(--bg-secondary);
+        }
+        
+        .layer-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+        }
+        
+        .layer-thumb {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 1rem;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .layer-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .layer-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .layer-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .layer-type {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        .layer-actions {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .layer-action-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .layer-action-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .layer-action-btn.active {
+            color: var(--primary-500);
+        }
+        
+        /*=====================================================
+          ⚙️ Settings Panel - لوحة الإعدادات
+        =====================================================*/
+        .settings-group {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .settings-group-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .setting-label i {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .setting-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .setting-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .setting-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            cursor: pointer;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--gray-400);
+            border-radius: var(--radius-full);
+            transition: all var(--transition-fast);
+        }
+        
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: var(--radius-full);
+            transition: all var(--transition-bounce);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--primary-500);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(22px);
+        }
+        
+        /* Select Dropdown */
+        .custom-select {
+            position: relative;
+        }
+        
+        .select-trigger {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .select-trigger:hover {
+            border-color: var(--primary-400);
+        }
+        
+        .select-trigger i {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-right: auto;
+        }
+        
+        /*=====================================================
+          📤 Export Modal - نافذة التصدير
+        =====================================================*/
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: var(--z-modal-backdrop);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+            padding: var(--spacing-md);
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            overflow: hidden;
+            transform: scale(0.9) translateY(20px);
+            transition: transform var(--transition-bounce);
+        }
+        
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .modal-title i {
+            color: var(--primary-500);
+        }
+        
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: all var(--transition-fast);
+        }
+        
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .modal-body {
+            padding: var(--spacing-lg);
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: flex-end;
+        }
+        
+        /* أزرار */
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-primary:hover {
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+        
+        [data-theme="dark"] .btn-secondary:hover {
+            background: var(--gray-700);
+        }
+        
+        .btn-danger {
+            background: var(--danger-500);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: var(--danger-600);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-500);
+            color: var(--primary-500);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        .btn-icon {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+        }
+        
+        .btn-sm {
+            padding: var(--spacing-xs) var(--spacing-md);
+            font-size: 0.85rem;
+        }
+        
+        .btn-lg {
+            padding: var(--spacing-md) var(--spacing-xl);
+            font-size: 1rem;
+        }
+        
+        .btn-block {
+            width: 100%;
+        }
+        
+        /* Export Options */
+        .export-format-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .export-format {
+            padding: var(--spacing-md);
+            background: var(--bg-tertiary);
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .export-format:hover {
+            border-color: var(--primary-300);
+        }
+        
+        .export-format.active {
+            border-color: var(--primary-500);
+            background: var(--primary-50);
+        }
+        
+        [data-theme="dark"] .export-format.active {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .export-format-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto var(--spacing-sm);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        
+        .export-format.active .export-format-icon {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        .export-format-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .export-format-ext {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .export-quality-section {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .quality-presets {
+            display: flex;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .quality-preset {
+            flex: 1;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--bg-tertiary);
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .quality-preset:hover {
+            border-color: var(--primary-300);
+        }
+        
+        .quality-preset.active {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        .export-size-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+        }
+        
+        .size-info-item {
+            text-align: center;
+        }
+        
+        .size-info-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .size-info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /*=====================================================
+          🔔 Toast Notifications
+        =====================================================*/
+        .toast-container {
+            position: fixed;
+            top: calc(var(--header-height) + var(--spacing-md));
+            right: var(--spacing-md);
+            z-index: var(--z-toast);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            pointer-events: none;
+        }
+        
+        .toast {
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            min-width: 280px;
+            max-width: 400px;
+            pointer-events: auto;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all var(--transition-bounce);
+            border-right: 4px solid var(--primary-500);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-right-color: var(--secondary-500);
+        }
+        
+        .toast.error {
+            border-right-color: var(--danger-500);
+        }
+        
+        .toast.warning {
+            border-right-color: var(--warning-500);
+        }
+        
+        .toast-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .toast.success .toast-icon {
+            background: var(--secondary-100);
+            color: var(--secondary-600);
+        }
+        
+        .toast.error .toast-icon {
+            background: var(--danger-100);
+            color: var(--danger-600);
+        }
+        
+        .toast.warning .toast-icon {
+            background: var(--warning-100);
+            color: var(--warning-600);
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .toast-message {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .toast-close {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+        
+        .toast-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        /*=====================================================
+          📱 Bottom Navigation (Mobile)
+        =====================================================*/
+        .bottom-nav {
+            display: none;
+            height: var(--bottom-nav-height);
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            padding-bottom: env(safe-area-inset-bottom, var(--spacing-xs));
+        }
+        
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-lg);
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+        
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+        
+        .nav-item:hover {
+            color: var(--text-secondary);
+        }
+        
+        .nav-item.active {
+            color: var(--primary-500);
+            background: var(--primary-50);
+        }
+        
+        [data-theme="dark"] .nav-item.active {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        /*=====================================================
+          🔧 Utility Classes
+        =====================================================*/
+        .hidden { display: none !important; }
+        .invisible { visibility: hidden; }
+        .sr-only { 
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-sm { gap: var(--spacing-sm); }
+        .gap-md { gap: var(--spacing-md); }
+        
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        
+        .mt-sm { margin-top: var(--spacing-sm); }
+        .mt-md { margin-top: var(--spacing-md); }
+        .mb-sm { margin-bottom: var(--spacing-sm); }
+        .mb-md { margin-bottom: var(--spacing-md); }
+        
+        .p-sm { padding: var(--spacing-sm); }
+        .p-md { padding: var(--spacing-md); }
+        
+        .rounded-md { border-radius: var(--radius-md); }
+        .rounded-lg { border-radius: var(--radius-lg); }
+        .rounded-full { border-radius: var(--radius-full); }
+        
+        .shadow-md { box-shadow: var(--shadow-md); }
+        .shadow-lg { box-shadow: var(--shadow-lg); }
+        
+        .transition { transition: all var(--transition-normal); }
+        
+        .truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /*=====================================================
+          📱 Responsive Styles
+        =====================================================*/
+        @media (max-width: 1024px) {
+            :root {
+                --sidebar-width: 280px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            :root {
+                --header-height: 56px;
+            }
+            
+            .app-name {
+                display: none;
+            }
+            
+            .header-center {
+                position: static;
+                transform: none;
+            }
+            
+            .canvas-tools {
+                bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .canvas-tools {
+                width: calc(100% - var(--spacing-lg) * 2);
+                justify-content: center;
+            }
+            
+            .zoom-controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <!-- شاشة التحميل -->
+    <div id="splash-screen">
+        <div class="splash-logo">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6366f1"/>
+                        <stop offset="50%" style="stop-color:#8b5cf6"/>
+                        <stop offset="100%" style="stop-color:#a855f7"/>
+                    </linearGradient>
+                </defs>
+                <rect x="10" y="10" width="80" height="80" rx="20" fill="url(#logoGradient)"/>
+                <text x="50" y="62" text-anchor="middle" fill="white" font-size="36" font-weight="bold" font-family="Arial">ف</text>
+                <circle cx="78" cy="22" r="10" fill="#22c55e"/>
+                <path d="M74 22 L77 25 L83 19" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <h1 class="splash-title">فونت ستوديو</h1>
+        <p class="splash-subtitle">جاري تحميل التطبيق...</p>
+        <div class="splash-loader"></div>
+    </div>
+
+    <!-- التطبيق الرئيسي -->
+    <div id="app">
+        <!-- الهيدر -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="app-logo">
+                    <i class="fas fa-font"></i>
+                </div>
+                <span class="app-name">فونت ستوديو</span>
+            </div>
+            
+            <div class="header-center">
+                <div class="project-name">
+                    <input type="text" value="تصميم جديد" id="project-name-input">
+                    <i class="fas fa-pen"></i>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button class="header-btn" id="undo-btn" title="تراجع">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button class="header-btn" id="redo-btn" title="إعادة">
+                    <i class="fas fa-redo"></i>
+                </button>
+                <button class="header-btn" id="save-btn" title="حفظ">
+                    <i class="fas fa-save"></i>
+                </button>
+                <button class="header-btn" id="export-btn" title="تصدير">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="header-btn" id="theme-toggle" title="تبديل المظهر">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="header-btn" id="settings-btn" title="الإعدادات">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- المحتوى الرئيسي -->
+        <main class="app-main">
+            <!-- منطقة الكانفاس -->
+            <div class="canvas-container" id="canvas-container">
+                <div class="canvas-wrapper" id="canvas-wrapper">
+                    <canvas id="main-canvas" width="1080" height="1080"></canvas>
+                    <div class="selection-layer" id="selection-layer"></div>
+                </div>
+                
+                <!-- أدوات الكانفاس -->
+                <div class="canvas-tools">
+                    <button class="canvas-tool-btn active" id="select-tool" title="أداة التحديد">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </button>
+                    <button class="canvas-tool-btn" id="text-tool" title="أداة النص">
+                        <i class="fas fa-font"></i>
+                    </button>
+                    <button class="canvas-tool-btn" id="image-tool" title="إضافة صورة">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <button class="canvas-tool-btn" id="shape-tool" title="الأشكال">
+                        <i class="fas fa-shapes"></i>
+                    </button>
+                    
+                    <div class="zoom-controls">
+                        <button class="canvas-tool-btn" id="zoom-out" title="تصغير">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="zoom-value" id="zoom-value">100%</span>
+                        <button class="canvas-tool-btn" id="zoom-in" title="تكبير">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="canvas-tool-btn" id="zoom-fit" title="ملائمة">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    
+                    <button class="canvas-tool-btn primary" id="add-text-btn" title="إضافة نص">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- الشريط الجانبي -->
+            <aside class="sidebar" id="sidebar">
+                <!-- تبويبات الشريط -->
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-tab="text">
+                        <i class="fas fa-font"></i>
+                        <span>النص</span>
+                    </button>
+                    <button class="sidebar-tab" data-tab="fonts">
+                        <i class="fas fa-text-height"></i>
+                        <span>الخطوط</span>
+                    </button>
+                    <button class="sidebar-tab" data-tab="opentype">
+                        <i class="fas fa-magic"></i>
+                        <span>OpenType</span>
+                    </button>
+                    <button class="sidebar-tab" data-tab="colors">
+                        <i class="fas fa-palette"></i>
+                        <span>الألوان</span>
+                    </button>
+                    <button class="sidebar-tab" data-tab="layers">
+                        <i class="fas fa-layer-group"></i>
+                        <span>الطبقات</span>
+                    </button>
+                </div>
+                
+                <!-- محتوى الشريط -->
+                <div class="sidebar-content">
+                    <!-- لوحة النص -->
+                    <div class="sidebar-panel active" id="panel-text">
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-keyboard"></i>
+                                    النص
+                                </h3>
+                            </div>
+                            <div class="text-input-wrapper">
+                                <textarea class="text-input" id="text-input" placeholder="اكتب النص هنا..." dir="auto"></textarea>
+                                <span class="text-char-count"><span id="char-count">0</span> حرف</span>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-text-width"></i>
+                                    التنسيق
+                                </h3>
+                            </div>
+                            <div class="text-format-tools">
+                                <button class="format-btn" id="bold-btn" title="عريض">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button class="format-btn" id="italic-btn" title="مائل">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button class="format-btn" id="underline-btn" title="تسطير">
+                                    <i class="fas fa-underline"></i>
+                                </button>
+                                <button class="format-btn" id="strikethrough-btn" title="يتوسطه خط">
+                                    <i class="fas fa-strikethrough"></i>
+                                </button>
+                                <div class="format-divider"></div>
+                                <button class="format-btn active" id="align-right-btn" title="محاذاة يمين">
+                                    <i class="fas fa-align-right"></i>
+                                </button>
+                                <button class="format-btn" id="align-center-btn" title="محاذاة وسط">
+                                    <i class="fas fa-align-center"></i>
+                                </button>
+                                <button class="format-btn" id="align-left-btn" title="محاذاة يسار">
+                                    <i class="fas fa-align-left"></i>
+                                </button>
+                                <button class="format-btn" id="align-justify-btn" title="ضبط">
+                                    <i class="fas fa-align-justify"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-text-height"></i>
+                                    الحجم والتباعد
+                                </h3>
+                            </div>
+                            
+                            <div class="slider-wrapper">
+                                <div class="slider-header">
+                                    <span class="slider-label">حجم الخط</span>
+                                    <span class="slider-value" id="font-size-value">48px</span>
+                                </div>
+                                <input type="range" class="slider" id="font-size-slider" min="8" max="200" value="48">
+                            </div>
+                            
+                            <div class="slider-wrapper">
+                                <div class="slider-header">
+                                    <span class="slider-label">تباعد الأحرف</span>
+                                    <span class="slider-value" id="letter-spacing-value">0px</span>
+                                </div>
+                                <input type="range" class="slider" id="letter-spacing-slider" min="-20" max="50" value="0">
+                            </div>
+                            
+                            <div class="slider-wrapper">
+                                <div class="slider-header">
+                                    <span class="slider-label">ارتفاع السطر</span>
+                                    <span class="slider-value" id="line-height-value">1.5</span>
+                                </div>
+                                <input type="range" class="slider" id="line-height-slider" min="80" max="300" value="150">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- لوحة الخطوط -->
+                    <div class="sidebar-panel" id="panel-fonts">
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-search"></i>
+                                    البحث في الخطوط
+                                </h3>
+                                <span class="opentype-badge" id="fonts-count">0</span>
+                            </div>
+                            <div class="font-search-wrapper">
+                                <input type="text" class="font-search" id="font-search" placeholder="ابحث عن خط...">
+                                <i class="fas fa-search font-search-icon"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-list"></i>
+                                    الخطوط المتاحة
+                                </h3>
+                                <div class="section-actions">
+                                    <button class="section-btn" id="sort-fonts-btn" title="ترتيب">
+                                        <i class="fas fa-sort-alpha-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="font-list" id="font-list">
+                                <!-- سيتم ملؤها بـ JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-plus-circle"></i>
+                                    إضافة خطوط
+                                </h3>
+                            </div>
+                            <div class="add-fonts-area" id="add-fonts-area">
+                                <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
+                                <div class="add-fonts-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <p class="add-fonts-text">اسحب الخطوط هنا أو انقر للاختيار</p>
+                                <p class="add-fonts-hint">يدعم TTF, OTF, WOFF, WOFF2</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- لوحة OpenType -->
+                    <div class="sidebar-panel" id="panel-opentype">
+                        <div class="panel-section">
+                            <div class="opentype-panel">
+                                <div class="opentype-header">
+                                    <h3 class="opentype-title">
+                                        <i class="fas fa-magic"></i>
+                                        خصائص OpenType
+                                    </h3>
+                                    <span class="opentype-badge" id="opentype-features-count">0</span>
+                                </div>
+                                
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--spacing-md);">
+                                    اختر الخصائص المتاحة في الخط الحالي
+                                </p>
+                                
+                                <div class="opentype-features-grid" id="opentype-features-grid">
+                                    <!-- Basic Features -->
+                                    <div class="opentype-feature" data-feature="liga">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Ligatures</span>
+                                            <span class="feature-tag">liga</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="dlig">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Discretionary</span>
+                                            <span class="feature-tag">dlig</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="calt">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Contextual Alt</span>
+                                            <span class="feature-tag">calt</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="swsh">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Swash</span>
+                                            <span class="feature-tag">swsh</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="salt">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Stylistic Alt</span>
+                                            <span class="feature-tag">salt</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="smcp">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Small Caps</span>
+                                            <span class="feature-tag">smcp</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="onum">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Old Nums</span>
+                                            <span class="feature-tag">onum</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="lnum">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Lining Nums</span>
+                                            <span class="feature-tag">lnum</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="tnum">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Tabular</span>
+                                            <span class="feature-tag">tnum</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="pnum">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Proportional</span>
+                                            <span class="feature-tag">pnum</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="frac">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Fractions</span>
+                                            <span class="feature-tag">frac</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="ordn">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Ordinals</span>
+                                            <span class="feature-tag">ordn</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="sups">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Superscript</span>
+                                            <span class="feature-tag">sups</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="subs">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Subscript</span>
+                                            <span class="feature-tag">subs</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="kern">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Kerning</span>
+                                            <span class="feature-tag">kern</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="opentype-feature" data-feature="case">
+                                        <div class="feature-checkbox">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Case Forms</span>
+                                            <span class="feature-tag">case</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-star"></i>
+                                    Stylistic Sets (SS01-SS20)
+                                </h3>
+                            </div>
+                            <div class="stylistic-sets-grid" id="stylistic-sets-grid">
+                                <!-- سيتم إنشاؤها بـ JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-sliders-h"></i>
+                                    Character Variants (CV01-CV99)
+                                </h3>
+                            </div>
+                            <div class="stylistic-sets-grid" id="character-variants-grid">
+                                <!-- سيتم إنشاؤها بـ JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- لوحة الألوان -->
+                    <div class="sidebar-panel" id="panel-colors">
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-fill-drip"></i>
+                                    لون النص
+                                </h3>
+                            </div>
+                            <div class="color-picker-section">
+                                <div class="color-picker-wrapper">
+                                    <div class="color-preview" id="text-color-preview">
+                                        <input type="color" id="text-color-picker" value="#ffffff" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
+                                        <div class="color-preview-inner" style="background: #ffffff; position: absolute; inset: 0; pointer-events: none;"></div>
+                                    </div>
+                                    <input type="text" class="color-hex-input" id="text-color-hex" value="#FFFFFF" maxlength="7">
+                                </div>
+                                <div class="preset-colors" id="text-preset-colors">
+                                    <div class="preset-color" style="background: #ffffff" data-color="#ffffff"></div>
+                                    <div class="preset-color" style="background: #000000" data-color="#000000"></div>
+                                    <div class="preset-color" style="background: #ef4444" data-color="#ef4444"></div>
+                                    <div class="preset-color" style="background: #f59e0b" data-color="#f59e0b"></div>
+                                    <div class="preset-color" style="background: #22c55e" data-color="#22c55e"></div>
+                                    <div class="preset-color" style="background: #3b82f6" data-color="#3b82f6"></div>
+                                    <div class="preset-color" style="background: #8b5cf6" data-color="#8b5cf6"></div>
+                                    <div class="preset-color" style="background: #ec4899" data-color="#ec4899"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-square"></i>
+                                    لون الخلفية
+                                </h3>
+                            </div>
+                            <div class="color-picker-section">
+                                <div class="color-picker-wrapper">
+                                    <div class="color-preview" id="bg-color-preview">
+                                        <input type="color" id="bg-color-picker" value="#1f2937" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
+                                        <div class="color-preview-inner" style="background: #1f2937; position: absolute; inset: 0; pointer-events: none;"></div>
+                                    </div>
+                                    <input type="text" class="color-hex-input" id="bg-color-hex" value="#1F2937" maxlength="7">
+                                </div>
+                                <div class="preset-colors" id="bg-preset-colors">
+                                    <div class="preset-color" style="background: #ffffff" data-color="#ffffff"></div>
+                                    <div class="preset-color" style="background: #f3f4f6" data-color="#f3f4f6"></div>
+                                    <div class="preset-color" style="background: #1f2937" data-color="#1f2937"></div>
+                                    <div class="preset-color" style="background: #000000" data-color="#000000"></div>
+                                    <div class="preset-color" style="background: #fee2e2" data-color="#fee2e2"></div>
+                                    <div class="preset-color" style="background: #dcfce7" data-color="#dcfce7"></div>
+                                    <div class="preset-color" style="background: #dbeafe" data-color="#dbeafe"></div>
+                                    <div class="preset-color" style="background: #fae8ff" data-color="#fae8ff"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-adjust"></i>
+                                    الشفافية
+                                </h3>
+                            </div>
+                            <div class="slider-wrapper">
+                                <div class="slider-header">
+                                    <span class="slider-label">شفافية النص</span>
+                                    <span class="slider-value" id="text-opacity-value">100%</span>
+                                </div>
+                                <input type="range" class="slider" id="text-opacity-slider" min="0" max="100" value="100">
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-shadow"></i>
+                                    ظل النص
+                                </h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="text-shadow-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div id="text-shadow-controls" style="display: none;">
+                                <div class="slider-wrapper">
+                                    <div class="slider-header">
+                                        <span class="slider-label">الإزاحة الأفقية</span>
+                                        <span class="slider-value" id="shadow-x-value">2px</span>
+                                    </div>
+                                    <input type="range" class="slider" id="shadow-x-slider" min="-20" max="20" value="2">
+                                </div>
+                                <div class="slider-wrapper">
+                                    <div class="slider-header">
+                                        <span class="slider-label">الإزاحة الرأسية</span>
+                                        <span class="slider-value" id="shadow-y-value">2px</span>
+                                    </div>
+                                    <input type="range" class="slider" id="shadow-y-slider" min="-20" max="20" value="2">
+                                </div>
+                                <div class="slider-wrapper">
+                                    <div class="slider-header">
+                                        <span class="slider-label">التمويه</span>
+                                        <span class="slider-value" id="shadow-blur-value">4px</span>
+                                    </div>
+                                    <input type="range" class="slider" id="shadow-blur-slider" min="0" max="30" value="4">
+                                </div>
+                                <div class="color-picker-wrapper mt-sm">
+                                    <div class="color-preview" id="shadow-color-preview">
+                                        <input type="color" id="shadow-color-picker" value="#000000" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
+                                        <div class="color-preview-inner" style="background: #000000; position: absolute; inset: 0; pointer-events: none;"></div>
+                                    </div>
+                                    <input type="text" class="color-hex-input" id="shadow-color-hex" value="#000000" maxlength="7">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-border-style"></i>
+                                    حدود النص
+                                </h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="text-stroke-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div id="text-stroke-controls" style="display: none;">
+                                <div class="slider-wrapper">
+                                    <div class="slider-header">
+                                        <span class="slider-label">سمك الحدود</span>
+                                        <span class="slider-value" id="stroke-width-value">1px</span>
+                                    </div>
+                                    <input type="range" class="slider" id="stroke-width-slider" min="1" max="10" value="1">
+                                </div>
+                                <div class="color-picker-wrapper mt-sm">
+                                    <div class="color-preview" id="stroke-color-preview">
+                                        <input type="color" id="stroke-color-picker" value="#000000" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
+                                        <div class="color-preview-inner" style="background: #000000; position: absolute; inset: 0; pointer-events: none;"></div>
+                                    </div>
+                                    <input type="text" class="color-hex-input" id="stroke-color-hex" value="#000000" maxlength="7">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- لوحة الطبقات -->
+                    <div class="sidebar-panel" id="panel-layers">
+                        <div class="panel-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-layer-group"></i>
+                                    الطبقات
+                                </h3>
+                                <div class="section-actions">
+                                    <button class="section-btn" id="add-layer-btn" title="طبقة جديدة">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="section-btn" id="delete-layer-btn" title="حذف الطبقة">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="layers-list" id="layers-list">
+                                <!-- سيتم ملؤها بـ JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+        
+        <!-- شريط التنقل السفلي للموبايل -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-panel="text">
+                <i class="fas fa-font"></i>
+                <span>النص</span>
+            </button>
+            <button class="nav-item" data-panel="fonts">
+                <i class="fas fa-text-height"></i>
+                <span>الخطوط</span>
+            </button>
+            <button class="nav-item" data-panel="opentype">
+                <i class="fas fa-magic"></i>
+                <span>OT</span>
+            </button>
+            <button class="nav-item" data-panel="colors">
+                <i class="fas fa-palette"></i>
+                <span>الألوان</span>
+            </button>
+            <button class="nav-item" data-panel="layers">
+                <i class="fas fa-layer-group"></i>
+                <span>الطبقات</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- نافذة التصدير -->
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-download"></i>
+                    تصدير التصميم
+                </h2>
+                <button class="modal-close" id="close-export-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="export-format-grid">
+                    <div class="export-format active" data-format="png">
+                        <div class="export-format-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <span class="export-format-name">PNG</span>
+                        <span class="export-format-ext">شفاف</span>
+                    </div>
+                    <div class="export-format" data-format="jpg">
+                        <div class="export-format-icon">
+                            <i class="fas fa-file-image"></i>
+                        </div>
+                        <span class="export-format-name">JPG</span>
+                        <span class="export-format-ext">مضغوط</span>
+                    </div>
+                    <div class="export-format" data-format="webp">
+                        <div class="export-format-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <span class="export-format-name">WebP</span>
+                        <span class="export-format-ext">ويب</span>
+                    </div>
+                </div>
+                
+                <div class="export-quality-section">
+                    <label class="slider-label">جودة الصورة</label>
+                    <div class="quality-presets">
+                        <button class="quality-preset" data-quality="0.5">منخفضة</button>
+                        <button class="quality-preset" data-quality="0.75">متوسطة</button>
+                        <button class="quality-preset active" data-quality="0.9">عالية</button>
+                        <button class="quality-preset" data-quality="1">قصوى</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" class="slider" id="export-quality-slider" min="10" max="100" value="90">
+                    </div>
+                </div>
+                
+                <div class="export-size-info">
+                    <div class="size-info-item">
+                        <div class="size-info-value" id="export-width">1080</div>
+                        <div class="size-info-label">العرض</div>
+                    </div>
+                    <div class="size-info-item">
+                        <div class="size-info-value">×</div>
+                        <div class="size-info-label">&nbsp;</div>
+                    </div>
+                    <div class="size-info-item">
+                        <div class="size-info-value" id="export-height">1080</div>
+                        <div class="size-info-label">الارتفاع</div>
+                    </div>
+                    <div class="size-info-item">
+                        <div class="size-info-value" id="export-size">~1.2 MB</div>
+                        <div class="size-info-label">الحجم</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-export">إلغاء</button>
+                <button class="btn btn-primary" id="confirm-export">
+                    <i class="fas fa-download"></i>
+                    تصدير
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- حاوية التنبيهات -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- الملفات الخارجية -->
+    <script src="js/app.js"></script>
+</body>
+</html>
