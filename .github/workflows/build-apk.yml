@@ -26,13 +26,21 @@ jobs:
         uses: actions/checkout@v4
 
       # =====================================================
-      # ☕ Setup Java JDK (بدون cache)
+      # ☕ Setup Java JDK
       # =====================================================
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      # =====================================================
+      # 🔧 Setup Gradle (إصدار متوافق)
+      # =====================================================
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.4'
 
       # =====================================================
       # 📱 Setup Android SDK
@@ -52,49 +60,39 @@ jobs:
       # 📦 Install Cordova
       # =====================================================
       - name: Install Cordova
-        run: npm install -g cordova
+        run: npm install -g cordova@12.0.0
 
       # =====================================================
-      # 📁 Create Project Structure
+      # 📁 Create Cordova Project
       # =====================================================
       - name: Create Cordova Project
         run: |
           cordova create cordova-app ${{ env.PACKAGE_NAME }} "${{ env.APP_NAME }}"
+          echo "✅ Cordova project created"
 
       # =====================================================
       # 📋 Copy Web Files
       # =====================================================
-      - name: Copy Web Files to Cordova
+      - name: Copy Web Files
         run: |
-          # مسح مجلد www الافتراضي
           rm -rf cordova-app/www/*
           
-          # نسخ index.html
           cp index.html cordova-app/www/
           
-          # نسخ مجلد js
           mkdir -p cordova-app/www/js
           if [ -d "js" ]; then
             cp -r js/* cordova-app/www/js/
           fi
           
-          # نسخ مجلد icons
           mkdir -p cordova-app/www/icons
           if [ -d "icons" ]; then
             cp -r icons/* cordova-app/www/icons/ 2>/dev/null || true
           fi
           
-          # نسخ manifest.json
-          if [ -f "manifest.json" ]; then
-            cp manifest.json cordova-app/www/
-          fi
+          [ -f "manifest.json" ] && cp manifest.json cordova-app/www/
+          [ -f "sw.js" ] && cp sw.js cordova-app/www/
           
-          # نسخ sw.js
-          if [ -f "sw.js" ]; then
-            cp sw.js cordova-app/www/
-          fi
-          
-          echo "✅ Web files copied successfully"
+          echo "✅ Files copied"
           ls -la cordova-app/www/
 
       # =====================================================
@@ -102,12 +100,10 @@ jobs:
       # =====================================================
       - name: Generate App Icons
         run: |
-          sudo apt-get update
-          sudo apt-get install -y imagemagick
+          sudo apt-get update && sudo apt-get install -y imagemagick
           
           mkdir -p cordova-app/www/icons
           
-          # إنشاء أيقونة SVG
           cat > /tmp/icon.svg << 'ICONEOF'
           <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -124,20 +120,16 @@ jobs:
           </svg>
           ICONEOF
           
-          # إنشاء الأيقونات بأحجام مختلفة
           for size in 72 96 128 144 152 192 384 512; do
             convert -background none -density 384 /tmp/icon.svg -resize ${size}x${size} cordova-app/www/icons/icon-${size}.png
-            echo "✅ Created icon-${size}.png"
           done
           
-          # إنشاء splash screen
           convert -size 1080x1920 'xc:#030712' cordova-app/www/icons/splash-portrait.png
           
-          echo "✅ All icons generated"
-          ls -la cordova-app/www/icons/
+          echo "✅ Icons generated"
 
       # =====================================================
-      # 📝 Create Cordova Config
+      # 📝 Create Config.xml
       # =====================================================
       - name: Create Cordova Config
         run: |
@@ -149,10 +141,8 @@ jobs:
                   xmlns:android="http://schemas.android.com/apk/res/android">
               
               <name>فونت ستوديو</name>
-              <description>تطبيق احترافي لتصميم الصور مع دعم كامل لخطوط OpenType</description>
-              <author email="support@fontstudio.app" href="https://fontstudio.app">
-                  Font Studio Team
-              </author>
+              <description>تطبيق احترافي لتصميم الصور</description>
+              <author email="support@fontstudio.app">Font Studio Team</author>
               
               <content src="index.html" />
               
@@ -162,11 +152,11 @@ jobs:
               <allow-navigation href="*" />
               
               <preference name="Orientation" value="default" />
-              <preference name="Fullscreen" value="false" />
               <preference name="BackgroundColor" value="#030712" />
               <preference name="AndroidLaunchMode" value="singleTop" />
               <preference name="android-minSdkVersion" value="24" />
               <preference name="android-targetSdkVersion" value="33" />
+              <preference name="GradlePluginGoogleServicesEnabled" value="false" />
               
               <platform name="android">
                   <icon src="www/icons/icon-72.png" density="ldpi" />
@@ -176,19 +166,15 @@ jobs:
                   <icon src="www/icons/icon-384.png" density="xxhdpi" />
                   <icon src="www/icons/icon-512.png" density="xxxhdpi" />
                   
-                  <splash src="www/icons/splash-portrait.png" density="port-hdpi" />
-                  <splash src="www/icons/splash-portrait.png" density="port-xhdpi" />
-                  <splash src="www/icons/splash-portrait.png" density="port-xxhdpi" />
-                  <splash src="www/icons/splash-portrait.png" density="port-xxxhdpi" />
+                  <preference name="AndroidWindowSplashScreenAnimatedIcon" value="www/icons/icon-512.png" />
+                  <preference name="AndroidWindowSplashScreenBackground" value="#030712" />
               </platform>
-              
           </widget>
           CONFIGEOF
-          
-          echo "✅ Config.xml created"
+          echo "✅ Config created"
 
       # =====================================================
-      # 📱 Add Android Platform
+      # 📱 Add Android Platform (إصدار متوافق)
       # =====================================================
       - name: Add Android Platform
         run: |
@@ -197,14 +183,33 @@ jobs:
           echo "✅ Android platform added"
 
       # =====================================================
-      # 🔌 Add Cordova Plugins
+      # 🔧 Fix Gradle Version
+      # =====================================================
+      - name: Fix Gradle Version
+        run: |
+          cd cordova-app/platforms/android
+          
+          # تحديث gradle-wrapper.properties
+          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
+          networkTimeout=10000
+          validateDistributionUrl=true
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+          
+          echo "✅ Gradle version fixed to 8.4"
+
+      # =====================================================
+      # 🔌 Add Plugins
       # =====================================================
       - name: Add Cordova Plugins
         run: |
           cd cordova-app
           cordova plugin add cordova-plugin-device || true
           cordova plugin add cordova-plugin-statusbar || true
-          cordova plugin add cordova-plugin-splashscreen || true
           echo "✅ Plugins added"
 
       # =====================================================
@@ -213,7 +218,7 @@ jobs:
       - name: Build Debug APK
         run: |
           cd cordova-app
-          cordova build android --debug
+          cordova build android --debug --verbose
           echo "✅ Debug APK built"
 
       # =====================================================
@@ -230,11 +235,7 @@ jobs:
       # =====================================================
       - name: List APK Files
         run: |
-          echo "📦 Debug APK:"
-          find cordova-app/platforms/android -name "*.apk" -type f
-          
-          echo ""
-          echo "📊 APK Sizes:"
+          echo "📦 APK Files:"
           find cordova-app/platforms/android -name "*.apk" -type f -exec ls -lh {} \;
 
       # =====================================================
@@ -260,7 +261,7 @@ jobs:
           if-no-files-found: warn
 
       # =====================================================
-      # 🏷️ Create Release (on tag)
+      # 🏷️ Create Release
       # =====================================================
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
