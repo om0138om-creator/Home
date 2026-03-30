@@ -1,0 +1,274 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name (e.g., 1.0.0)'
+        required: false
+        default: '1.0.0'
+
+env:
+  APP_NAME: "Font Studio"
+  APP_NAME_AR: "فونت ستوديو"
+  PACKAGE_NAME: "com.fontstudio.app"
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      # =====================================================
+      # 📥 Checkout Repository
+      # =====================================================
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # =====================================================
+      # ☕ Setup Java JDK
+      # =====================================================
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      # =====================================================
+      # 📱 Setup Android SDK
+      # =====================================================
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # =====================================================
+      # 🟢 Setup Node.js
+      # =====================================================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # =====================================================
+      # 📦 Install Dependencies
+      # =====================================================
+      - name: Install npm dependencies
+        run: |
+          npm install -g cordova
+          npm install
+
+      # =====================================================
+      # 🔧 Create Cordova Project Structure
+      # =====================================================
+      - name: Setup Cordova Project
+        run: |
+          # Create Cordova project
+          cordova create cordova-app ${{ env.PACKAGE_NAME }} "${{ env.APP_NAME }}"
+          
+          # Copy web files to www
+          rm -rf cordova-app/www/*
+          cp index.html cordova-app/www/
+          cp -r js cordova-app/www/ 2>/dev/null || mkdir -p cordova-app/www/js && cp js/* cordova-app/www/js/
+          cp -r icons cordova-app/www/ 2>/dev/null || mkdir -p cordova-app/www/icons
+          cp manifest.json cordova-app/www/
+          cp sw.js cordova-app/www/
+          
+          # Navigate to cordova directory
+          cd cordova-app
+          
+          # Add Android platform
+          cordova platform add android@12.0.1
+          
+          # Install required plugins
+          cordova plugin add cordova-plugin-file
+          cordova plugin add cordova-plugin-device
+          cordova plugin add cordova-plugin-splashscreen
+          cordova plugin add cordova-plugin-statusbar
+          cordova plugin add cordova-plugin-network-information
+          cordova plugin add cordova-plugin-inappbrowser
+
+      # =====================================================
+      # 📝 Configure Cordova
+      # =====================================================
+      - name: Configure Cordova config.xml
+        run: |
+          cd cordova-app
+          cat > config.xml << 'EOF'
+          <?xml version='1.0' encoding='utf-8'?>
+          <widget id="${{ env.PACKAGE_NAME }}" version="${{ github.event.inputs.version || '1.0.0' }}"
+                  xmlns="http://www.w3.org/ns/widgets" 
+                  xmlns:cdv="http://cordova.apache.org/ns/1.0"
+                  xmlns:android="http://schemas.android.com/apk/res/android">
+              
+              <name>فونت ستوديو</name>
+              <description>تطبيق احترافي لتصميم الصور مع دعم كامل لخطوط OpenType</description>
+              <author email="support@fontstudio.app" href="https://fontstudio.app">
+                  Font Studio Team
+              </author>
+              
+              <content src="index.html" />
+              
+              <access origin="*" />
+              <allow-intent href="http://*/*" />
+              <allow-intent href="https://*/*" />
+              <allow-navigation href="*" />
+              
+              <preference name="Orientation" value="default" />
+              <preference name="Fullscreen" value="false" />
+              <preference name="StatusBarOverlaysWebView" value="false" />
+              <preference name="StatusBarBackgroundColor" value="#6366f1" />
+              <preference name="StatusBarStyle" value="lightcontent" />
+              <preference name="SplashScreenDelay" value="2000" />
+              <preference name="FadeSplashScreen" value="true" />
+              <preference name="FadeSplashScreenDuration" value="500" />
+              <preference name="ShowSplashScreenSpinner" value="false" />
+              <preference name="SplashMaintainAspectRatio" value="true" />
+              <preference name="AndroidLaunchMode" value="singleTop" />
+              <preference name="BackgroundColor" value="#030712" />
+              <preference name="android-minSdkVersion" value="24" />
+              <preference name="android-targetSdkVersion" value="34" />
+              
+              <platform name="android">
+                  <icon src="www/icons/icon-72.png" density="ldpi" />
+                  <icon src="www/icons/icon-96.png" density="mdpi" />
+                  <icon src="www/icons/icon-144.png" density="hdpi" />
+                  <icon src="www/icons/icon-192.png" density="xhdpi" />
+                  <icon src="www/icons/icon-384.png" density="xxhdpi" />
+                  <icon src="www/icons/icon-512.png" density="xxxhdpi" />
+                  
+                  <splash src="www/icons/splash-portrait.png" density="port-hdpi" />
+                  <splash src="www/icons/splash-portrait.png" density="port-xhdpi" />
+                  <splash src="www/icons/splash-portrait.png" density="port-xxhdpi" />
+                  <splash src="www/icons/splash-portrait.png" density="port-xxxhdpi" />
+                  
+                  <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+                      <application android:usesCleartextTraffic="true" android:hardwareAccelerated="true" />
+                  </edit-config>
+                  
+                  <config-file parent="/manifest" target="AndroidManifest.xml">
+                      <uses-permission android:name="android.permission.INTERNET" />
+                      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+                      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+                      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+                      <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+                  </config-file>
+              </platform>
+              
+              <plugin name="cordova-plugin-file" spec="^7.0.0" />
+              <plugin name="cordova-plugin-device" spec="^2.1.0" />
+              <plugin name="cordova-plugin-splashscreen" spec="^6.0.2" />
+              <plugin name="cordova-plugin-statusbar" spec="^3.0.0" />
+          </widget>
+          EOF
+
+      # =====================================================
+      # 🎨 Generate Icons (if not exist)
+      # =====================================================
+      - name: Generate App Icons
+        run: |
+          mkdir -p cordova-app/www/icons
+          
+          # Create a simple SVG icon
+          cat > /tmp/icon.svg << 'EOF'
+          <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#6366f1"/>
+                <stop offset="50%" style="stop-color:#8b5cf6"/>
+                <stop offset="100%" style="stop-color:#a855f7"/>
+              </linearGradient>
+            </defs>
+            <rect width="512" height="512" rx="100" fill="url(#bg)"/>
+            <text x="256" y="320" text-anchor="middle" fill="white" font-size="220" font-weight="bold" font-family="Arial">ف</text>
+            <circle cx="420" cy="120" r="50" fill="#22c55e"/>
+            <path d="M395 120 L410 135 L445 100" stroke="white" stroke-width="12" fill="none" stroke-linecap="round"/>
+          </svg>
+          EOF
+          
+          # Install imagemagick
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          
+          # Generate icons in different sizes
+          for size in 72 96 128 144 152 192 384 512; do
+            convert -background none -density 384 /tmp/icon.svg -resize ${size}x${size} cordova-app/www/icons/icon-${size}.png
+          done
+          
+          # Generate splash screen
+          convert -size 1080x1920 xc:'#030712' \
+            -gravity center \
+            -fill '#6366f1' -font Arial -pointsize 80 \
+            -annotate 0 'فونت ستوديو' \
+            cordova-app/www/icons/splash-portrait.png
+
+      # =====================================================
+      # 🔨 Build Debug APK
+      # =====================================================
+      - name: Build Debug APK
+        run: |
+          cd cordova-app
+          cordova build android --debug
+
+      # =====================================================
+      # 🔨 Build Release APK
+      # =====================================================
+      - name: Build Release APK
+        run: |
+          cd cordova-app
+          cordova build android --release -- --packageType=apk
+
+      # =====================================================
+      # 📤 Upload Debug APK
+      # =====================================================
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: font-studio-debug-apk
+          path: cordova-app/platforms/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      # =====================================================
+      # 📤 Upload Release APK
+      # =====================================================
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: font-studio-release-apk
+          path: cordova-app/platforms/android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+
+      # =====================================================
+      # 🏷️ Create Release (on tag push)
+      # =====================================================
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            cordova-app/platforms/android/app/build/outputs/apk/debug/*.apk
+            cordova-app/platforms/android/app/build/outputs/apk/release/*.apk
+          generate_release_notes: true
+          body: |
+            ## 🎨 فونت ستوديو - ${{ github.ref_name }}
+            
+            ### ✨ المميزات:
+            - دعم كامل لـ OpenType Features
+            - Stylistic Sets (SS01-SS20)
+            - Character Variants (CV01-CV99)
+            - إضافة خطوط مخصصة (TTF, OTF, WOFF, WOFF2)
+            - تصدير بصيغ PNG, JPG, WebP
+            - واجهة عربية احترافية
+            
+            ### 📥 التحميل:
+            - **Debug APK**: للاختبار
+            - **Release APK**: للاستخدام العام
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
