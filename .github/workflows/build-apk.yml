@@ -12,6 +12,8 @@ on:
 env:
   APP_NAME: "Font Studio"
   PACKAGE_NAME: "com.fontstudio.app"
+  # هذا المتغير سيجبر كوردوفا على استخدام إصدار Gradle 8.4 المستقر وتجنب خطأ XmlParser
+  CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL: "https://services.gradle.org/distributions/gradle-8.4-all.zip"
 
 jobs:
   build:
@@ -35,7 +37,7 @@ jobs:
           distribution: 'temurin'
 
       # =====================================================
-      # 🔧 Setup Gradle (إصدار متوافق)
+      # 🔧 Setup Gradle
       # =====================================================
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -174,33 +176,13 @@ jobs:
           echo "✅ Config created"
 
       # =====================================================
-      # 📱 Add Android Platform (إصدار متوافق)
+      # 📱 Add Android Platform
       # =====================================================
       - name: Add Android Platform
         run: |
           cd cordova-app
           cordova platform add android@12.0.1
           echo "✅ Android platform added"
-
-      # =====================================================
-      # 🔧 Fix Gradle Version
-      # =====================================================
-      - name: Fix Gradle Version
-        run: |
-          cd cordova-app/platforms/android
-          
-          # تحديث gradle-wrapper.properties
-          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
-          networkTimeout=10000
-          validateDistributionUrl=true
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
-          
-          echo "✅ Gradle version fixed to 8.4"
 
       # =====================================================
       # 🔌 Add Plugins
