@@ -1,0 +1,46 @@
+{
+    "name": "font-studio-pro",
+    "version": "1.0.0",
+    "description": "تطبيق احترافي لتصميم الصور مع دعم كامل لخطوط OpenType",
+    "main": "index.html",
+    "scripts": {
+        "start": "npx serve .",
+        "build": "echo 'No build step required for this project'",
+        "test": "echo 'No tests configured'",
+        "lint": "echo 'No linting configured'",
+        "cordova:create": "cordova create cordova-app com.fontstudio.app 'Font Studio'",
+        "cordova:android": "cd cordova-app && cordova platform add android",
+        "cordova:build": "cd cordova-app && cordova build android",
+        "cordova:run": "cd cordova-app && cordova run android"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yourusername/font-studio-pro.git"
+    },
+    "keywords": [
+        "font",
+        "design",
+        "opentype",
+        "arabic",
+        "typography",
+        "image-editor",
+        "pwa",
+        "android",
+        "cordova"
+    ],
+    "author": "Font Studio Team",
+    "license": "MIT",
+    "devDependencies": {
+        "cordova": "^12.0.0",
+        "serve": "^14.2.1"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions",
+        "not dead",
+        "not ie 11"
+    ]
+}
