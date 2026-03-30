@@ -12,7 +12,7 @@ on:
 env:
   APP_NAME: "Font Studio"
   PACKAGE_NAME: "com.fontstudio.app"
-  # هذا المتغير سيجبر كوردوفا على استخدام إصدار Gradle 8.4 المستقر وتجنب خطأ XmlParser
+  # هذا المتغير سيجبر كوردوفا على استخدام إصدار Gradle 8.4 المستقر لتجنب أخطاء التوافق
   CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL: "https://services.gradle.org/distributions/gradle-8.4-all.zip"
 
 jobs:
@@ -45,10 +45,13 @@ jobs:
           gradle-version: '8.4'
 
       # =====================================================
-      # 📱 Setup Android SDK
+      # 📱 Setup Android SDK & Build Tools
       # =====================================================
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
+      - name: Install Android Build Tools 33.0.2
+        run: sdkmanager "build-tools;33.0.2"
 
       # =====================================================
       # 🟢 Setup Node.js
