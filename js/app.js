@@ -164,7 +164,7 @@ class FontStudioApp {
         this.canvasProperties = {
             width: CONFIG.CANVAS.DEFAULT_WIDTH,
             height: CONFIG.CANVAS.DEFAULT_HEIGHT,
-            backgroundColor: '#1f2937',
+            backgroundColor: '#ffffff',
             backgroundImage: null
         };
         
@@ -323,6 +323,12 @@ class FontStudioApp {
         
         // Toast container
         this.elements.toastContainer = document.getElementById('toast-container');
+        
+        // Startup modal (نافذة البداية)
+        this.elements.startupModal = document.getElementById('startup-modal');
+        this.elements.newCanvasWidth = document.getElementById('new-canvas-width');
+        this.elements.newCanvasHeight = document.getElementById('new-canvas-height');
+        this.elements.startDesignBtn = document.getElementById('start-design-btn');
         
         // Bottom nav (mobile)
         this.elements.bottomNavItems = document.querySelectorAll('.nav-item');
@@ -628,6 +634,31 @@ class FontStudioApp {
         
         // Window resize
         window.addEventListener('resize', () => this.fitCanvasToViewport());
+        
+        // Start new design (بدء تصميم جديد بالمقاسات المحددة)
+        if (this.elements.startDesignBtn) {
+            this.elements.startDesignBtn.addEventListener('click', () => {
+                const w = parseInt(this.elements.newCanvasWidth.value) || 1080;
+                const h = parseInt(this.elements.newCanvasHeight.value) || 1080;
+                
+                // تحديث الخصائص
+                this.canvasProperties.width = w;
+                this.canvasProperties.height = h;
+                
+                // تحديث الكانفاس الفعلي
+                this.elements.canvas.width = w;
+                this.elements.canvas.height = h;
+                
+                // إخفاء نافذة البداية
+                this.elements.startupModal.classList.remove('active');
+                
+                // إعادة ضبط العرض وحفظ الخطوة
+                this.fitCanvasToViewport();
+                this.render();
+                this.saveHistory();
+                this.showToast('جاهز للعمل', 'success', `تم إنشاء مساحة عمل مقاس ${w}x${h}`);
+            });
+        }
         
         // Mouse wheel zoom
         this.elements.canvasContainer.addEventListener('wheel', (e) => {
@@ -1740,6 +1771,11 @@ class FontStudioApp {
                 // Update UI
                 this.elements.textInput.value = this.textProperties.text;
                 this.elements.charCount.textContent = this.textProperties.text.length;
+                
+                // إخفاء نافذة البداية إذا تم تحميل مشروع محفوظ بنجاح
+                if (this.elements.startupModal) {
+                    this.elements.startupModal.classList.remove('active');
+                }
                 this.updateLayersList();
                 this.updateOpenTypeFeaturesCount();
                 this.render();
