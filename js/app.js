@@ -756,9 +756,9 @@ class FontStudioApp {
         const container = this.elements.canvasContainer;
         const hammer = new Hammer.Manager(container);
         
-        // Add recognizers
         const pinch = new Hammer.Pinch();
-        const pan = new Hammer.Pan();
+        // تفعيل السحب في جميع الاتجاهات بدون تأخير
+        const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 0 }); 
         const tap = new Hammer.Tap({ taps: 2 });
         
         hammer.add([pinch, pan, tap]);
@@ -767,11 +767,51 @@ class FontStudioApp {
         let initialPanX = 0;
         let initialPanY = 0;
         
-        // Pinch to zoom
-        hammer.on('pinchstart', () => {
-            initialZoom = this.state.zoom;
-        });
+        // --- متغيرات تحريك الطبقات (السحر الجديد) ---
+        let isDraggingLayer = false;
+        let draggedLayer = null;
+        let initialLayerX = 0;
+        let initialLayerY = 0;
+
+        // دالة مساعدة لمعرفة هل إصبعك لمس النص/الصورة أم لمس الفراغ
+        const getHitLayer = (center) => {
+            const rect = this.elements.canvas.getBoundingClientRect();
+            // تحويل إحداثيات الشاشة إلى إحداثيات الكانفاس الداخلية (مثل 1080x1080)
+            const x = (center.x - rect.left) * (this.elements.canvas.width / rect.width);
+            const y = (center.y - rect.top) * (this.elements.canvas.height / rect.height);
+            
+            const ctx = this.elements.ctx;
+            // فحص الطبقات العلوية أولاً
+            const layers = [...this.state.layers].reverse(); 
+            
+            for (const layer of layers) {
+                if (!layer.visible || layer.locked) continue;
+                
+                if (layer.type === 'text') {
+                    ctx.save();
+                    ctx.font = `${layer.properties.fontSize}px "${layer.properties.fontFamily}"`;
+                    const metrics = ctx.measureText(layer.properties.text || " ");
+                    const width = metrics.width;
+                    const height = layer.properties.fontSize;
+                    ctx.restore();
+                    
+                    // التوسيع قليلاً (+30) لتسهيل التقاط النص بالإصبع
+                    if (x >= layer.x - width/2 - 30 && x <= layer.x + width/2 + 30 &&
+                        y >= layer.y - height/2 - 30 && y <= layer.y + height/2 + 30) {
+                        return layer;
+                    }
+                } else if (layer.type === 'image' || layer.type === 'shape') {
+                    if (x >= layer.x && x <= layer.x + layer.width &&
+                        y >= layer.y && y <= layer.y + layer.height) {
+                        return layer;
+                    }
+                }
+            }
+            return null;
+        };
         
+        // التكبير والتصغير (Pinch to zoom)
+        hammer.on('pinchstart', () => { initialZoom = this.state.zoom; });
         hammer.on('pinchmove', (e) => {
             let newZoom = initialZoom * e.scale;
             newZoom = Math.max(CONFIG.CANVAS.MIN_ZOOM, Math.min(CONFIG.CANVAS.MAX_ZOOM, newZoom));
@@ -779,27 +819,58 @@ class FontStudioApp {
             this.updateCanvasTransform();
         });
         
-        // Pan
-        hammer.on('panstart', () => {
+        // السحب والتحريك (Pan)
+        hammer.on('panstart', (e) => {
+            isDraggingLayer = false;
+            
+            // إذا كانت أداة (السهم ↖) محددة، حاول التقاط وتحريك العنصر
+            if (this.state.currentTool === 'select') {
+                const hitLayer = getHitLayer(e.center);
+                if (hitLayer) {
+                    isDraggingLayer = true;
+                    draggedLayer = hitLayer;
+                    this.selectLayer(hitLayer.id); // تفعيل الطبقة لظهور خصائصها
+                    initialLayerX = hitLayer.x;
+                    initialLayerY = hitLayer.y;
+                    return; // الخروج لكي لا يتم تحريك الشاشة بأكملها
+                }
+            }
+            
+            // إذا لم نلمس عنصراً أو الأداة ليست السهم، حرك الشاشة بأكملها
             initialPanX = this.state.panX;
             initialPanY = this.state.panY;
         });
         
         hammer.on('panmove', (e) => {
-            this.state.panX = initialPanX + e.deltaX / this.state.zoom;
-            this.state.panY = initialPanY + e.deltaY / this.state.zoom;
-            this.updateCanvasTransform();
+            if (isDraggingLayer && draggedLayer) {
+                // تحريك النص المباشر (مع مراعاة نسبة التكبير الحالية)
+                draggedLayer.x = initialLayerX + (e.deltaX / this.state.zoom);
+                draggedLayer.y = initialLayerY + (e.deltaY / this.state.zoom);
+                this.render();
+            } else {
+                // تحريك الكانفاس بأكمله
+                this.state.panX = initialPanX + e.deltaX / this.state.zoom;
+                this.state.panY = initialPanY + e.deltaY / this.state.zoom;
+                this.updateCanvasTransform();
+            }
         });
         
-        // Double tap to reset zoom
+        // حفظ الخطوة بعد الإفلات للتراجع (Undo)
+        hammer.on('panend', (e) => {
+            if (isDraggingLayer) {
+                this.saveHistory(); 
+                isDraggingLayer = false;
+                draggedLayer = null;
+            }
+        });
+        
+        // نقر مزدوج لضبط حجم الشاشة (Reset zoom)
         hammer.on('tap', () => {
             this.state.zoom = 1;
             this.state.panX = 0;
             this.state.panY = 0;
             this.updateCanvasTransform();
-        });
-    }
-    
+          
     // =====================================================
     // 🎨 Rendering
     // =====================================================
