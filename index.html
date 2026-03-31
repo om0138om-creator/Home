@@ -13,122 +13,55 @@
     <!-- أيقونات التطبيق -->
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    
-    <!-- manifest للتطبيق -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- خطوط Google للواجهة -->
+    <!-- خطوط Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&family=Cinzel:wght@700;800&display=swap" rel="stylesheet">
     
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome للأيقونات -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- مكتبة OpenType.js للتعامل مع الخطوط -->
+    <!-- المكتبات -->
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
-    
-    <!-- مكتبة Hammer.js للـ Touch Gestures -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-    
-    <!-- مكتبة html2canvas للتصدير -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- مكتبة FileSaver للحفظ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    
-    <!-- مكتبة JSZip للملفات المضغوطة -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    
-    <!-- مكتبة localForage للتخزين -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
                 
     <style>
         /*=====================================================
-          🎨 المتغيرات الأساسية - CSS Variables
+          🎨 CSS Variables - المتغيرات
         =====================================================*/
         :root {
             /* الألوان الرئيسية */
-            --primary-50: #eef2ff;
-            --primary-100: #e0e7ff;
-            --primary-200: #c7d2fe;
-            --primary-300: #a5b4fc;
-            --primary-400: #818cf8;
             --primary-500: #6366f1;
             --primary-600: #4f46e5;
-            --primary-700: #4338ca;
-            --primary-800: #3730a3;
-            --primary-900: #312e81;
-            
-            /* ألوان ثانوية */
-            --secondary-50: #f0fdf4;
-            --secondary-100: #dcfce7;
-            --secondary-200: #bbf7d0;
-            --secondary-300: #86efac;
-            --secondary-400: #4ade80;
             --secondary-500: #22c55e;
-            --secondary-600: #16a34a;
-            --secondary-700: #15803d;
-            --secondary-800: #166534;
-            --secondary-900: #14532d;
-            
-            /* ألوان تحذيرية */
-            --warning-50: #fffbeb;
-            --warning-100: #fef3c7;
-            --warning-200: #fde68a;
-            --warning-300: #fcd34d;
-            --warning-400: #fbbf24;
             --warning-500: #f59e0b;
-            --warning-600: #d97706;
-            --warning-700: #b45309;
-            --warning-800: #92400e;
-            --warning-900: #78350f;
-            
-            /* ألوان الخطر */
-            --danger-50: #fef2f2;
-            --danger-100: #fee2e2;
-            --danger-200: #fecaca;
-            --danger-300: #fca5a5;
-            --danger-400: #f87171;
             --danger-500: #ef4444;
-            --danger-600: #dc2626;
-            --danger-700: #b91c1c;
-            --danger-800: #991b1b;
-            --danger-900: #7f1d1d;
             
-            /* ألوان محايدة */
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-            --gray-950: #030712;
+            /* ألوان الواجهة الداكنة */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-card: rgba(31, 41, 55, 0.8);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --border-color: #475569;
             
-            /* ألوان التدرج */
+            /* التدرجات */
             --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-            --gradient-secondary: linear-gradient(135deg, #22c55e 0%, #10b981 50%, #14b8a6 100%);
             --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%);
             --gradient-cool: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%);
-            --gradient-dark: linear-gradient(135deg, #1f2937 0%, #111827 50%, #030712 100%);
-            --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
             
             /* الظلال */
-            --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.4);
-            --shadow-glow-lg: 0 0 40px rgba(99, 102, 241, 0.6);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
             
             /* الأبعاد */
             --radius-sm: 0.375rem;
@@ -136,70 +69,20 @@
             --radius-lg: 0.75rem;
             --radius-xl: 1rem;
             --radius-2xl: 1.5rem;
-            --radius-3xl: 2rem;
             --radius-full: 9999px;
             
             /* الانتقالات */
-            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+            --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
             
             /* الخطوط */
             --font-primary: 'Cairo', 'Tajawal', sans-serif;
-            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
             
-            /* المسافات */
-            --spacing-xs: 0.25rem;
-            --spacing-sm: 0.5rem;
-            --spacing-md: 1rem;
-            --spacing-lg: 1.5rem;
-            --spacing-xl: 2rem;
-            --spacing-2xl: 3rem;
-            --spacing-3xl: 4rem;
-            
-            /* Z-Index */
-            --z-dropdown: 100;
-            --z-sticky: 200;
-            --z-fixed: 300;
-            --z-modal-backdrop: 400;
-            --z-modal: 500;
-            --z-popover: 600;
-            --z-tooltip: 700;
-            --z-toast: 800;
-            --z-max: 9999;
-            
-            /* أبعاد الشاشة */
-            --header-height: 60px;
-            --sidebar-width: 320px;
-            --toolbar-height: 50px;
-            --bottom-nav-height: 70px;
-        }
-        
-        /* الوضع الداكن */
-        [data-theme="dark"] {
-            --bg-primary: var(--gray-900);
-            --bg-secondary: var(--gray-800);
-            --bg-tertiary: var(--gray-700);
-            --bg-card: rgba(31, 41, 55, 0.8);
-            --text-primary: var(--gray-50);
-            --text-secondary: var(--gray-300);
-            --text-muted: var(--gray-500);
-            --border-color: var(--gray-700);
-            --border-light: var(--gray-800);
-        }
-        
-        /* الوضع الفاتح */
-        [data-theme="light"] {
-            --bg-primary: var(--gray-50);
-            --bg-secondary: white;
-            --bg-tertiary: var(--gray-100);
-            --bg-card: rgba(255, 255, 255, 0.9);
-            --text-primary: var(--gray-900);
-            --text-secondary: var(--gray-600);
-            --text-muted: var(--gray-400);
-            --border-color: var(--gray-200);
-            --border-light: var(--gray-100);
+            /* الأبعاد الثابتة */
+            --header-height: 50px;
+            --bottom-nav-height: 60px;
+            --panel-height: 280px;
         }
         
         /*=====================================================
@@ -212,127 +95,55 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        html {
-            font-size: 16px;
-            scroll-behavior: smooth;
-            -webkit-text-size-adjust: 100%;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        body {
-            font-family: var(--font-primary);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow: hidden;
-            position: fixed;
+        html, body {
             width: 100%;
             height: 100%;
-            touch-action: manipulation;
-        }
-        
-        /* إخفاء scrollbar مع الحفاظ على التمرير */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--gray-400);
-            border-radius: var(--radius-full);
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--gray-500);
-        }
-        
-        /* Selection */
-        ::selection {
-            background: var(--primary-500);
-            color: white;
-        }
-        
-        /* روابط */
-        a {
-            color: var(--primary-500);
-            text-decoration: none;
-            transition: color var(--transition-fast);
-        }
-        
-        a:hover {
-            color: var(--primary-600);
-        }
-        
-        /* صور */
-        img, video {
-            max-width: 100%;
-            height: auto;
-            display: block;
-        }
-        
-        /* أزرار */
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-            background: none;
-            outline: none;
-        }
-        
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-        
-        /* حقول الإدخال */
-        input, textarea, select {
-            font-family: inherit;
-            font-size: inherit;
-            outline: none;
-            border: none;
-            background: transparent;
-        }
-        
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-        }
-        
-        /* قوائم */
-        ul, ol {
-            list-style: none;
-        }
-        
-        /*=====================================================
-          🏗️ Layout - التخطيط الرئيسي
-        =====================================================*/
-        #app {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
-            background: var(--bg-primary);
-        }
-        
-        /* شاشة التحميل */
-        #splash-screen {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-dark);
+            background: var(--bg-primary);
+            font-family: var(--font-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            touch-action: manipulation;
+        }
+        
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: var(--radius-full); }
+        
+        button { font-family: inherit; cursor: pointer; border: none; background: none; outline: none; }
+        input, textarea, select { font-family: inherit; outline: none; border: none; background: transparent; }
+        ul, ol { list-style: none; }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; display: block; }
+        
+        /*=====================================================
+          🏗️ App Layout - التخطيط الرئيسي
+        =====================================================*/
+        #app {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+        
+        /*=====================================================
+          ⏳ Splash Screen - شاشة التحميل
+        =====================================================*/
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 50%, #030712 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: var(--z-max);
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            z-index: 99999;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
         
         #splash-screen.hidden {
@@ -342,593 +153,424 @@
         }
         
         .splash-logo {
-            width: 120px;
-            height: 120px;
-            margin-bottom: var(--spacing-xl);
+            width: 100px;
+            height: 100px;
+            margin-bottom: 1.5rem;
             animation: pulse-glow 2s ease-in-out infinite;
         }
         
         .splash-logo svg {
             width: 100%;
             height: 100%;
-            filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.5));
+            filter: drop-shadow(0 0 25px rgba(99, 102, 241, 0.5));
         }
         
         .splash-title {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 800;
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: var(--spacing-md);
+            margin-bottom: 0.5rem;
         }
         
         .splash-subtitle {
-            color: var(--gray-400);
-            font-size: 0.95rem;
-            margin-bottom: var(--spacing-2xl);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
         }
         
         .splash-loader {
-            width: 200px;
-            height: 4px;
-            background: var(--gray-800);
+            width: 180px;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
             border-radius: var(--radius-full);
             overflow: hidden;
-            position: relative;
         }
         
         .splash-loader::after {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
+            display: block;
             height: 100%;
             width: 40%;
             background: var(--gradient-primary);
             border-radius: var(--radius-full);
-            animation: loading-bar 1.5s ease-in-out infinite;
+            animation: loading-bar 1.2s ease-in-out infinite;
         }
         
         @keyframes loading-bar {
-            0% { left: -40%; }
-            100% { left: 100%; }
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(350%); }
         }
         
         @keyframes pulse-glow {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.5)); }
-            50% { transform: scale(1.05); filter: drop-shadow(0 0 50px rgba(99, 102, 241, 0.8)); }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         
         /*=====================================================
-          📱 Header - الهيدر (تم الإصلاح الجذري النهائي)
+          📱 Header - الهيدر (مُصلح 100%)
         =====================================================*/
         .app-header {
-            flex: 0 0 55px !important;
-            height: 55px !important;
-            width: 100% !important;
-            background: #0f172a !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            padding: 0 10px !important;
-            z-index: 9999 !important;
-            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-            overflow: hidden !important; /* يمنع خروج أي عنصر خارج الهيدر */
-        }
-        
-        .header-left, .header-center, .header-right {
-            display: flex !important;
-            align-items: center !important;
-            height: 100% !important;
+            flex: 0 0 var(--header-height);
+            height: var(--header-height);
+            width: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
         }
         
         .header-left {
-            flex: 1 !important;
-            justify-content: flex-start !important;
-            min-width: 0 !important; /* يسمح بالتصغير لتجنب طرد باقي العناصر */
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
         }
         
         .header-center {
-            flex: 1 !important; 
-            justify-content: center !important;
-            position: static !important;
-            transform: none !important;
+            flex: 1 1 auto;
+            display: flex;
+            justify-content: center;
+            min-width: 0;
+            padding: 0 8px;
         }
         
         .header-right {
-            flex: 1 !important;
-            justify-content: flex-end !important;
-            gap: 8px !important;
-            min-width: max-content !important; /* يجبر الأزرار على الظهور وعدم الاختفاء */
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .app-name {
-            display: block !important;
-            font-family: 'Cinzel', serif !important;
-            font-size: 1.15rem !important; /* مقاس مثالي للموبايل */
-            font-weight: 800 !important;
-            color: #d4af37 !important; 
-            -webkit-text-fill-color: initial !important; 
-            background: none !important;
-            letter-spacing: 1px !important;
-            white-space: nowrap !important; /* السحر: يمنع قص الكلمة */
-            direction: ltr !important; /* يجبر الشعار الإنجليزي على الترتيب الصحيح */
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #d4af37;
+            white-space: nowrap;
+            direction: ltr;
+            letter-spacing: 0.5px;
         }
         
         .project-name {
-            background: rgba(255,255,255,0.08) !important;
-            padding: 4px 12px !important;
-            border-radius: 12px !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 5px !important;
-            max-width: 110px !important; /* تحجيم المربع حتى لا يطرد الأزرار الجانبية */
+            background: rgba(255,255,255,0.08);
+            padding: 4px 12px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 120px;
         }
         
         .project-name input {
-            width: 100% !important;
-            background: transparent !important;
-            color: white !important;
-            font-size: 0.85rem !important;
-            text-align: center !important;
-            border: none !important;
-            padding: 0 !important;
-            outline: none !important;
+            width: 100%;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            text-align: center;
         }
         
         .project-name i {
             color: var(--text-muted);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
         
         .header-btn {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: 36px !important;
-            height: 36px !important;
-            background: rgba(255,255,255,0.08) !important;
-            border-radius: 50% !important;
-            color: white !important;
-            font-size: 1rem !important;
-            border: none !important;
-            transition: all 0.2s !important;
-        }
-        
-        .header-btn#export-btn {
-            background: rgba(212, 175, 55, 0.15) !important;
-            color: #d4af37 !important;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all var(--transition-fast);
         }
         
         .header-btn:active {
-            transform: scale(0.9) !important;
+            transform: scale(0.9);
         }
-
+        
+        .header-btn#export-btn {
+            background: rgba(212, 175, 55, 0.15);
+            color: #d4af37;
+        }
         
         /*=====================================================
           🖼️ Main Content - المحتوى الرئيسي
         =====================================================*/
         .app-main {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
+            flex: 1 1 auto;
             position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         /*=====================================================
-          🎨 Canvas Area - منطقة العمل
+          🎨 Canvas Area - منطقة العمل (مُصلحة 100%)
         =====================================================*/
-        /* 1. إعدام اللوحة القديمة وإخفائها برمجياً بشكل كامل حتى لا تظهر أبداً */
-        #panel-text {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            position: absolute !important;
-            z-index: -999 !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-
-        /* 2. مساحة التصميم (مرنة وتتوسط الشاشة بدقة وتترك مسافة للهيدر) */
         .canvas-container {
-            position: absolute !important;
-            inset: 0 !important; /* تملأ المساحة المتبقية تحت الهيدر بالكامل */
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background: #1c1c1c !important; 
-            overflow: hidden !important;
-            touch-action: none !important;
-            padding: 20px !important; /* مساحة أمان علوية وسفلية لكي لا يلتصق الكانفاس بالسقف */
-            z-index: 5 !important;
+            flex: 1 1 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a2e;
+            overflow: hidden;
+            touch-action: none;
+            padding: 20px;
         }
         
         .canvas-wrapper {
-            max-width: 100% !important;
-            max-height: 100% !important;
-            background: white !important;
-            border-radius: 0 !important; 
-            box-shadow: 0 4px 30px rgba(0,0,0,0.6) !important; /* ظل لفصل الكانفاس عن الخلفية */
-            position: relative !important;
-            margin: 0 auto !important;
-            transform-origin: center center !important;
-        }
-
-        #main-canvas, .selection-layer {
-            width: 100% !important;
-            height: 100% !important;
-            position: absolute !important;
-            top: 0 !important; 
-            left: 0 !important;
+            position: relative;
+            background: white;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+            transform-origin: center center;
+            /* لا نضيف أي width/height هنا - يتم التحكم بها من JS */
         }
         
         #main-canvas {
             display: block;
-            max-width: none;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-        }
-        
-        /* طبقة التحديد */
-        .selection-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
+        }
+        
+        .selection-layer {
+            position: absolute;
+            inset: 0;
             pointer-events: none;
         }
         
-        .selection-layer.active {
-            pointer-events: auto;
-        }
-        
-        /* عنصر محدد (InShot Style) */
-        .selected-element {
+        /* أدوات الكانفاس (الكبسولة العائمة) */
+        .canvas-tools {
             position: absolute;
-            border: 2px solid white !important; /* إطار أبيض ناصع ومستمر */
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.3) !important; /* ظل خفيف لإبراز التحديد على الخلفيات الفاتحة */
-            background: transparent !important;
-            cursor: move;
-            touch-action: none;
-            z-index: 100;
-        }
-        
-        .selected-element .resize-handle {
-            position: absolute;
-            width: 16px !important; /* مقابض دائرية أكبر لتسهيل اللمس */
-            height: 16px !important;
-            background: white !important;
-            border: 1px solid rgba(0,0,0,0.5) !important;
-            border-radius: 50% !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-        }
-        
-        .resize-handle.top-left { top: -6px; left: -6px; cursor: nwse-resize; }
-        .resize-handle.top-right { top: -6px; right: -6px; cursor: nesw-resize; }
-        .resize-handle.bottom-left { bottom: -6px; left: -6px; cursor: nesw-resize; }
-        .resize-handle.bottom-right { bottom: -6px; right: -6px; cursor: nwse-resize; }
-        .resize-handle.top-center { top: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
-        .resize-handle.bottom-center { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
-        .resize-handle.left-center { left: -6px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
-        .resize-handle.right-center { right: -6px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
-        
-        .rotate-handle {
-            position: absolute;
-            top: -35px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 24px;
-            height: 24px;
-            background: var(--primary-500);
-            border-radius: var(--radius-full);
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.7rem;
-            cursor: grab;
-            box-shadow: var(--shadow-md);
-        }
-        
-        .rotate-handle::before {
-            content: '';
-            position: absolute;
-            bottom: -12px;
-            width: 2px;
-            height: 12px;
-            background: var(--primary-500);
-        }
-        
-        /* أدوات الكانفاس (كبسولة أنيقة) */
-        .canvas-tools {
-            position: absolute !important;
-            bottom: 75px !important; /* تقف فوق الشريط السفلي مباشرة */
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            display: flex !important;
-            gap: 8px !important;
-            padding: 6px 12px !important;
-            background: rgba(0, 0, 0, 0.7) !important; /* خلفية سوداء شفافة */
-            border-radius: 25px !important; /* كبسولة */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            z-index: 50 !important;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 50;
         }
         
         .canvas-tool-btn {
-            width: 30px !important;
-            height: 30px !important;
-            border-radius: 50% !important; /* أزرار دائرية تماماً */
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            color: white !important;
-            font-size: 0.85rem !important;
-            background: transparent !important;
-            transition: all 0.2s !important;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            background: transparent;
+            transition: all var(--transition-fast);
         }
         
-        .canvas-tool-btn:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-        
-        .canvas-tool-btn:active {
-            transform: scale(0.9);
-        }
-        
-        .canvas-tool-btn.active {
-            background: var(--primary-500);
-            color: white;
-        }
+        .canvas-tool-btn:active { transform: scale(0.9); }
+        .canvas-tool-btn.active { color: var(--primary-500); }
         
         .canvas-tool-btn.primary {
             background: var(--gradient-primary);
             color: white;
-            box-shadow: var(--shadow-md);
         }
         
         .zoom-controls {
             display: flex;
             align-items: center;
-            gap: var(--spacing-xs);
-            padding: 0 var(--spacing-sm);
-            border-right: 1px solid var(--border-color);
-            border-left: 1px solid var(--border-color);
-            margin: 0 var(--spacing-xs);
+            gap: 4px;
+            padding: 0 8px;
+            border-left: 1px solid rgba(255,255,255,0.1);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            margin: 0 4px;
         }
         
         .zoom-value {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            color: var(--text-primary);
-            min-width: 50px;
+            color: var(--text-secondary);
+            min-width: 42px;
             text-align: center;
         }
         
         /*=====================================================
-          📋 Sidebar - الشريط الجانبي
+          📋 Sidebar Panel - اللوحة السفلية (مُصلحة للأبد)
         =====================================================*/
         .sidebar {
-            width: var(--sidebar-width);
-            height: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--panel-height);
             background: var(--bg-secondary);
-            border-left: 1px solid var(--border-color);
+            border-radius: 20px 20px 0 0;
             display: flex;
             flex-direction: column;
-            position: relative;
-            z-index: var(--z-sticky);
-            transition: transform var(--transition-normal);
+            z-index: 500;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.4);
+            /* الإصلاح الجذري: transform بدلاً من bottom */
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            visibility: hidden;
         }
         
-        .sidebar.collapsed {
-            transform: translateX(100%);
+        .sidebar.active {
+            transform: translateY(0);
+            visibility: visible;
         }
         
-        @media (max-width: 768px) {
-            .sidebar {
-                position: absolute;
-                right: 0;
-                top: 0;
-                z-index: var(--z-modal);
-                box-shadow: var(--shadow-2xl);
-            }
+        .close-panel-btn {
+            width: 40px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin: 10px auto 5px;
+            cursor: pointer;
+            flex-shrink: 0;
         }
         
-        /* تبويبات الشريط الجانبي */
-        .sidebar-tabs {
-            display: flex;
-            background: var(--bg-tertiary);
-            padding: var(--spacing-xs);
-            gap: var(--spacing-xs);
-            border-bottom: 1px solid var(--border-color);
-        }
+        .sidebar-tabs { display: none; }
         
-        .sidebar-tab {
-            flex: 1;
-            padding: var(--spacing-sm) var(--spacing-xs);
-            border-radius: var(--radius-md);
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            transition: all var(--transition-fast);
-        }
-        
-        .sidebar-tab i {
-            font-size: 1rem;
-        }
-        
-        .sidebar-tab:hover {
-            color: var(--text-secondary);
-            background: var(--bg-secondary);
-        }
-        
-        .sidebar-tab.active {
-            color: var(--primary-500);
-            background: var(--bg-secondary);
-            box-shadow: var(--shadow-sm);
-        }
-        
-        /* محتوى الشريط الجانبي (معدل لمنع الاختفاء) */
         .sidebar-content {
-            flex: 1 1 auto !important; /* السحر: إجبار العنصر على احترام مساحته */
-            min-height: 0 !important; /* حل سحري لمشكلة الفليكس بوكس في الأندرويد */
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            padding: 15px !important;
-            padding-bottom: 85px !important; /* مساحة أمان بالأسفل حتى لا يغطي الشريط السفلي على الخيارات */
+            flex: 1 1 auto;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px 15px 20px;
         }
         
         .sidebar-panel {
             display: none;
-            animation: fadeIn 0.3s ease;
         }
         
         .sidebar-panel.active {
             display: block;
+            animation: fadeSlideUp 0.25s ease;
         }
-
         
-        @keyframes fadeIn {
+        @keyframes fadeSlideUp {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* قسم داخل البانل (تصغير المسافات) */
+        /* أقسام اللوحة */
         .panel-section {
-            margin-bottom: 12px !important;
+            margin-bottom: 15px;
         }
         
         .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 6px !important;
-            padding-bottom: 6px !important;
-            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
         .section-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: var(--spacing-xs);
+            gap: 6px;
         }
         
         .section-title i {
             color: var(--primary-500);
-            font-size: 0.85rem;
-        }
-        
-        .section-actions {
-            display: flex;
-            gap: var(--spacing-xs);
-        }
-        
-        .section-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
             font-size: 0.8rem;
-            transition: all var(--transition-fast);
-        }
-        
-        .section-btn:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
         }
         
         /*=====================================================
           ✏️ Text Panel - لوحة النص
         =====================================================*/
-        .text-input-wrapper {
-            position: relative;
-            margin-bottom: var(--spacing-md);
-        }
+        /* إخفاء مربع النص القديم في لوحة النص */
+        #panel-text .text-input-wrapper { display: none !important; }
+        #panel-text .section-header:first-child { display: none !important; }
         
-        .text-input {
-            width: 100%;
-            min-height: 100px;
-            padding: var(--spacing-md);
-            background: var(--bg-tertiary);
-            border: 2px solid transparent;
-            border-radius: var(--radius-lg);
-            color: var(--text-primary);
-            font-size: 1rem;
-            resize: vertical;
-            transition: all var(--transition-fast);
-        }
-        
-        .text-input:focus {
-            border-color: var(--primary-500);
-            background: var(--bg-secondary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
-        
-        .text-input::placeholder {
-            color: var(--text-muted);
-        }
-        
-        .text-char-count {
-            position: absolute;
-            bottom: var(--spacing-sm);
-            left: var(--spacing-sm);
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-        
-        /* أدوات تنسيق النص */
         .text-format-tools {
             display: flex;
-            flex-wrap: wrap;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-md);
-            padding: var(--spacing-sm);
-            background: var(--bg-tertiary);
+            flex-wrap: nowrap;
+            gap: 6px;
+            padding: 8px;
+            background: rgba(255,255,255,0.03);
             border-radius: var(--radius-lg);
+            overflow-x: auto;
+            justify-content: center;
         }
         
+        .text-format-tools::-webkit-scrollbar { display: none; }
+        
         .format-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-md);
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-secondary);
             font-size: 0.9rem;
+            background: rgba(255,255,255,0.05);
             transition: all var(--transition-fast);
         }
         
-        .format-btn:hover {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
+        .format-btn:active { transform: scale(0.9); }
+        .format-btn.active { background: var(--primary-500); color: white; }
+        .format-divider { display: none; }
+        
+        /* أشرطة التمرير */
+        .slider-wrapper {
+            padding: 6px 0;
         }
         
-        .format-btn.active {
-            background: var(--primary-500);
-            color: white;
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
         }
         
-        .format-divider {
-            width: 1px;
-            height: 28px;
-            background: var(--border-color);
-            align-self: center;
-            margin: 0 var(--spacing-xs);
+        .slider-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .slider-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary-500);
+        }
+        
+        .slider {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        
+        .slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.15);
         }
         
         /*=====================================================
@@ -936,183 +578,133 @@
         =====================================================*/
         .font-search-wrapper {
             position: relative;
-            margin-bottom: var(--spacing-md);
+            margin-bottom: 12px;
         }
         
         .font-search {
             width: 100%;
-            padding: var(--spacing-sm) var(--spacing-md);
-            padding-right: 40px;
-            background: var(--bg-tertiary);
-            border: 2px solid transparent;
+            padding: 10px 40px 10px 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: var(--radius-lg);
             color: var(--text-primary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: all var(--transition-fast);
         }
         
         .font-search:focus {
             border-color: var(--primary-500);
-            background: var(--bg-secondary);
+            background: rgba(255,255,255,0.08);
         }
         
         .font-search-icon {
             position: absolute;
-            right: var(--spacing-sm);
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
-        /* قائمة الخطوط */
         .font-list {
-            max-height: 300px;
+            max-height: 180px;
             overflow-y: auto;
-            margin-bottom: var(--spacing-md);
         }
         
         .font-item {
             display: flex;
             align-items: center;
-            padding: var(--spacing-sm);
+            padding: 10px;
             border-radius: var(--radius-md);
             cursor: pointer;
             transition: all var(--transition-fast);
-            margin-bottom: var(--spacing-xs);
+            margin-bottom: 4px;
         }
         
-        .font-item:hover {
-            background: var(--bg-tertiary);
-        }
+        .font-item:hover { background: rgba(255,255,255,0.05); }
         
         .font-item.active {
-            background: var(--primary-100);
-            border: 1px solid var(--primary-300);
-        }
-        
-        [data-theme="dark"] .font-item.active {
             background: rgba(99, 102, 241, 0.2);
-            border: 1px solid var(--primary-600);
+            border: 1px solid var(--primary-500);
         }
         
         .font-item-preview {
             flex: 1;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
         
         .font-item-name {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             margin-top: 2px;
         }
         
-        .font-item-actions {
-            display: flex;
-            gap: var(--spacing-xs);
-            opacity: 0;
-            transition: opacity var(--transition-fast);
-        }
-        
-        .font-item:hover .font-item-actions {
-            opacity: 1;
-        }
-        
-        .font-action-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            transition: all var(--transition-fast);
-        }
-        
-        .font-action-btn:hover {
-            background: var(--bg-secondary);
-            color: var(--primary-500);
-        }
-        
-        .font-action-btn.delete:hover {
-            color: var(--danger-500);
-        }
-        
-        /* زر إضافة خطوط */
+        /* منطقة إضافة الخطوط */
         .add-fonts-area {
-            border: 2px dashed var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-xl);
+            border: 2px dashed rgba(255,255,255,0.15);
+            border-radius: var(--radius-xl);
+            padding: 25px 15px;
             text-align: center;
             cursor: pointer;
             transition: all var(--transition-fast);
         }
         
-        .add-fonts-area:hover {
+        .add-fonts-area:hover,
+        .add-fonts-area.dragging {
             border-color: var(--primary-500);
             background: rgba(99, 102, 241, 0.05);
         }
         
-        .add-fonts-area.dragging {
-            border-color: var(--primary-500);
-            background: rgba(99, 102, 241, 0.1);
-            transform: scale(1.02);
-        }
-        
         .add-fonts-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto var(--spacing-md);
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 10px;
             background: var(--gradient-primary);
             border-radius: var(--radius-xl);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
         }
         
         .add-fonts-text {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: var(--spacing-xs);
+            margin-bottom: 4px;
         }
         
         .add-fonts-hint {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
         }
         
         /*=====================================================
-          ✨ OpenType Features Panel
+          ✨ OpenType Features - الكبسولات الأنيقة
         =====================================================*/
         .opentype-panel {
-            background: var(--bg-tertiary);
+            background: rgba(255,255,255,0.03);
             border-radius: var(--radius-lg);
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
+            padding: 12px;
+            margin-bottom: 12px;
         }
         
         .opentype-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: var(--spacing-md);
+            margin-bottom: 10px;
         }
         
         .opentype-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: var(--spacing-xs);
+            gap: 6px;
         }
         
         .opentype-title i {
@@ -1123,149 +715,102 @@
             padding: 2px 8px;
             background: var(--secondary-500);
             color: white;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             border-radius: var(--radius-full);
         }
         
-        /* سحر تنسيق لوحة OpenType الجديد (تصميم الكبسولات الأنيق) */
+        /* شبكة الخصائص - كبسولات */
         .opentype-features-grid {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 8px !important;
-            max-height: 200px !important;
-            overflow-y: auto !important;
-            padding: 5px !important;
-            justify-content: center !important;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 5px;
         }
+        
         .opentype-feature {
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-            padding: 6px 12px !important;
-            background: var(--bg-secondary) !important;
-            border-radius: 20px !important; /* شكل كبسولة */
-            cursor: pointer !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            transition: all 0.2s !important;
-            width: auto !important;
-        }
-        .opentype-feature.active {
-            background: var(--primary-500) !important;
-            border-color: var(--primary-500) !important;
-            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4) !important;
-        }
-        .feature-checkbox { display: none !important; } /* إخفاء المربع القديم المزعج */
-        .feature-info {
-            display: flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-        }
-        .feature-name { 
-            font-size: 0.8rem !important; 
-            color: var(--text-primary) !important;
-            font-weight: 600 !important;
-        }
-        .opentype-feature.active .feature-name,
-        .opentype-feature.active .feature-tag {
-            color: white !important;
-        }
-        .feature-tag { 
-            font-size: 0.65rem !important; 
-            background: rgba(0,0,0,0.3) !important;
-            padding: 2px 6px !important;
-            border-radius: 10px !important;
-            color: var(--text-muted) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all var(--transition-fast);
         }
         
         .opentype-feature:hover {
-            border-color: var(--primary-300);
+            border-color: var(--primary-500);
         }
         
         .opentype-feature.active {
-            background: var(--primary-100);
-            border-color: var(--primary-400);
-        }
-        
-        [data-theme="dark"] .opentype-feature.active {
-            background: rgba(99, 102, 241, 0.2);
-        }
-        
-        .feature-checkbox {
-            width: 18px;
-            height: 18px;
-            border: 2px solid var(--gray-400);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition-fast);
-            flex-shrink: 0;
-        }
-        
-        .opentype-feature.active .feature-checkbox {
             background: var(--primary-500);
             border-color: var(--primary-500);
         }
         
-        .feature-checkbox i {
-            color: white;
-            font-size: 0.7rem;
-            opacity: 0;
-            transform: scale(0);
-            transition: all var(--transition-fast);
+        .opentype-feature.unavailable {
+            opacity: 0.3;
+            pointer-events: none;
         }
         
-        .opentype-feature.active .feature-checkbox i {
-            opacity: 1;
-            transform: scale(1);
-        }
+        .feature-checkbox { display: none; }
         
         .feature-info {
-            flex: 1;
-            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .feature-name {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-primary);
         }
         
-        .feature-tag {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
+        .opentype-feature.active .feature-name,
+        .opentype-feature.active .feature-tag {
+            color: white;
         }
         
-        /* Stylistic Sets (تحويل المربعات القبيحة إلى كبسولات أنيقة) */
+        .feature-tag {
+            font-size: 0.6rem;
+            background: rgba(0,0,0,0.2);
+            padding: 2px 5px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+        
+        /* Stylistic Sets و Character Variants - كبسولات */
         .stylistic-sets-grid {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 8px !important;
-            margin-top: var(--spacing-sm);
-            justify-content: center !important;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 8px;
         }
         
         .stylistic-set {
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            padding: 6px 16px !important;
-            background: var(--bg-secondary) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            border-radius: 20px !important; /* شكل الكبسولة */
-            font-size: 0.8rem !important;
-            font-weight: 600 !important;
-            color: var(--text-secondary) !important;
-            cursor: pointer !important;
-            transition: all var(--transition-fast) !important;
-            width: auto !important;
-            aspect-ratio: auto !important; /* إلغاء المربع */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
         }
         
         .stylistic-set:hover {
-            border-color: var(--primary-400);
+            border-color: var(--primary-500);
             color: var(--primary-500);
         }
         
@@ -1276,75 +821,56 @@
         }
         
         .stylistic-set.unavailable {
-            opacity: 0.3;
-            cursor: not-allowed;
+            opacity: 0.25;
+            pointer-events: none;
         }
         
         /*=====================================================
           🎨 Colors Panel - لوحة الألوان
         =====================================================*/
         .color-picker-section {
-            margin-bottom: var(--spacing-md);
+            margin-bottom: 12px;
         }
         
         .color-picker-label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: var(--spacing-sm);
+            margin-bottom: 8px;
             display: block;
         }
         
         .color-picker-wrapper {
             display: flex;
             align-items: center;
-            gap: var(--spacing-sm);
+            gap: 10px;
         }
         
         .color-preview {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: var(--radius-lg);
-            border: 3px solid var(--border-color);
+            border: 2px solid rgba(255,255,255,0.2);
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            transition: all var(--transition-fast);
-        }
-        
-        .color-preview:hover {
-            transform: scale(1.05);
-            border-color: var(--primary-400);
-        }
-        
-        .color-preview::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: 
-                linear-gradient(45deg, #ccc 25%, transparent 25%),
-                linear-gradient(-45deg, #ccc 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #ccc 75%),
-                linear-gradient(-45deg, transparent 75%, #ccc 75%);
-            background-size: 10px 10px;
-            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
-            z-index: -1;
         }
         
         .color-preview-inner {
-            width: 100%;
-            height: 100%;
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
         }
         
         .color-hex-input {
             flex: 1;
-            padding: var(--spacing-sm) var(--spacing-md);
-            background: var(--bg-tertiary);
-            border: 2px solid transparent;
-            border-radius: var(--radius-lg);
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-md);
             color: var(--text-primary);
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
+            font-family: monospace;
+            font-size: 0.85rem;
             text-transform: uppercase;
         }
         
@@ -1352,16 +878,16 @@
             border-color: var(--primary-500);
         }
         
-        /* لوحة الألوان المسبقة */
         .preset-colors {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: var(--spacing-xs);
-            margin-top: var(--spacing-sm);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
         }
         
         .preset-color {
-            aspect-ratio: 1;
+            width: 28px;
+            height: 28px;
             border-radius: var(--radius-md);
             cursor: pointer;
             border: 2px solid transparent;
@@ -1369,312 +895,54 @@
         }
         
         .preset-color:hover {
-            transform: scale(1.15);
-            z-index: 1;
+            transform: scale(1.1);
         }
         
         .preset-color.active {
-            border-color: var(--text-primary);
-            box-shadow: var(--shadow-md);
+            border-color: white;
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
         }
         
-        /* تدرج الألوان */
-        .gradient-controls {
-            padding: var(--spacing-md);
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-lg);
-            margin-top: var(--spacing-md);
-        }
-        
-        .gradient-preview {
-            height: 40px;
-            border-radius: var(--radius-md);
-            margin-bottom: var(--spacing-md);
+        /* Toggle Switch */
+        .toggle-switch {
             position: relative;
+            width: 44px;
+            height: 24px;
             cursor: pointer;
         }
         
-        .gradient-stops {
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            right: 0;
-            height: 16px;
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
         }
         
-        .gradient-stop {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border-radius: var(--radius-full);
-            border: 2px solid white;
-            box-shadow: var(--shadow-md);
-            cursor: grab;
-            transform: translateX(-50%);
-        }
-        
-        /*=====================================================
-          📐 Transform Panel - لوحة التحويل
-        =====================================================*/
-        .transform-controls {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--spacing-md);
-        }
-        
-        .transform-control {
-            padding: var(--spacing-sm);
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-lg);
-        }
-        
-        .control-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: var(--spacing-xs);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-        }
-        
-        .control-label i {
-            font-size: 0.7rem;
-        }
-        
-        .control-input-wrapper {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-        }
-        
-        .control-input {
-            flex: 1;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            text-align: center;
-        }
-        
-        .control-input:focus {
-            border-color: var(--primary-500);
-        }
-        
-        .control-unit {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            width: 25px;
-        }
-        
-        /* شريط التمرير */
-        .slider-wrapper {
-            padding: var(--spacing-sm) 0;
-        }
-        
-        .slider-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .slider-label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-        
-        .slider-value {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--primary-500);
-            font-family: var(--font-mono);
-        }
-        
-        .slider {
-            width: 100%;
-            height: 4px; /* أنحف وأكثر أناقة */
-            -webkit-appearance: none;
-            appearance: none;
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-radius: var(--radius-full);
-            outline: none;
-            cursor: pointer;
-        }
-        
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: white !important; /* زر أبيض ناصع مثل إنشوت */
-            border-radius: var(--radius-full);
-            cursor: grab;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            transition: transform 0.1s;
-        }
-        
-        .slider::-webkit-slider-thumb:active {
-            cursor: grabbing;
-            transform: scale(1.2); /* تكبير ملحوظ عند سحب الشريط */
-        }
-        
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: white !important;
-            border-radius: var(--radius-full);
-            cursor: grab;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-        
-        /*=====================================================
-          🖼️ Image Panel - لوحة الصور
-        =====================================================*/
-        .image-upload-area {
-            border: 2px dashed var(--border-color);
-            border-radius: var(--radius-xl);
-            padding: var(--spacing-2xl);
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            margin-bottom: var(--spacing-md);
-        }
-        
-        .image-upload-area:hover {
-            border-color: var(--primary-500);
-            background: rgba(99, 102, 241, 0.05);
-        }
-        
-        .image-upload-area.dragging {
-            border-color: var(--primary-500);
-            background: rgba(99, 102, 241, 0.1);
-            transform: scale(1.02);
-        }
-        
-        .upload-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto var(--spacing-md);
-            background: var(--gradient-cool);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .upload-text {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .upload-hint {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-        
-        .upload-formats {
-            display: flex;
-            justify-content: center;
-            gap: var(--spacing-sm);
-            margin-top: var(--spacing-md);
-        }
-        
-        .format-badge {
-            padding: 4px 10px;
-            background: var(--bg-secondary);
-            border-radius: var(--radius-full);
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-        
-        /* قائمة الصور */
-        .images-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--spacing-sm);
-        }
-        
-        .image-thumb {
-            aspect-ratio: 1;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all var(--transition-fast);
-        }
-        
-        .image-thumb:hover {
-            border-color: var(--primary-400);
-            transform: scale(1.02);
-        }
-        
-        .image-thumb.active {
-            border-color: var(--primary-500);
-            box-shadow: var(--shadow-glow);
-        }
-        
-        .image-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .image-thumb-overlay {
+        .toggle-slider {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity var(--transition-fast);
-        }
-        
-        .image-thumb:hover .image-thumb-overlay {
-            opacity: 1;
-        }
-        
-        .image-thumb-actions {
-            display: flex;
-            gap: var(--spacing-xs);
-        }
-        
-        .thumb-action-btn {
-            width: 32px;
-            height: 32px;
-            background: white;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gray-700);
-            font-size: 0.85rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: var(--radius-full);
             transition: all var(--transition-fast);
         }
         
-        .thumb-action-btn:hover {
-            background: var(--primary-500);
-            color: white;
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: all var(--transition-bounce);
         }
         
-        .thumb-action-btn.delete:hover {
-            background: var(--danger-500);
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--primary-500);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(20px);
         }
         
         /*=====================================================
@@ -1683,59 +951,41 @@
         .layers-list {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-xs);
+            gap: 6px;
         }
         
         .layer-item {
             display: flex;
             align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            background: var(--bg-tertiary);
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
             border-radius: var(--radius-lg);
             cursor: pointer;
-            transition: all var(--transition-fast);
             border: 2px solid transparent;
+            transition: all var(--transition-fast);
         }
         
-        .layer-item:hover {
-            background: var(--bg-secondary);
-        }
+        .layer-item:hover { background: rgba(255,255,255,0.06); }
         
         .layer-item.active {
             border-color: var(--primary-500);
-            background: var(--bg-secondary);
-        }
-        
-        .layer-item.dragging {
-            opacity: 0.5;
-            transform: scale(0.98);
+            background: rgba(99, 102, 241, 0.1);
         }
         
         .layer-thumb {
-            width: 40px;
-            height: 40px;
-            background: var(--bg-secondary);
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.05);
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-muted);
-            font-size: 1rem;
-            overflow: hidden;
-            flex-shrink: 0;
+            font-size: 0.9rem;
         }
         
-        .layer-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .layer-info {
-            flex: 1;
-            min-width: 0;
-        }
+        .layer-info { flex: 1; min-width: 0; }
         
         .layer-name {
             font-size: 0.85rem;
@@ -1753,7 +1003,7 @@
         
         .layer-actions {
             display: flex;
-            gap: 2px;
+            gap: 4px;
         }
         
         .layer-action-btn {
@@ -1764,151 +1014,180 @@
             align-items: center;
             justify-content: center;
             color: var(--text-muted);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             transition: all var(--transition-fast);
         }
         
-        .layer-action-btn:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
+        .layer-action-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+        .layer-action-btn.active { color: var(--primary-500); }
         
-        .layer-action-btn.active {
-            color: var(--primary-500);
-        }
-        
-        /*=====================================================
-          ⚙️ Settings Panel - لوحة الإعدادات
-        =====================================================*/
-        .settings-group {
-            margin-bottom: var(--spacing-lg);
-        }
-        
-        .settings-group-title {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: var(--spacing-sm);
-        }
-        
-        .setting-item {
+        .section-actions {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--spacing-sm) 0;
-            border-bottom: 1px solid var(--border-light);
+            gap: 4px;
         }
         
-        .setting-item:last-child {
-            border-bottom: none;
-        }
-        
-        .setting-label {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-        
-        .setting-label i {
-            width: 32px;
-            height: 32px;
-            background: var(--bg-tertiary);
+        .section-btn {
+            width: 28px;
+            height: 28px;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.75rem;
+            transition: all var(--transition-fast);
         }
         
-        .setting-text {
+        .section-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+        
+        /*=====================================================
+          📱 Bottom Navigation - الشريط السفلي
+        =====================================================*/
+        .bottom-nav {
+            flex: 0 0 var(--bottom-nav-height);
+            height: var(--bottom-nav-height);
+            background: #0a0a0f;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        
+        .nav-item {
             display: flex;
             flex-direction: column;
-        }
-        
-        .setting-name {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-        
-        .setting-desc {
-            font-size: 0.75rem;
+            align-items: center;
+            gap: 3px;
+            padding: 8px 12px;
+            border-radius: var(--radius-lg);
             color: var(--text-muted);
-        }
-        
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 26px;
-            cursor: pointer;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            inset: 0;
-            background: var(--gray-400);
-            border-radius: var(--radius-full);
+            font-size: 0.65rem;
             transition: all var(--transition-fast);
+            min-width: 55px;
         }
         
-        .toggle-slider::before {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            left: 3px;
-            top: 3px;
-            background: white;
-            border-radius: var(--radius-full);
-            transition: all var(--transition-bounce);
-            box-shadow: var(--shadow-sm);
+        .nav-item i {
+            font-size: 1.2rem;
         }
         
-        .toggle-switch input:checked + .toggle-slider {
-            background: var(--primary-500);
+        .nav-item span {
+            font-weight: 500;
         }
         
-        .toggle-switch input:checked + .toggle-slider::before {
-            transform: translateX(22px);
+        .nav-item.active {
+            color: var(--primary-500);
         }
         
-        /* Select Dropdown */
-        .custom-select {
-            position: relative;
+        .nav-item:active {
+            transform: scale(0.95);
         }
         
-        .select-trigger {
-            padding: var(--spacing-xs) var(--spacing-sm);
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 0.85rem;
+        /*=====================================================
+          🎬 InShot Text Toolbar - شريط تحرير النص
+        =====================================================*/
+        .inshot-editor-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 600;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+        
+        .inshot-editor-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .inshot-text-toolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1a1a1f;
+            z-index: 700;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .inshot-text-toolbar.hidden {
+            transform: translateY(100%);
+        }
+        
+        .inshot-input-row {
             display: flex;
             align-items: center;
-            gap: var(--spacing-xs);
-            cursor: pointer;
-            transition: all var(--transition-fast);
+            background: rgba(255,255,255,0.08);
+            margin: 12px;
+            border-radius: 25px;
+            padding: 4px 12px;
         }
         
-        .select-trigger:hover {
-            border-color: var(--primary-400);
+        .inshot-main-input {
+            flex: 1;
+            height: 44px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+            outline: none;
+            padding: 0 10px;
         }
         
-        .select-trigger i {
-            font-size: 0.7rem;
+        .inshot-icon-btn {
             color: var(--text-muted);
-            margin-right: auto;
+            font-size: 1.1rem;
+            padding: 8px;
+        }
+        
+        .inshot-tools-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .inshot-center-tools {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .inshot-tool-btn {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            background: transparent;
+            transition: color var(--transition-fast);
+        }
+        
+        .inshot-tool-btn.active {
+            color: white;
+        }
+        
+        .inshot-action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            background: transparent;
+        }
+        
+        .inshot-action-btn.done-btn {
+            color: var(--secondary-500);
         }
         
         /*=====================================================
@@ -1917,17 +1196,16 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: var(--z-modal-backdrop);
+            z-index: 1000;
             opacity: 0;
             visibility: hidden;
             transition: all var(--transition-normal);
-            padding: var(--spacing-md);
+            padding: 20px;
         }
         
         .modal-overlay.active {
@@ -1937,11 +1215,11 @@
         
         .modal {
             width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
+            max-width: 420px;
+            max-height: 85vh;
             background: var(--bg-secondary);
             border-radius: var(--radius-2xl);
-            box-shadow: var(--shadow-2xl);
+            box-shadow: var(--shadow-xl);
             overflow: hidden;
             transform: scale(0.9) translateY(20px);
             transition: transform var(--transition-bounce);
@@ -1955,17 +1233,17 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: var(--spacing-md) var(--spacing-lg);
-            border-bottom: 1px solid var(--border-color);
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
         .modal-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: var(--spacing-sm);
+            gap: 8px;
         }
         
         .modal-title i {
@@ -1973,9 +1251,9 @@
         }
         
         .modal-close {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-full);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1984,42 +1262,38 @@
         }
         
         .modal-close:hover {
-            background: var(--bg-tertiary);
+            background: rgba(255,255,255,0.1);
             color: var(--text-primary);
         }
         
         .modal-body {
-            padding: var(--spacing-lg);
-            max-height: 60vh;
+            padding: 20px;
+            max-height: 55vh;
             overflow-y: auto;
         }
         
         .modal-footer {
-            padding: var(--spacing-md) var(--spacing-lg);
-            border-top: 1px solid var(--border-color);
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
             display: flex;
-            gap: var(--spacing-sm);
+            gap: 10px;
             justify-content: flex-end;
         }
         
-        /* أزرار */
+        /* الأزرار */
         .btn {
-            padding: var(--spacing-sm) var(--spacing-lg);
+            padding: 10px 20px;
             border-radius: var(--radius-lg);
             font-size: 0.9rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: var(--spacing-xs);
+            gap: 6px;
             transition: all var(--transition-fast);
-            cursor: pointer;
-            border: none;
         }
         
-        .btn:active {
-            transform: scale(0.98);
-        }
+        .btn:active { transform: scale(0.98); }
         
         .btn-primary {
             background: var(--gradient-primary);
@@ -2027,75 +1301,22 @@
             box-shadow: var(--shadow-md);
         }
         
-        .btn-primary:hover {
-            box-shadow: var(--shadow-lg), var(--shadow-glow);
-            transform: translateY(-2px);
-        }
-        
         .btn-secondary {
-            background: var(--bg-tertiary);
+            background: rgba(255,255,255,0.1);
             color: var(--text-primary);
         }
         
-        .btn-secondary:hover {
-            background: var(--gray-300);
-        }
-        
-        [data-theme="dark"] .btn-secondary:hover {
-            background: var(--gray-700);
-        }
-        
-        .btn-danger {
-            background: var(--danger-500);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: var(--danger-600);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary-500);
-            color: var(--primary-500);
-        }
-        
-        .btn-outline:hover {
-            background: var(--primary-500);
-            color: white;
-        }
-        
-        .btn-icon {
-            width: 44px;
-            height: 44px;
-            padding: 0;
-        }
-        
-        .btn-sm {
-            padding: var(--spacing-xs) var(--spacing-md);
-            font-size: 0.85rem;
-        }
-        
-        .btn-lg {
-            padding: var(--spacing-md) var(--spacing-xl);
-            font-size: 1rem;
-        }
-        
-        .btn-block {
-            width: 100%;
-        }
-        
-        /* Export Options */
+        /* خيارات التصدير */
         .export-format-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-lg);
+            gap: 10px;
+            margin-bottom: 20px;
         }
         
         .export-format {
-            padding: var(--spacing-md);
-            background: var(--bg-tertiary);
+            padding: 15px 10px;
+            background: rgba(255,255,255,0.03);
             border: 2px solid transparent;
             border-radius: var(--radius-lg);
             text-align: center;
@@ -2104,28 +1325,25 @@
         }
         
         .export-format:hover {
-            border-color: var(--primary-300);
+            border-color: rgba(99, 102, 241, 0.3);
         }
         
         .export-format.active {
             border-color: var(--primary-500);
-            background: var(--primary-50);
-        }
-        
-        [data-theme="dark"] .export-format.active {
-            background: rgba(99, 102, 241, 0.2);
+            background: rgba(99, 102, 241, 0.1);
         }
         
         .export-format-icon {
-            width: 48px;
-            height: 48px;
-            margin: 0 auto var(--spacing-sm);
-            background: var(--bg-secondary);
-            border-radius: var(--radius-lg);
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
+            color: var(--text-muted);
         }
         
         .export-format.active .export-format-icon {
@@ -2134,34 +1352,34 @@
         }
         
         .export-format-name {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-primary);
         }
         
         .export-format-ext {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
         }
         
         .export-quality-section {
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: 20px;
         }
         
         .quality-presets {
             display: flex;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-sm);
+            gap: 8px;
+            margin-bottom: 10px;
         }
         
         .quality-preset {
             flex: 1;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            background: var(--bg-tertiary);
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
             border: 1px solid transparent;
             border-radius: var(--radius-md);
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-secondary);
             cursor: pointer;
@@ -2169,7 +1387,7 @@
         }
         
         .quality-preset:hover {
-            border-color: var(--primary-300);
+            border-color: rgba(99, 102, 241, 0.3);
         }
         
         .quality-preset.active {
@@ -2180,24 +1398,22 @@
         .export-size-info {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: var(--spacing-md);
-            background: var(--bg-tertiary);
+            justify-content: space-around;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
             border-radius: var(--radius-lg);
         }
         
-        .size-info-item {
-            text-align: center;
-        }
+        .size-info-item { text-align: center; }
         
         .size-info-value {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--text-primary);
         }
         
         .size-info-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
         }
         
@@ -2206,30 +1422,30 @@
         =====================================================*/
         .toast-container {
             position: fixed;
-            top: calc(var(--header-height) + var(--spacing-md));
-            right: var(--spacing-md);
-            z-index: var(--z-toast);
+            top: calc(var(--header-height) + 10px);
+            right: 10px;
+            z-index: 2000;
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-sm);
+            gap: 8px;
             pointer-events: none;
         }
         
         .toast {
-            padding: var(--spacing-md) var(--spacing-lg);
+            padding: 12px 16px;
             background: var(--bg-secondary);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-xl);
             display: flex;
             align-items: center;
-            gap: var(--spacing-sm);
-            min-width: 280px;
-            max-width: 400px;
+            gap: 10px;
+            min-width: 250px;
+            max-width: 350px;
             pointer-events: auto;
-            transform: translateX(100%);
+            transform: translateX(120%);
             opacity: 0;
             transition: all var(--transition-bounce);
-            border-right: 4px solid var(--primary-500);
+            border-right: 3px solid var(--primary-500);
         }
         
         .toast.show {
@@ -2237,62 +1453,43 @@
             opacity: 1;
         }
         
-        .toast.success {
-            border-right-color: var(--secondary-500);
-        }
-        
-        .toast.error {
-            border-right-color: var(--danger-500);
-        }
-        
-        .toast.warning {
-            border-right-color: var(--warning-500);
-        }
+        .toast.success { border-right-color: var(--secondary-500); }
+        .toast.error { border-right-color: var(--danger-500); }
+        .toast.warning { border-right-color: var(--warning-500); }
         
         .toast-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-full);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-500);
         }
         
-        .toast.success .toast-icon {
-            background: var(--secondary-100);
-            color: var(--secondary-600);
-        }
+        .toast.success .toast-icon { background: rgba(34, 197, 94, 0.2); color: var(--secondary-500); }
+        .toast.error .toast-icon { background: rgba(239, 68, 68, 0.2); color: var(--danger-500); }
+        .toast.warning .toast-icon { background: rgba(245, 158, 11, 0.2); color: var(--warning-500); }
         
-        .toast.error .toast-icon {
-            background: var(--danger-100);
-            color: var(--danger-600);
-        }
-        
-        .toast.warning .toast-icon {
-            background: var(--warning-100);
-            color: var(--warning-600);
-        }
-        
-        .toast-content {
-            flex: 1;
-        }
+        .toast-content { flex: 1; }
         
         .toast-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-primary);
         }
         
         .toast-message {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
         }
         
         .toast-close {
-            width: 28px;
-            height: 28px;
-            border-radius: var(--radius-full);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2302,608 +1499,210 @@
         }
         
         .toast-close:hover {
-            background: var(--bg-tertiary);
+            background: rgba(255,255,255,0.1);
             color: var(--text-primary);
         }
         
         /*=====================================================
-          📱 Bottom Navigation (Mobile)
+          🏠 Home Screen - الشاشة الرئيسية
         =====================================================*/
-        .bottom-nav {
-            display: none;
-            height: var(--bottom-nav-height);
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            padding-bottom: env(safe-area-inset-bottom, var(--spacing-xs));
-        }
-        
-        @media (max-width: 768px) {
-            .bottom-nav {
-                display: flex;
-                justify-content: space-around;
-                align-items: center;
-            }
-            
-            .sidebar {
-                display: none;
-            }
-        }
-        
-        .nav-item {
+        .home-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 800;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
+            padding-bottom: 100px;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+        }
+        
+        .home-screen.hidden-slide {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .home-header {
+            padding: 40px 20px 30px;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(99, 102, 241, 0.1), transparent);
+        }
+        
+        .home-logo {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 15px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            display: flex;
             align-items: center;
-            gap: 2px;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--radius-lg);
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+        
+        .home-header h1 {
+            font-size: 1.6rem;
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .home-header p {
             color: var(--text-muted);
-            font-size: 0.7rem;
-            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        .home-content {
+            flex: 1;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 25px 25px 0 0;
+            margin-top: -10px;
+        }
+        
+        .home-content .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+        
+        .main-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .action-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
             transition: all var(--transition-fast);
         }
         
-        .nav-item i {
-            font-size: 1.2rem;
+        .action-card:active {
+            transform: scale(0.95);
         }
         
-        .nav-item:hover {
-            color: var(--text-secondary);
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
         }
         
-        .nav-item.active {
-            color: var(--primary-500);
-            background: var(--primary-50);
+        .action-card span {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
         
-        [data-theme="dark"] .nav-item.active {
-            background: rgba(99, 102, 241, 0.2);
+        .presets-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding-bottom: 15px;
+            scrollbar-width: none;
+        }
+        
+        .presets-scroll::-webkit-scrollbar { display: none; }
+        
+        .preset-card {
+            flex: 0 0 100px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid transparent;
+            border-radius: 14px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .preset-card.active {
+            border-color: var(--primary-500);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .preset-ratio {
+            margin: 0 auto 8px;
+            border: 2px solid var(--text-muted);
+            border-radius: 3px;
+        }
+        
+        .preset-card.active .preset-ratio {
+            border-color: var(--primary-500);
+        }
+        
+        .ratio-1-1 { width: 28px; height: 28px; }
+        .ratio-9-16 { width: 20px; height: 36px; }
+        .ratio-4-5 { width: 26px; height: 32px; }
+        .ratio-16-9 { width: 36px; height: 20px; }
+        
+        .preset-name {
+            display: block;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .preset-size {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.65rem;
+        }
+        
+        .home-color-picker {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 15px;
+            border-radius: 14px;
+            margin-top: 15px;
+        }
+        
+        #home-bg-color {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
         }
         
         /*=====================================================
           🔧 Utility Classes
         =====================================================*/
         .hidden { display: none !important; }
-        .invisible { visibility: hidden; }
-        .sr-only { 
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-        
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .text-left { text-align: left; }
-        
-        .flex { display: flex; }
-        .flex-col { flex-direction: column; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .gap-sm { gap: var(--spacing-sm); }
-        .gap-md { gap: var(--spacing-md); }
-        
-        .w-full { width: 100%; }
-        .h-full { height: 100%; }
-        
-        .mt-sm { margin-top: var(--spacing-sm); }
-        .mt-md { margin-top: var(--spacing-md); }
-        .mb-sm { margin-bottom: var(--spacing-sm); }
-        .mb-md { margin-bottom: var(--spacing-md); }
-        
-        .p-sm { padding: var(--spacing-sm); }
-        .p-md { padding: var(--spacing-md); }
-        
-        .rounded-md { border-radius: var(--radius-md); }
-        .rounded-lg { border-radius: var(--radius-lg); }
-        .rounded-full { border-radius: var(--radius-full); }
-        
-        .shadow-md { box-shadow: var(--shadow-md); }
-        .shadow-lg { box-shadow: var(--shadow-lg); }
-        
-        .transition { transition: all var(--transition-normal); }
-        
-        .truncate {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .mt-sm { margin-top: 8px; }
+        .mt-md { margin-top: 16px; }
         
         /*=====================================================
-          📱 Responsive Styles
+          📱 Responsive
         =====================================================*/
-        @media (max-width: 1024px) {
-            :root {
-                --sidebar-width: 280px;
-            }
+        @media (max-width: 380px) {
+            .app-name { font-size: 1rem; }
+            .header-btn { width: 30px; height: 30px; font-size: 0.8rem; }
+            .project-name { max-width: 90px; }
+            .project-name input { font-size: 0.7rem; }
+            .zoom-controls { display: none; }
         }
-        
-        @media (max-width: 768px) {
-            :root {
-                --header-height: 56px;
-            }
-            
-            .app-name {
-                display: block !important; /* السحر هنا: إظهار اللوجو */
-                font-size: 1.1rem !important;
-            }
-            
-            .header-btn {
-                color: white !important; /* تأكيد ظهور الأيقونات */
-            }
-            
-            .header-center {
-                position: static;
-                transform: none;
-            }
-            
-            .canvas-tools {
-                bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
-            }
-            
-            /* التعديلات الجديدة لإصلاح الهيدر العلوي */
-            .app-header {
-                padding: 0 var(--spacing-xs);
-            }
-            .header-right {
-                gap: 2px;
-            }
-            .header-btn {
-                width: 32px;
-                height: 32px;
-            }
-            .header-btn i {
-                font-size: 0.9rem;
-            }
-            .project-name {
-                padding: var(--spacing-xs);
-            }
-            .project-name input {
-                width: 75px;
-                font-size: 0.8rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .canvas-tools {
-                width: calc(100% - var(--spacing-lg) * 2);
-                justify-content: center;
-            }
-            
-            .zoom-controls {
-                display: none;
-            }
-        }
-
-        /* ==========================================
-           تصميم الشاشة الرئيسية الجديد
-        ========================================== */
-        .home-screen {
-            position: fixed;
-            inset: 0;
-            background: #0f172a;
-            z-index: 999999 !important;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto !important;
-            padding-bottom: 120px !important; /* زيادة المساحة هنا لرفع الأزرار فوق حافة الهاتف */
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-        }
-
-        .home-screen.hidden-slide {
-            transform: translateY(-100%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .home-header {
-            padding: var(--spacing-2xl) var(--spacing-md) var(--spacing-xl);
-            text-align: center;
-            background: linear-gradient(to bottom, rgba(99, 102, 241, 0.1), transparent);
-        }
-
-        .home-logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto var(--spacing-md);
-            background: var(--gradient-primary);
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
-        }
-
-        .home-header h1 {
-            font-size: 1.8rem;
-            color: white;
-            margin-bottom: 5px;
-        }
-
-        .home-header p {
-            color: var(--gray-400);
-            font-size: 0.9rem;
-        }
-
-        .home-content {
-            flex: 1;
-            padding: var(--spacing-md);
-            background: #1e293b;
-            border-radius: 30px 30px 0 0;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
-        }
-
-        .main-actions-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .action-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: var(--spacing-lg) var(--spacing-sm);
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-
-        .action-card:active {
-            transform: scale(0.95);
-        }
-
-        .action-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            margin: 0 auto var(--spacing-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        .action-card span {
-            color: white;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .presets-scroll {
-            display: flex;
-            overflow-x: auto;
-            gap: var(--spacing-sm);
-            padding-bottom: var(--spacing-md);
-            scrollbar-width: none; 
-        }
-        .presets-scroll::-webkit-scrollbar { display: none; }
-
-        .preset-card {
-            flex: 0 0 110px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid transparent;
-            border-radius: 16px;
-            padding: var(--spacing-md) var(--spacing-xs);
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-
-        .preset-card.active {
-            border-color: var(--primary-500);
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        .preset-ratio {
-            margin: 0 auto var(--spacing-sm);
-            border: 2px solid var(--gray-400);
-            border-radius: 4px;
-        }
-        .preset-card.active .preset-ratio { border-color: var(--primary-500); }
-        
-        .ratio-1-1 { width: 30px; height: 30px; }
-        .ratio-9-16 { width: 22px; height: 40px; }
-        .ratio-4-5 { width: 28px; height: 35px; }
-        .ratio-16-9 { width: 40px; height: 22px; }
-
-        .preset-name { display: block; color: white; font-size: 0.8rem; font-weight: 600; margin-bottom: 2px;}
-        .preset-size { display: block; color: var(--gray-400); font-size: 0.7rem; }
-
-        .home-color-picker {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            background: rgba(255, 255, 255, 0.05);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: 16px;
-        }
-
-        #home-bg-color {
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: transparent;
-        }
-
-        /* ==========================================
-           🚀 التخطيط الهيكلي الفولاذي (ضد تهنيج الأندرويد)
-        ========================================== */
-        
-        html, body {
-            height: 100% !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: hidden !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            background: #0f172a !important;
-        }
-
-        #app {
-            position: absolute !important;
-            inset: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            background: transparent !important;
-        }
-
-        /* 1. الهيدر ثابت في الأعلى */
-        .app-header {
-            flex: 0 0 50px !important;
-            width: 100% !important;
-            z-index: 200 !important;
-        }
-
-        /* 2. مساحة العمل تأخذ كل المساحة المتبقية بذكاء */
-        .app-main {
-            flex: 1 1 auto !important;
-            position: relative !important;
-            overflow: hidden !important;
-            z-index: 1 !important;
-        }
-
-        .canvas-container {
-            position: absolute !important;
-            inset: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: 5 !important;
-        }
-
-        .canvas-tools {
-            position: absolute !important;
-            bottom: 20px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            z-index: 50 !important;
-        }
-
-        /* 3. اللوحة المنبثقة (تم حل مشكلة الشبح للأبد) */
-        .sidebar {
-            position: absolute !important;
-            bottom: -400px !important; /* مخفية خارج الشاشة تماماً (بدون استخدام transform المزعج) */
-            left: 0 !important;
-            width: 100% !important;
-            height: 280px !important; 
-            background: #1e1e1e !important; 
-            border-radius: 16px 16px 0 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            z-index: 950 !important; 
-            transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; /* حركة صعود سلسة */
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.5) !important;
-            transform: none !important; /* إلغاء الـ transform لمنع أي خلل */
-        }
-
-        .sidebar.active {
-            bottom: 55px !important; /* ترتفع لتجلس فوق أدوات إنشوت بالضبط */
-        }
-
-        .sidebar-content {
-            flex: 1 1 auto !important;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            padding: 15px !important;
-            padding-bottom: 20px !important;
-        }
-
-        .sidebar-tabs { display: none !important; }
-        
-        .close-panel-btn {
-            width: 35px !important;
-            height: 4px !important;
-            background: rgba(255, 255, 255, 0.3) !important;
-            border-radius: 10px !important;
-            margin: 8px auto 2px auto !important;
-            cursor: pointer !important;
-            flex-shrink: 0 !important;
-        }
-
-        /* 4. الشريط السفلي صلب (مع السماح بإخفائه عند فتح الكيبورد) */
-        .bottom-nav {
-            flex: 0 0 60px !important; 
-            position: relative !important;
-            width: 100% !important;
-            background: #050505 !important;
-            display: flex; /* السحر هنا: تم إزالة important */
-            justify-content: space-around !important;
-            align-items: center !important;
-            z-index: 200 !important;
-            border-top: 1px solid rgba(255,255,255,0.05) !important;
-        }
-        
-        .nav-item {
-            min-width: 60px !important;
-            background: transparent !important;
-            opacity: 0.5 !important;
-            padding: 0 !important;
-        }
-        
-        .nav-item.active { opacity: 1 !important; }
-        
-        .nav-item i {
-            background: transparent !important;
-            width: 30px !important;
-            height: 30px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            margin: 0 auto 5px auto !important;
-            font-size: 1.3rem !important;
-            color: white !important;
-        }
-        
-        .nav-item.active i { color: var(--primary-500) !important; }
-        .nav-item span { font-size: 0.65rem !important; color: white !important; }
-
-        /* 5. مربع النص الاحترافي (كبسولة إنشوت) */
-        .text-input-wrapper { margin-bottom: 5px !important; }
-        
-        .text-input {
-            width: 100% !important;
-            height: 50px !important;
-            padding: 0 20px !important;
-            line-height: 50px !important;
-            border-radius: 25px !important; /* شكل بيضاوي أنيق */
-            background: rgba(255, 255, 255, 0.08) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            white-space: nowrap !important; /* الكتابة في سطر واحد وسحب أفقي */
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            font-size: 1rem !important;
-            text-align: center !important;
-            color: white !important;
-            resize: none !important;
-        }
-        
-        .text-input:focus {
-            background: rgba(255, 255, 255, 0.15) !important;
-            border-color: var(--primary-500) !important;
-        }
-        
-        .text-char-count { display: none !important; }
-        #panel-text .section-header { display: none !important; }
-        #panel-text .panel-section { margin-bottom: 5px !important; }
-
-        /* 6. أدوات التنسيق */
-        .text-format-tools {
-            display: flex !important;
-            flex-wrap: nowrap !important;
-            background: transparent !important;
-            padding: 0 5px !important;
-            gap: 8px !important;
-            overflow-x: auto !important;
-            scrollbar-width: none !important;
-            justify-content: center !important;
-            margin-bottom: 5px !important;
-        }
-        .text-format-tools::-webkit-scrollbar { display: none !important; }
-        
-        .format-btn {
-            width: 38px !important;
-            height: 38px !important;
-            min-width: 38px !important;
-            border-radius: 50% !important;
-            background: rgba(255,255,255,0.05) !important;
-            font-size: 0.95rem !important;
-        }
-        .format-btn.active { background: var(--primary-500) !important; }
-        .format-divider { display: none !important; }
-
-        /* 7. تصغير أشرطة الحجم والتباعد */
-        #panel-text .slider-wrapper { padding: 2px 10px !important; }
-        #panel-text .slider-header { margin-bottom: 2px !important; }
-        #panel-text .slider-label, #panel-text .slider-value {
-            font-size: 0.75rem !important;
-            color: var(--gray-300) !important;
-        }
-
-
-        /* ==========================================
-           🎨 تصميم InShot Style Text Editor
-        ========================================== */
-        .selected-element {
-            border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
-            box-shadow: 0 0 5px rgba(0,0,0,0.3) !important;
-        }
-        .resize-handle.top-left {
-            width: 24px !important; height: 24px !important;
-            top: -12px !important; left: -12px !important;
-            background: #ff4d4f !important; border: 2px solid white !important;
-            border-radius: 50% !important; box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
-            cursor: pointer;
-        }
-        .resize-handle.top-left::after {
-            content: '×'; color: white; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 16px; font-weight: bold;
-        }
-        .resize-handle.bottom-right {
-            width: 24px !important; height: 24px !important;
-            bottom: -12px !important; right: -12px !important;
-            background: white !important; border: 1px solid #ccc !important;
-            border-radius: 50% !important; box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
-            cursor: nwse-resize;
-        }
-        .resize-handle.bottom-right::after {
-            content: '⤢'; color: #333; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 14px; font-weight: bold;
-        }
-        .resize-handle.top-right, .resize-handle.bottom-left, 
-        .resize-handle.top-center, .resize-handle.bottom-center, 
-        .resize-handle.left-center, .resize-handle.right-center, .rotate-handle {
-            display: none !important;
-        }
-        .inshot-editor-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900;
-        }
-        .inshot-text-toolbar {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: #1e1e1e; z-index: 1000; display: flex; flex-direction: column;
-            transform: translateY(0); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            padding-bottom: env(safe-area-inset-bottom, 0);
-        }
-        .inshot-text-toolbar.hidden, .inshot-editor-overlay.hidden {
-            transform: translateY(100%); opacity: 0; pointer-events: none;
-        }
-        .inshot-input-row {
-            display: flex; align-items: center; background: #2a2a2a;
-            margin: 10px; border-radius: 8px; padding: 5px 10px;
-        }
-        .inshot-main-input {
-            flex: 1; height: 40px; background: transparent; border: none;
-            color: white; font-size: 1.1rem; text-align: right; outline: none; padding: 0 10px;
-        }
-        .inshot-icon-btn { color: #888; font-size: 1.2rem; padding: 5px; }
-        .inshot-tools-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 15px; background: #1e1e1e; border-top: 1px solid #333;
-        }
-        .inshot-center-tools { display: flex; gap: 20px; }
-        .inshot-tool-btn { color: #888; font-size: 1.2rem; background: transparent; transition: color 0.2s; }
-        .inshot-tool-btn.active { color: white; }
-        .inshot-action-btn { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
-        .done-btn { background: transparent; font-size: 1.4rem; }
-        .close-btn { background: transparent; font-size: 1.4rem; }
     </style>
 </head>
-<body data-theme="dark">
+<body>
     <!-- شاشة التحميل -->
     <div id="splash-screen">
         <div class="splash-logo">
@@ -2926,6 +1725,7 @@
         <div class="splash-loader"></div>
     </div>
 
+    <!-- الشاشة الرئيسية -->
     <div id="home-screen" class="home-screen">
         <div class="home-header">
             <div class="home-logo">
@@ -2954,32 +1754,32 @@
                 </div>
             </div>
 
-            <h3 class="section-title" style="margin-top: var(--spacing-xl);">مقاسات جاهزة</h3>
+            <h3 class="section-title">مقاسات جاهزة</h3>
             
             <div class="presets-scroll">
                 <div class="preset-card active" data-width="1080" data-height="1080">
                     <div class="preset-ratio ratio-1-1"></div>
-                    <span class="preset-name">مربع (بوست)</span>
-                    <span class="preset-size">1080x1080</span>
+                    <span class="preset-name">مربع</span>
+                    <span class="preset-size">1080×1080</span>
                 </div>
                 <div class="preset-card" data-width="1080" data-height="1920">
                     <div class="preset-ratio ratio-9-16"></div>
-                    <span class="preset-name">ستوري / ريلز</span>
-                    <span class="preset-size">1080x1920</span>
+                    <span class="preset-name">ستوري</span>
+                    <span class="preset-size">1080×1920</span>
                 </div>
                 <div class="preset-card" data-width="1080" data-height="1350">
                     <div class="preset-ratio ratio-4-5"></div>
                     <span class="preset-name">بورتريه</span>
-                    <span class="preset-size">1080x1350</span>
+                    <span class="preset-size">1080×1350</span>
                 </div>
                 <div class="preset-card" data-width="1920" data-height="1080">
                     <div class="preset-ratio ratio-16-9"></div>
-                    <span class="preset-name">يوتيوب / غلاف</span>
-                    <span class="preset-size">1920x1080</span>
+                    <span class="preset-name">يوتيوب</span>
+                    <span class="preset-size">1920×1080</span>
                 </div>
             </div>
 
-            <h3 class="section-title" style="margin-top: var(--spacing-xl);">لون الخلفية</h3>
+            <h3 class="section-title">لون الخلفية</h3>
             <div class="home-color-picker">
                 <input type="color" id="home-bg-color" value="#ffffff">
                 <div class="preset-colors" id="home-preset-colors">
@@ -2992,7 +1792,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- التطبيق الرئيسي -->
     <div id="app">
@@ -3015,7 +1814,6 @@
                 <button class="header-btn" id="export-btn" title="تصدير"><i class="fas fa-download"></i></button>
             </div>
         </header>
-
         
         <!-- المحتوى الرئيسي -->
         <main class="app-main">
@@ -3027,17 +1825,17 @@
                 </div>
                 
                 <!-- أدوات الكانفاس -->
-                <div class="canvas-tools">
-                    <button class="canvas-tool-btn active" id="select-tool" title="أداة التحديد">
+                <div class="canvas-tools" id="canvas-tools">
+                    <button class="canvas-tool-btn active" id="select-tool" title="تحديد">
                         <i class="fas fa-mouse-pointer"></i>
                     </button>
-                    <button class="canvas-tool-btn" id="text-tool" title="أداة النص">
+                    <button class="canvas-tool-btn" id="text-tool" title="نص">
                         <i class="fas fa-font"></i>
                     </button>
-                    <button class="canvas-tool-btn" id="image-tool" title="إضافة صورة">
+                    <button class="canvas-tool-btn" id="image-tool" title="صورة">
                         <i class="fas fa-image"></i>
                     </button>
-                    <button class="canvas-tool-btn" id="shape-tool" title="الأشكال">
+                    <button class="canvas-tool-btn" id="shape-tool" title="شكل">
                         <i class="fas fa-shapes"></i>
                     </button>
                     
@@ -3060,22 +1858,18 @@
                 </div>
             </div>
             
+            <!-- اللوحة الجانبية (منبثقة من الأسفل) -->
             <aside class="sidebar" id="sidebar">
                 <div class="close-panel-btn" id="close-panel-btn"></div>
-
                 
-                <!-- محتوى الشريط -->
                 <div class="sidebar-content">
                     <!-- لوحة النص -->
                     <div class="sidebar-panel active" id="panel-text">
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-keyboard"></i>
-                                    النص
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-keyboard"></i> النص</h3>
                             </div>
-                            <div class="text-input-wrapper" style="display: none !important;">
+                            <div class="text-input-wrapper">
                                 <textarea class="text-input" id="text-input" placeholder="اكتب النص هنا..." dir="auto"></textarea>
                                 <span class="text-char-count"><span id="char-count">0</span> حرف</span>
                             </div>
@@ -3083,46 +1877,24 @@
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-text-width"></i>
-                                    التنسيق
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-text-width"></i> التنسيق</h3>
                             </div>
                             <div class="text-format-tools">
-                                <button class="format-btn" id="bold-btn" title="عريض">
-                                    <i class="fas fa-bold"></i>
-                                </button>
-                                <button class="format-btn" id="italic-btn" title="مائل">
-                                    <i class="fas fa-italic"></i>
-                                </button>
-                                <button class="format-btn" id="underline-btn" title="تسطير">
-                                    <i class="fas fa-underline"></i>
-                                </button>
-                                <button class="format-btn" id="strikethrough-btn" title="يتوسطه خط">
-                                    <i class="fas fa-strikethrough"></i>
-                                </button>
+                                <button class="format-btn" id="bold-btn" title="عريض"><i class="fas fa-bold"></i></button>
+                                <button class="format-btn" id="italic-btn" title="مائل"><i class="fas fa-italic"></i></button>
+                                <button class="format-btn" id="underline-btn" title="تسطير"><i class="fas fa-underline"></i></button>
+                                <button class="format-btn" id="strikethrough-btn" title="خط"><i class="fas fa-strikethrough"></i></button>
                                 <div class="format-divider"></div>
-                                <button class="format-btn active" id="align-right-btn" title="محاذاة يمين">
-                                    <i class="fas fa-align-right"></i>
-                                </button>
-                                <button class="format-btn" id="align-center-btn" title="محاذاة وسط">
-                                    <i class="fas fa-align-center"></i>
-                                </button>
-                                <button class="format-btn" id="align-left-btn" title="محاذاة يسار">
-                                    <i class="fas fa-align-left"></i>
-                                </button>
-                                <button class="format-btn" id="align-justify-btn" title="ضبط">
-                                    <i class="fas fa-align-justify"></i>
-                                </button>
+                                <button class="format-btn active" id="align-right-btn" title="يمين"><i class="fas fa-align-right"></i></button>
+                                <button class="format-btn" id="align-center-btn" title="وسط"><i class="fas fa-align-center"></i></button>
+                                <button class="format-btn" id="align-left-btn" title="يسار"><i class="fas fa-align-left"></i></button>
+                                <button class="format-btn" id="align-justify-btn" title="ضبط"><i class="fas fa-align-justify"></i></button>
                             </div>
                         </div>
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-text-height"></i>
-                                    الحجم والتباعد
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-text-height"></i> الحجم والتباعد</h3>
                             </div>
                             
                             <div class="slider-wrapper">
@@ -3155,10 +1927,7 @@
                     <div class="sidebar-panel" id="panel-fonts">
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-search"></i>
-                                    البحث في الخطوط
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-search"></i> البحث في الخطوط</h3>
                                 <span class="opentype-badge" id="fonts-count">0</span>
                             </div>
                             <div class="font-search-wrapper">
@@ -3169,33 +1938,23 @@
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-list"></i>
-                                    الخطوط المتاحة
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-list"></i> الخطوط المتاحة</h3>
                                 <div class="section-actions">
                                     <button class="section-btn" id="sort-fonts-btn" title="ترتيب">
                                         <i class="fas fa-sort-alpha-down"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="font-list" id="font-list">
-                                <!-- سيتم ملؤها بـ JavaScript -->
-                            </div>
+                            <div class="font-list" id="font-list"></div>
                         </div>
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-plus-circle"></i>
-                                    إضافة خطوط
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-plus-circle"></i> إضافة خطوط</h3>
                             </div>
                             <div class="add-fonts-area" id="add-fonts-area">
-                                <input type="file" id="font-file-input" accept="*/*" multiple hidden>
-                                <div class="add-fonts-icon">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                </div>
+                                <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
+                                <div class="add-fonts-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                                 <p class="add-fonts-text">اسحب الخطوط هنا أو انقر للاختيار</p>
                                 <p class="add-fonts-hint">يدعم TTF, OTF, WOFF, WOFF2</p>
                             </div>
@@ -3207,175 +1966,84 @@
                         <div class="panel-section">
                             <div class="opentype-panel">
                                 <div class="opentype-header">
-                                    <h3 class="opentype-title">
-                                        <i class="fas fa-magic"></i>
-                                        خصائص OpenType
-                                    </h3>
+                                    <h3 class="opentype-title"><i class="fas fa-magic"></i> خصائص OpenType</h3>
                                     <span class="opentype-badge" id="opentype-features-count">0</span>
                                 </div>
                                 
-                                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--spacing-md);">
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
                                     اختر الخصائص المتاحة في الخط الحالي
                                 </p>
                                 
                                 <div class="opentype-features-grid" id="opentype-features-grid">
-                                    <!-- Basic Features -->
                                     <div class="opentype-feature" data-feature="liga">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
                                             <span class="feature-name">Ligatures</span>
                                             <span class="feature-tag">liga</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="dlig">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
                                             <span class="feature-name">Discretionary</span>
                                             <span class="feature-tag">dlig</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="calt">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
-                                            <span class="feature-name">Contextual Alt</span>
+                                            <span class="feature-name">Contextual</span>
                                             <span class="feature-tag">calt</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="swsh">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
                                             <span class="feature-name">Swash</span>
                                             <span class="feature-tag">swsh</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="salt">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
-                                            <span class="feature-name">Stylistic Alt</span>
+                                            <span class="feature-name">Stylistic</span>
                                             <span class="feature-tag">salt</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="smcp">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
                                             <span class="feature-name">Small Caps</span>
                                             <span class="feature-tag">smcp</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="onum">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
                                             <span class="feature-name">Old Nums</span>
                                             <span class="feature-tag">onum</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="lnum">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
-                                            <span class="feature-name">Lining Nums</span>
+                                            <span class="feature-name">Lining</span>
                                             <span class="feature-tag">lnum</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="tnum">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
                                             <span class="feature-name">Tabular</span>
                                             <span class="feature-tag">tnum</span>
                                         </div>
                                     </div>
-                                    
-                                    <div class="opentype-feature" data-feature="pnum">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
-                                        <div class="feature-info">
-                                            <span class="feature-name">Proportional</span>
-                                            <span class="feature-tag">pnum</span>
-                                        </div>
-                                    </div>
-                                    
                                     <div class="opentype-feature" data-feature="frac">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
                                             <span class="feature-name">Fractions</span>
                                             <span class="feature-tag">frac</span>
                                         </div>
                                     </div>
-                                    
-                                    <div class="opentype-feature" data-feature="ordn">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
-                                        <div class="feature-info">
-                                            <span class="feature-name">Ordinals</span>
-                                            <span class="feature-tag">ordn</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="opentype-feature" data-feature="sups">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
-                                        <div class="feature-info">
-                                            <span class="feature-name">Superscript</span>
-                                            <span class="feature-tag">sups</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="opentype-feature" data-feature="subs">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
-                                        <div class="feature-info">
-                                            <span class="feature-name">Subscript</span>
-                                            <span class="feature-tag">subs</span>
-                                        </div>
-                                    </div>
-                                    
                                     <div class="opentype-feature" data-feature="kern">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
                                             <span class="feature-name">Kerning</span>
                                             <span class="feature-tag">kern</span>
                                         </div>
                                     </div>
-                                    
                                     <div class="opentype-feature" data-feature="case">
-                                        <div class="feature-checkbox">
-                                            <i class="fas fa-check"></i>
-                                        </div>
                                         <div class="feature-info">
-                                            <span class="feature-name">Case Forms</span>
+                                            <span class="feature-name">Case</span>
                                             <span class="feature-tag">case</span>
                                         </div>
                                     </div>
@@ -3385,26 +2053,16 @@
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-star"></i>
-                                    Stylistic Sets (SS01-SS20)
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-star"></i> Stylistic Sets</h3>
                             </div>
-                            <div class="stylistic-sets-grid" id="stylistic-sets-grid">
-                                <!-- سيتم إنشاؤها بـ JavaScript -->
-                            </div>
+                            <div class="stylistic-sets-grid" id="stylistic-sets-grid"></div>
                         </div>
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-sliders-h"></i>
-                                    Character Variants (CV01-CV99)
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-sliders-h"></i> Character Variants</h3>
                             </div>
-                            <div class="stylistic-sets-grid" id="character-variants-grid">
-                                <!-- سيتم إنشاؤها بـ JavaScript -->
-                            </div>
+                            <div class="stylistic-sets-grid" id="character-variants-grid"></div>
                         </div>
                     </div>
                     
@@ -3412,16 +2070,13 @@
                     <div class="sidebar-panel" id="panel-colors">
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-fill-drip"></i>
-                                    لون النص
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-fill-drip"></i> لون النص</h3>
                             </div>
                             <div class="color-picker-section">
                                 <div class="color-picker-wrapper">
                                     <div class="color-preview" id="text-color-preview">
                                         <input type="color" id="text-color-picker" value="#ffffff" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
-                                        <div class="color-preview-inner" style="background: #ffffff; position: absolute; inset: 0; pointer-events: none;"></div>
+                                        <div class="color-preview-inner" style="background: #ffffff;"></div>
                                     </div>
                                     <input type="text" class="color-hex-input" id="text-color-hex" value="#FFFFFF" maxlength="7">
                                 </div>
@@ -3440,16 +2095,13 @@
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-square"></i>
-                                    لون الخلفية
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-square"></i> لون الخلفية</h3>
                             </div>
                             <div class="color-picker-section">
                                 <div class="color-picker-wrapper">
                                     <div class="color-preview" id="bg-color-preview">
                                         <input type="color" id="bg-color-picker" value="#ffffff" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
-                                        <div class="color-preview-inner" style="background: #ffffff; position: absolute; inset: 0; pointer-events: none;"></div>
+                                        <div class="color-preview-inner" style="background: #ffffff;"></div>
                                     </div>
                                     <input type="text" class="color-hex-input" id="bg-color-hex" value="#FFFFFF" maxlength="7">
                                 </div>
@@ -3468,10 +2120,7 @@
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-adjust"></i>
-                                    الشفافية
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-adjust"></i> الشفافية</h3>
                             </div>
                             <div class="slider-wrapper">
                                 <div class="slider-header">
@@ -3484,10 +2133,7 @@
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-shadow"></i>
-                                    ظل النص
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-moon"></i> ظل النص</h3>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="text-shadow-toggle">
                                     <span class="toggle-slider"></span>
@@ -3518,7 +2164,7 @@
                                 <div class="color-picker-wrapper mt-sm">
                                     <div class="color-preview" id="shadow-color-preview">
                                         <input type="color" id="shadow-color-picker" value="#000000" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
-                                        <div class="color-preview-inner" style="background: #000000; position: absolute; inset: 0; pointer-events: none;"></div>
+                                        <div class="color-preview-inner" style="background: #000000;"></div>
                                     </div>
                                     <input type="text" class="color-hex-input" id="shadow-color-hex" value="#000000" maxlength="7">
                                 </div>
@@ -3527,10 +2173,7 @@
                         
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-border-style"></i>
-                                    حدود النص
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-border-style"></i> حدود النص</h3>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="text-stroke-toggle">
                                     <span class="toggle-slider"></span>
@@ -3547,7 +2190,7 @@
                                 <div class="color-picker-wrapper mt-sm">
                                     <div class="color-preview" id="stroke-color-preview">
                                         <input type="color" id="stroke-color-picker" value="#000000" style="opacity: 0; width: 100%; height: 100%; cursor: pointer;">
-                                        <div class="color-preview-inner" style="background: #000000; position: absolute; inset: 0; pointer-events: none;"></div>
+                                        <div class="color-preview-inner" style="background: #000000;"></div>
                                     </div>
                                     <input type="text" class="color-hex-input" id="stroke-color-hex" value="#000000" maxlength="7">
                                 </div>
@@ -3559,10 +2202,7 @@
                     <div class="sidebar-panel" id="panel-layers">
                         <div class="panel-section">
                             <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-layer-group"></i>
-                                    الطبقات
-                                </h3>
+                                <h3 class="section-title"><i class="fas fa-layer-group"></i> الطبقات</h3>
                                 <div class="section-actions">
                                     <button class="section-btn" id="add-layer-btn" title="طبقة جديدة">
                                         <i class="fas fa-plus"></i>
@@ -3572,19 +2212,18 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="layers-list" id="layers-list">
-                                <!-- سيتم ملؤها بـ JavaScript -->
-                            </div>
+                            <div class="layers-list" id="layers-list"></div>
                         </div>
                     </div>
                 </div>
             </aside>
         </main>
 
+        <!-- InShot Text Toolbar -->
         <div class="inshot-editor-overlay hidden" id="inshot-editor-overlay"></div>
         <div class="inshot-text-toolbar hidden" id="inshot-text-toolbar">
             <div class="inshot-input-row">
-                <button class="inshot-icon-btn cancel-btn" id="inshot-clear-text">
+                <button class="inshot-icon-btn" id="inshot-clear-text">
                     <i class="fas fa-times-circle"></i>
                 </button>
                 <input type="text" class="inshot-main-input" id="inshot-main-input" placeholder="اكتب هنا..." dir="auto">
@@ -3610,14 +2249,13 @@
                     </button>
                 </div>
 
-                <button class="inshot-action-btn close-btn" id="inshot-close-btn">
+                <button class="inshot-action-btn" id="inshot-close-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
         </div>
                 
-        
-        <!-- شريط التنقل السفلي للموبايل -->
+        <!-- شريط التنقل السفلي -->
         <nav class="bottom-nav">
             <button class="nav-item" data-panel="text">
                 <i class="fas fa-font"></i>
@@ -3646,34 +2284,23 @@
     <div class="modal-overlay" id="export-modal">
         <div class="modal">
             <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-download"></i>
-                    تصدير التصميم
-                </h2>
-                <button class="modal-close" id="close-export-modal">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h2 class="modal-title"><i class="fas fa-download"></i> تصدير التصميم</h2>
+                <button class="modal-close" id="close-export-modal"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div class="export-format-grid">
                     <div class="export-format active" data-format="png">
-                        <div class="export-format-icon">
-                            <i class="fas fa-image"></i>
-                        </div>
+                        <div class="export-format-icon"><i class="fas fa-image"></i></div>
                         <span class="export-format-name">PNG</span>
                         <span class="export-format-ext">شفاف</span>
                     </div>
                     <div class="export-format" data-format="jpg">
-                        <div class="export-format-icon">
-                            <i class="fas fa-file-image"></i>
-                        </div>
+                        <div class="export-format-icon"><i class="fas fa-file-image"></i></div>
                         <span class="export-format-name">JPG</span>
                         <span class="export-format-ext">مضغوط</span>
                     </div>
                     <div class="export-format" data-format="webp">
-                        <div class="export-format-icon">
-                            <i class="fas fa-globe"></i>
-                        </div>
+                        <div class="export-format-icon"><i class="fas fa-globe"></i></div>
                         <span class="export-format-name">WebP</span>
                         <span class="export-format-ext">ويب</span>
                     </div>
@@ -3699,7 +2326,7 @@
                     </div>
                     <div class="size-info-item">
                         <div class="size-info-value">×</div>
-                        <div class="size-info-label">&nbsp;</div>
+                        <div class="size-info-label"></div>
                     </div>
                     <div class="size-info-item">
                         <div class="size-info-value" id="export-height">1080</div>
@@ -3714,8 +2341,7 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="cancel-export">إلغاء</button>
                 <button class="btn btn-primary" id="confirm-export">
-                    <i class="fas fa-download"></i>
-                    تصدير
+                    <i class="fas fa-download"></i> تصدير
                 </button>
             </div>
         </div>
@@ -3723,7 +2349,6 @@
 
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- الملفات الخارجية -->
     <script src="js/app.js"></script>
 </body>
 </html>
