@@ -402,20 +402,18 @@
         }
         
         /*=====================================================
-          📱 Header - الهيدر
+          📱 Header - الهيدر (InShot Style)
         =====================================================*/
         .app-header {
-            height: var(--header-height);
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
+            height: 50px !important; /* أنحف */
+            background: #0f172a !important; /* لون كحلي صافي */
+            border-bottom: none !important; /* إزالة الخط السفلي */
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 var(--spacing-md);
+            padding: 0 10px !important;
             position: relative;
             z-index: var(--z-sticky);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
         }
         
         .header-left {
@@ -597,22 +595,25 @@
             pointer-events: auto;
         }
         
-        /* عنصر محدد */
+        /* عنصر محدد (InShot Style) */
         .selected-element {
             position: absolute;
-            border: 2px dashed var(--primary-500);
-            background: rgba(99, 102, 241, 0.1);
+            border: 2px solid white !important; /* إطار أبيض ناصع ومستمر */
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.3) !important; /* ظل خفيف لإبراز التحديد على الخلفيات الفاتحة */
+            background: transparent !important;
             cursor: move;
             touch-action: none;
+            z-index: 100;
         }
         
         .selected-element .resize-handle {
             position: absolute;
-            width: 12px;
-            height: 12px;
-            background: white;
-            border: 2px solid var(--primary-500);
-            border-radius: var(--radius-sm);
+            width: 16px !important; /* مقابض دائرية أكبر لتسهيل اللمس */
+            height: 16px !important;
+            background: white !important;
+            border: 1px solid rgba(0,0,0,0.5) !important;
+            border-radius: 50% !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
         }
         
         .resize-handle.top-left { top: -6px; left: -6px; cursor: nwse-resize; }
@@ -651,33 +652,33 @@
             background: var(--primary-500);
         }
         
-        /* أدوات الكانفاس */
+        /* أدوات الكانفاس (كبسولة أنيقة) */
         .canvas-tools {
-            position: absolute;
-            bottom: var(--spacing-lg);
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-xl);
-            border: 1px solid var(--border-color);
+            position: absolute !important;
+            bottom: 75px !important; /* تقف فوق الشريط السفلي مباشرة */
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            display: flex !important;
+            gap: 8px !important;
+            padding: 6px 12px !important;
+            background: rgba(0, 0, 0, 0.7) !important; /* خلفية سوداء شفافة */
+            border-radius: 25px !important; /* كبسولة */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            z-index: 50 !important;
         }
         
         .canvas-tool-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            transition: all var(--transition-fast);
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 50% !important; /* أزرار دائرية تماماً */
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: white !important;
+            font-size: 0.85rem !important;
+            background: transparent !important;
+            transition: all 0.2s !important;
         }
         
         .canvas-tool-btn:hover {
@@ -790,7 +791,8 @@
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: var(--spacing-md);
+            padding: 15px;
+            padding-bottom: 85px !important; /* مساحة أمان بالأسفل حتى لا يغطي الشريط السفلي على الخيارات */
         }
         
         .sidebar-panel {
@@ -807,18 +809,18 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* قسم داخل البانل */
+        /* قسم داخل البانل (تصغير المسافات) */
         .panel-section {
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: 12px !important;
         }
         
         .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: var(--spacing-sm);
-            padding-bottom: var(--spacing-xs);
-            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 6px !important;
+            padding-bottom: 6px !important;
+            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
         }
         
         .section-title {
@@ -1466,10 +1468,10 @@
         
         .slider {
             width: 100%;
-            height: 6px;
+            height: 4px; /* أنحف وأكثر أناقة */
             -webkit-appearance: none;
             appearance: none;
-            background: var(--bg-tertiary);
+            background: rgba(255, 255, 255, 0.1) !important;
             border-radius: var(--radius-full);
             outline: none;
             cursor: pointer;
@@ -1478,32 +1480,28 @@
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--gradient-primary);
+            width: 20px;
+            height: 20px;
+            background: white !important; /* زر أبيض ناصع مثل إنشوت */
             border-radius: var(--radius-full);
             cursor: grab;
-            box-shadow: var(--shadow-md);
-            transition: transform var(--transition-fast);
-        }
-        
-        .slider::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
         }
         
         .slider::-webkit-slider-thumb:active {
             cursor: grabbing;
-            transform: scale(0.95);
+            transform: scale(1.2); /* تكبير ملحوظ عند سحب الشريط */
         }
         
         .slider::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            background: var(--gradient-primary);
+            width: 20px;
+            height: 20px;
+            background: white !important;
             border-radius: var(--radius-full);
             cursor: grab;
             border: none;
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         
         /*=====================================================
@@ -2608,8 +2606,10 @@
         }
 
         /* ==========================================
-           🚀 التخطيط الهيكلي الصارم (يمنع أي تداخل)
+           🚀 التخطيط الهيكلي النظيف & InShot UI Magic
         ========================================== */
+        
+        /* 1. التطبيق ومساحة العمل (ثبات تام) */
         #app {
             position: fixed !important;
             inset: 0 !important;
@@ -2627,7 +2627,7 @@
             position: relative !important;
             overflow: hidden !important;
             z-index: 1 !important;
-            height: calc(100% - var(--bottom-nav-height)) !important;
+            height: calc(100% - 65px) !important; /* 65px هو حجم الشريط السفلي الجديد */
         }
 
         .canvas-container {
@@ -2645,41 +2645,26 @@
             transition: transform 0.1s ease-out !important;
         }
 
+        .canvas-tools {
+            position: absolute !important;
+            bottom: 85px !important;
+            z-index: 50 !important;
+        }
+
+        /* 2. الشريط السفلي (InShot Style الأنيق) */
         .bottom-nav {
             position: absolute !important;
             bottom: 0 !important;
             left: 0 !important;
             width: 100% !important;
-            height: var(--bottom-nav-height) !important;
-            background: #030712 !important;
+            height: 65px !important;
+            background: #050505 !important;
             display: flex !important;
             justify-content: space-around !important;
             align-items: center !important;
             z-index: 200 !important;
             border-top: 1px solid rgba(255,255,255,0.05) !important;
         }
-
-        .sidebar {
-            position: absolute !important;
-            bottom: var(--bottom-nav-height) !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 380px !important; /* طول ثابت لمنع انهياره مع الكيبورد */
-            background: rgba(15, 23, 42, 0.98) !important;
-            border-radius: 24px 24px 0 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            z-index: 100 !important;
-            transform: translateY(120%) !important;
-            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.6) !important;
-        }
-
-        .sidebar.active {
-            transform: translateY(0) !important;
-        }
-
-        .sidebar-tabs { display: none !important; }
 
         .nav-item {
             min-width: 60px !important;
@@ -2692,24 +2677,122 @@
         
         .nav-item i {
             background: transparent !important;
-            width: 35px !important;
-            height: 35px !important;
+            width: 30px !important;
+            height: 30px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             margin: 0 auto 5px auto !important;
-            font-size: 1.4rem !important;
+            font-size: 1.3rem !important;
             color: white !important;
         }
         
         .nav-item.active i { color: var(--primary-500) !important; }
         .nav-item span { font-size: 0.65rem !important; color: white !important; }
 
-        .canvas-tools {
+        /* 3. اللوحة المنبثقة الذكية (تتكيف مع الكيبورد ولا تغطي الكانفاس) */
+        .sidebar {
             position: absolute !important;
-            bottom: calc(var(--bottom-nav-height) + 20px) !important;
-            z-index: 50 !important;
+            bottom: 65px !important; /* تقف فوق الشريط السفلي مباشرة */
+            left: 0 !important;
+            width: 100% !important;
+            height: auto !important; /* السحر: تتكيف حسب المحتوى لتكون صغيرة */
+            min-height: auto !important;
+            max-height: 45vh !important;
+            background: rgba(15, 23, 42, 0.98) !important;
+            border-radius: 24px 24px 0 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            z-index: 100 !important;
+            transform: translateY(120%) !important;
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.6) !important;
+            padding-bottom: 10px !important;
         }
+
+        .sidebar.active {
+            transform: translateY(0) !important;
+        }
+        .sidebar-tabs { display: none !important; }
+        
+        /* مؤشر سحب اللوحة (Pill) */
+        .close-panel-btn {
+            width: 35px !important;
+            height: 4px !important;
+            background: rgba(255, 255, 255, 0.3) !important;
+            border-radius: 10px !important;
+            margin: 8px auto 2px auto !important;
+            cursor: pointer !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* 4. تحويل لوحة النص إلى شريط InShot السحري (بيضاوي وصغير) */
+        .text-input-wrapper {
+            margin-bottom: 5px !important;
+        }
+        
+        .text-input {
+            min-height: 48px !important;
+            height: auto !important; /* السماح بالتمدد للأسفل */
+            padding: 12px 20px !important; /* مسافات مريحة */
+            line-height: 1.5 !important;
+            border-radius: 24px !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            white-space: pre-wrap !important; /* السماح بتعدد الأسطر */
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+            color: white !important;
+            resize: none !important;
+        }
+        
+        /* إخفاء العناصر المزعجة التي تأخذ مساحة */
+        .text-char-count { display: none !important; }
+        #panel-text .section-header { display: none !important; }
+        #panel-text .panel-section { margin-bottom: 5px !important; }
+
+        /* 5. أدوات التنسيق الأفقية الدائرية (مثل InShot) */
+        .text-format-tools {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            background: transparent !important;
+            padding: 0 5px !important;
+            gap: 8px !important;
+            overflow-x: auto !important;
+            scrollbar-width: none !important;
+            justify-content: center !important;
+            border-radius: 0 !important;
+            margin-bottom: 5px !important;
+        }
+        .text-format-tools::-webkit-scrollbar { display: none !important; }
+        
+        .format-btn {
+            width: 38px !important;
+            height: 38px !important;
+            min-width: 38px !important;
+            border-radius: 50% !important; /* شكل دائري */
+            background: rgba(255,255,255,0.05) !important;
+            font-size: 0.95rem !important;
+        }
+        .format-btn.active {
+            background: var(--primary-500) !important;
+        }
+        .format-divider { display: none !important; }
+
+        /* 6. تصغير أشرطة الحجم والتباعد */
+        #panel-text .slider-wrapper {
+            padding: 2px 10px !important;
+        }
+        #panel-text .slider-header {
+            margin-bottom: 2px !important;
+        }
+        #panel-text .slider-label, #panel-text .slider-value {
+            font-size: 0.75rem !important;
+            color: var(--gray-300) !important;
+        }
+
 
     </style>
 </head>
