@@ -324,6 +324,15 @@ class FontStudioApp {
         
         // Bottom nav (mobile)
         this.elements.bottomNavItems = document.querySelectorAll('.nav-item');
+
+        // InShot Toolbar Elements
+        this.elements.inshotToolbar = document.getElementById('inshot-text-toolbar');
+        this.elements.inshotOverlay = document.getElementById('inshot-editor-overlay');
+        this.elements.inshotInput = document.getElementById('inshot-main-input');
+        this.elements.inshotDone = document.getElementById('inshot-done-btn');
+        this.elements.inshotClose = document.getElementById('inshot-close-btn');
+        this.elements.inshotClear = document.getElementById('inshot-clear-text');
+        this.elements.inshotToolBtns = document.querySelectorAll('.inshot-tool-btn');
     }
     
     setupCanvas() {
@@ -388,6 +397,41 @@ class FontStudioApp {
             this.elements.closePanelBtn.addEventListener('click', () => this.closeBottomPanel());
         }
         
+        // InShot Editor Events
+        if (this.elements.inshotInput) {
+            this.elements.inshotInput.addEventListener('input', (e) => {
+                this.textProperties.text = e.target.value;
+                const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+                if (activeLayer && activeLayer.type === 'text') {
+                    activeLayer.properties.text = e.target.value;
+                }
+                this.render();
+            });
+
+            this.elements.inshotClear.addEventListener('click', () => {
+                this.elements.inshotInput.value = '';
+                this.elements.inshotInput.dispatchEvent(new Event('input'));
+                this.elements.inshotInput.focus();
+            });
+
+            this.elements.inshotDone.addEventListener('click', () => this.closeInShotEditor());
+            this.elements.inshotClose.addEventListener('click', () => this.closeInShotEditor());
+
+            this.elements.inshotToolBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.elements.inshotToolBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const target = btn.dataset.target;
+                    if(target !== 'keyboard') {
+                        this.switchTab(target);
+                    } else {
+                        this.closeBottomPanel();
+                        this.elements.inshotInput.focus();
+                    }
+                });
+            });
+        }
+
         // إغلاق اللوحة عند لمس مساحة العمل
         this.elements.canvasContainer.addEventListener('mousedown', (e) => {
             if (e.target === this.elements.canvasContainer || e.target === this.elements.selectionLayer) {
@@ -1734,6 +1778,21 @@ class FontStudioApp {
             item.classList.remove('active');
         });
     }
+
+    openInShotEditor() {
+        if (!this.elements.inshotToolbar) return;
+        this.elements.inshotToolbar.classList.remove('hidden');
+        document.querySelector('.bottom-nav').style.display = 'none';
+        this.elements.inshotInput.value = this.textProperties.text || '';
+        setTimeout(() => this.elements.inshotInput.focus(), 100);
+    }
+
+    closeInShotEditor() {
+        if (!this.elements.inshotToolbar) return;
+        this.elements.inshotToolbar.classList.add('hidden');
+        document.querySelector('.bottom-nav').style.display = 'flex';
+        this.closeBottomPanel();
+    }
     
     setTool(tool) {
         this.state.currentTool = tool;
@@ -1802,12 +1861,9 @@ class FontStudioApp {
         this.saveHistory();
         this.render();
         
-        // السحر: تركيز تلقائي على مربع النص وتظليله لتفتح الكيبورد فوراً (InShot Style)
+        // السحر: فتح شريط InShot المدمج
         setTimeout(() => {
-            if (this.elements.textInput) {
-                this.elements.textInput.focus();
-                this.elements.textInput.select(); 
-            }
+            this.openInShotEditor();
         }, 50);
         
         this.showToast('تمت الإضافة', 'success', 'تم إضافة طبقة نص جديدة');
