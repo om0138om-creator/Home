@@ -380,9 +380,13 @@ class FontStudioApp {
     }
     
     updateCanvasTransform() {
-        // تم إيقاف تحريك وتكبير الشاشة من الجذور! الكانفاس ثابت مسطرة.
+        // السحر: تفعيل التكبير/التصغير ليناسب شاشة الهاتف، مع منع التحريك (Pan) تماماً لثبات الكانفاس!
         const wrapper = this.elements.canvasWrapper;
-        wrapper.style.transform = `none`; 
+        wrapper.style.transform = `scale(${this.state.zoom}) translate(0px, 0px)`; 
+        
+        if (this.elements.zoomValue) {
+            this.elements.zoomValue.textContent = `${Math.round(this.state.zoom * 100)}%`;
+        }
     }
     
     // =====================================================
