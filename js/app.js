@@ -4,9 +4,7 @@
  * =====================================================
  * تطبيق احترافي لتصميم الصور مع دعم كامل لـ OpenType
  * 
- * @author Font Studio Team
- * @version 1.0.0
- * @license MIT
+ * @version 2.0.0 (Refactored)
  */
 
 'use strict';
@@ -17,27 +15,25 @@
 
 const CONFIG = {
     APP_NAME: 'فونت ستوديو',
-    VERSION: '1.0.0',
+    VERSION: '2.0.0',
     
-    // Canvas defaults
     CANVAS: {
         DEFAULT_WIDTH: 1080,
         DEFAULT_HEIGHT: 1080,
         MIN_ZOOM: 0.1,
         MAX_ZOOM: 5,
-        ZOOM_STEP: 0.1
+        ZOOM_STEP: 0.1,
+        PADDING: 30
     },
     
-    // Text defaults
     TEXT: {
         DEFAULT_SIZE: 48,
         MIN_SIZE: 8,
         MAX_SIZE: 500,
-        DEFAULT_COLOR: '#ffffff',
+        DEFAULT_COLOR: '#000000',
         DEFAULT_FONT: 'Cairo'
     },
     
-    // Storage keys
     STORAGE: {
         FONTS: 'fontStudio_fonts',
         PROJECTS: 'fontStudio_projects',
@@ -45,66 +41,20 @@ const CONFIG = {
         CURRENT_PROJECT: 'fontStudio_currentProject'
     },
     
-    // OpenType feature tags
     OPENTYPE_FEATURES: {
-        // Basic Ligatures
         'liga': { name: 'Standard Ligatures', description: 'الرباطات القياسية' },
         'dlig': { name: 'Discretionary Ligatures', description: 'الرباطات الاختيارية' },
-        'hlig': { name: 'Historical Ligatures', description: 'الرباطات التاريخية' },
-        'clig': { name: 'Contextual Ligatures', description: 'الرباطات السياقية' },
-        
-        // Alternates
         'calt': { name: 'Contextual Alternates', description: 'البدائل السياقية' },
         'salt': { name: 'Stylistic Alternates', description: 'البدائل الأسلوبية' },
         'swsh': { name: 'Swash', description: 'الزخرفات' },
-        'hist': { name: 'Historical Forms', description: 'الأشكال التاريخية' },
-        'ornm': { name: 'Ornaments', description: 'الزخارف' },
-        
-        // Caps
         'smcp': { name: 'Small Capitals', description: 'الأحرف الكبيرة الصغيرة' },
-        'c2sc': { name: 'Capitals to Small Caps', description: 'تحويل لأحرف صغيرة' },
-        'pcap': { name: 'Petite Capitals', description: 'الأحرف الصغيرة جداً' },
-        'titl': { name: 'Titling', description: 'العناوين' },
-        
-        // Numeric
         'lnum': { name: 'Lining Figures', description: 'الأرقام المصفوفة' },
         'onum': { name: 'Oldstyle Figures', description: 'الأرقام القديمة' },
         'pnum': { name: 'Proportional Figures', description: 'الأرقام المتناسبة' },
         'tnum': { name: 'Tabular Figures', description: 'الأرقام الجدولية' },
         'frac': { name: 'Fractions', description: 'الكسور' },
-        'afrc': { name: 'Alternative Fractions', description: 'الكسور البديلة' },
-        'ordn': { name: 'Ordinals', description: 'الترتيبيات' },
-        'zero': { name: 'Slashed Zero', description: 'صفر مشطوب' },
-        
-        // Position
-        'sups': { name: 'Superscript', description: 'الأس العلوي' },
-        'subs': { name: 'Subscript', description: 'الأس السفلي' },
-        'sinf': { name: 'Scientific Inferiors', description: 'الرموز السفلية العلمية' },
-        'numr': { name: 'Numerators', description: 'البسط' },
-        'dnom': { name: 'Denominators', description: 'المقام' },
-        
-        // Spacing & Kerning
         'kern': { name: 'Kerning', description: 'المسافات بين الحروف' },
-        'cpsp': { name: 'Capital Spacing', description: 'تباعد الأحرف الكبيرة' },
-        'case': { name: 'Case-Sensitive Forms', description: 'الأشكال الحساسة' },
-        
-        // Arabic specific
-        'init': { name: 'Initial Forms', description: 'الأشكال الأولية' },
-        'medi': { name: 'Medial Forms', description: 'الأشكال الوسطى' },
-        'fina': { name: 'Final Forms', description: 'الأشكال النهائية' },
-        'isol': { name: 'Isolated Forms', description: 'الأشكال المنفصلة' },
-        'rlig': { name: 'Required Ligatures', description: 'الرباطات المطلوبة' },
-        'rclt': { name: 'Required Contextual', description: 'السياقية المطلوبة' },
-        
-        // Other
-        'aalt': { name: 'Access All Alternates', description: 'جميع البدائل' },
-        'rand': { name: 'Randomize', description: 'عشوائي' },
-        'locl': { name: 'Localized Forms', description: 'الأشكال المحلية' },
-        'rvrn': { name: 'Required Variation', description: 'التنويع المطلوب' },
-        'mark': { name: 'Mark Positioning', description: 'موضع العلامات' },
-        'mkmk': { name: 'Mark to Mark', description: 'علامة لعلامة' },
-        'curs': { name: 'Cursive Positioning', description: 'الموضع المتصل' },
-        'ccmp': { name: 'Glyph Composition', description: 'تركيب الرموز' }
+        'case': { name: 'Case-Sensitive Forms', description: 'الأشكال الحساسة' }
     }
 };
 
@@ -120,7 +70,6 @@ class FontStudioApp {
             zoom: 1,
             panX: 0,
             panY: 0,
-            isDragging: false,
             selectedElement: null,
             currentFont: null,
             loadedFonts: new Map(),
@@ -135,28 +84,18 @@ class FontStudioApp {
         // Text properties
         this.textProperties = {
             text: '',
-            fontFamily: 'Cairo',
-            fontSize: 48,
+            fontFamily: CONFIG.TEXT.DEFAULT_FONT,
+            fontSize: CONFIG.TEXT.DEFAULT_SIZE,
             fontWeight: 'normal',
             fontStyle: 'normal',
-            textAlign: 'right',
-            color: '#ffffff',
+            textAlign: 'center',
+            color: CONFIG.TEXT.DEFAULT_COLOR,
             opacity: 1,
             letterSpacing: 0,
             lineHeight: 1.5,
             textDecoration: 'none',
-            shadow: {
-                enabled: false,
-                x: 2,
-                y: 2,
-                blur: 4,
-                color: '#000000'
-            },
-            stroke: {
-                enabled: false,
-                width: 1,
-                color: '#000000'
-            },
+            shadow: { enabled: false, x: 2, y: 2, blur: 4, color: '#000000' },
+            stroke: { enabled: false, width: 1, color: '#000000' },
             openTypeFeatures: {}
         };
         
@@ -188,13 +127,13 @@ class FontStudioApp {
             this.setupEventListeners();
             this.setupTouchGestures();
             this.generateStylisticSetsUI();
+            this.updateFontList();
             
-            // إخفاء شاشة التحميل فوراً لبدء الاستخدام بدون انتظار
+            // إخفاء شاشة التحميل
             this.hideSplashScreen();
-            this.render();
             
-            // تحميل البيانات الثقيلة (مثل الخطوط المحفوظة) في الخلفية دون تعطيل التطبيق
-            this.loadSavedData().catch(e => console.error("Error loading background data:", e));
+            // تحميل البيانات المحفوظة في الخلفية
+            await this.loadSavedData();
             
             console.log('✅ App initialized successfully');
         } catch (error) {
@@ -213,8 +152,9 @@ class FontStudioApp {
         this.elements.ctx = this.elements.canvas.getContext('2d');
         this.elements.selectionLayer = document.getElementById('selection-layer');
         this.elements.sidebar = document.getElementById('sidebar');
+        this.elements.canvasTools = document.getElementById('canvas-tools');
         
-        // Header buttons
+        // Header
         this.elements.undoBtn = document.getElementById('undo-btn');
         this.elements.redoBtn = document.getElementById('redo-btn');
         this.elements.exportBtn = document.getElementById('export-btn');
@@ -230,9 +170,8 @@ class FontStudioApp {
         this.elements.zoomFit = document.getElementById('zoom-fit');
         this.elements.zoomValue = document.getElementById('zoom-value');
         this.elements.addTextBtn = document.getElementById('add-text-btn');
-        this.elements.canvasTools = document.querySelector('.canvas-tools'); // السحر: تعريف الكبسولة للتحكم بها
         
-        // Bottom Panels (بديل الشريط الجانبي)
+        // Panels
         this.elements.sidebarPanels = document.querySelectorAll('.sidebar-panel');
         this.elements.closePanelBtn = document.getElementById('close-panel-btn');
         
@@ -305,25 +244,25 @@ class FontStudioApp {
         this.elements.confirmExport = document.getElementById('confirm-export');
         this.elements.exportQualitySlider = document.getElementById('export-quality-slider');
         
-        // Toast container
+        // Toast
         this.elements.toastContainer = document.getElementById('toast-container');
         
-        // Home Screen elements (عناصر الشاشة الرئيسية الجديدة)
+        // Home Screen
         this.elements.homeScreen = document.getElementById('home-screen');
-        this.elements.appContainer = document.getElementById('app');
         this.elements.startEmptyBtn = document.getElementById('start-empty-btn');
         this.elements.startImageBtn = document.getElementById('start-image-btn');
         this.elements.presetCards = document.querySelectorAll('.preset-card');
         this.elements.homeBgColor = document.getElementById('home-bg-color');
         this.elements.homePresetColors = document.querySelectorAll('#home-preset-colors .preset-color');
         
-        // إخفاء مساحة العمل في البداية حتى يتم اختيار مقاس
-        this.elements.appContainer.style.display = 'none';
+        // إخفاء التطبيق في البداية
+        this.elements.app.style.display = 'none';
         
-        // Bottom nav (mobile)
+        // Bottom nav
         this.elements.bottomNavItems = document.querySelectorAll('.nav-item');
+        this.elements.bottomNav = document.querySelector('.bottom-nav');
 
-        // InShot Toolbar Elements
+        // InShot Toolbar
         this.elements.inshotToolbar = document.getElementById('inshot-text-toolbar');
         this.elements.inshotOverlay = document.getElementById('inshot-editor-overlay');
         this.elements.inshotInput = document.getElementById('inshot-main-input');
@@ -333,26 +272,20 @@ class FontStudioApp {
         this.elements.inshotToolBtns = document.querySelectorAll('.inshot-tool-btn');
     }
     
+    // =====================================================
+    // 🖼️ Canvas Setup (مُصلح بالكامل)
+    // =====================================================
+    
     setupCanvas() {
         const canvas = this.elements.canvas;
-        const ctx = this.elements.ctx;
         
-        // Set canvas size
         canvas.width = this.canvasProperties.width;
         canvas.height = this.canvasProperties.height;
         
-        // Enable high DPI
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        
-        canvas.style.width = `${this.canvasProperties.width}px`;
-        canvas.style.height = `${this.canvasProperties.height}px`;
-        
         // Configure context
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        this.elements.ctx.imageSmoothingEnabled = true;
+        this.elements.ctx.imageSmoothingQuality = 'high';
         
-        // Fit canvas to viewport
         this.fitCanvasToViewport();
     }
     
@@ -360,29 +293,33 @@ class FontStudioApp {
         const container = this.elements.canvasContainer;
         const wrapper = this.elements.canvasWrapper;
         
-        wrapper.style.width = `${this.canvasProperties.width}px`;
-        wrapper.style.height = `${this.canvasProperties.height}px`;
+        if (!container || !wrapper) return;
         
         const containerRect = container.getBoundingClientRect();
-        const padding = 40; 
+        const padding = CONFIG.CANVAS.PADDING;
         
-        const availableWidth = containerRect.width - padding * 2;
-        const availableHeight = containerRect.height - padding * 2;
+        const availableWidth = containerRect.width - (padding * 2);
+        const availableHeight = containerRect.height - (padding * 2);
         
         const scaleX = availableWidth / this.canvasProperties.width;
         const scaleY = availableHeight / this.canvasProperties.height;
         
+        // اختيار أصغر نسبة لضمان ظهور الكانفاس كاملاً
         this.state.zoom = Math.min(scaleX, scaleY, 1);
         
-        this.state.panX = 0;
-        this.state.panY = 0;
+        // تطبيق الأبعاد الأصلية على الـ wrapper
+        wrapper.style.width = `${this.canvasProperties.width}px`;
+        wrapper.style.height = `${this.canvasProperties.height}px`;
+        
         this.updateCanvasTransform();
+        this.render();
     }
     
     updateCanvasTransform() {
-        // السحر: تفعيل التكبير/التصغير ليناسب شاشة الهاتف، مع منع التحريك (Pan) تماماً لثبات الكانفاس!
         const wrapper = this.elements.canvasWrapper;
-        wrapper.style.transform = `scale(${this.state.zoom}) translate(0px, 0px)`; 
+        if (!wrapper) return;
+        
+        wrapper.style.transform = `scale(${this.state.zoom})`;
         
         if (this.elements.zoomValue) {
             this.elements.zoomValue.textContent = `${Math.round(this.state.zoom * 100)}%`;
@@ -394,158 +331,268 @@ class FontStudioApp {
     // =====================================================
     
     setupEventListeners() {
-        // إغلاق اللوحة السفلية (نظام InShot)
+        // إغلاق اللوحة السفلية
         if (this.elements.closePanelBtn) {
             this.elements.closePanelBtn.addEventListener('click', () => this.closeBottomPanel());
         }
         
-        // InShot Editor Events
-        if (this.elements.inshotInput) {
-            this.elements.inshotInput.addEventListener('input', (e) => {
-                this.textProperties.text = e.target.value;
-                const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-                if (activeLayer && activeLayer.type === 'text') {
-                    activeLayer.properties.text = e.target.value;
-                }
-                this.render();
-            });
-
-            this.elements.inshotClear.addEventListener('click', () => {
-                this.elements.inshotInput.value = '';
-                this.elements.inshotInput.dispatchEvent(new Event('input'));
-                this.elements.inshotInput.focus();
-            });
-
-            this.elements.inshotDone.addEventListener('click', () => this.closeInShotEditor());
-            this.elements.inshotClose.addEventListener('click', () => this.closeInShotEditor());
-
-            this.elements.inshotToolBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    this.elements.inshotToolBtns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    const target = btn.dataset.target;
-                    if(target !== 'keyboard') {
-                        this.switchTab(target);
-                    } else {
-                        this.closeBottomPanel();
-                        this.elements.inshotInput.focus();
-                    }
-                });
-            });
-        }
-
-        // إغلاق اللوحة عند لمس مساحة العمل
-        this.elements.canvasContainer.addEventListener('mousedown', (e) => {
-            if (e.target === this.elements.canvasContainer || e.target === this.elements.selectionLayer) {
-                this.closeBottomPanel();
-            }
-        });
-        this.elements.canvasContainer.addEventListener('touchstart', (e) => {
-            if (e.target === this.elements.canvasContainer || e.target === this.elements.selectionLayer) {
+        // InShot Editor
+        this.setupInShotEditor();
+        
+        // إغلاق اللوحة عند لمس الكانفاس
+        this.elements.canvasContainer.addEventListener('click', (e) => {
+            if (e.target === this.elements.canvasContainer) {
                 this.closeBottomPanel();
             }
         });
         
-        // Bottom nav (mobile)
+        // Bottom nav
         this.elements.bottomNavItems.forEach(item => {
             item.addEventListener('click', () => {
-                if (item.dataset.panel === 'text') {
-                    // إذا ضغط على "النص" من الشريط السفلي، نفتح شريط إنشوت الجديد
+                const panel = item.dataset.panel;
+                
+                if (panel === 'text') {
                     const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
                     if (activeLayer && activeLayer.type === 'text') {
-                        this.openInShotEditor(); // تعديل النص الحالي
+                        this.openInShotEditor();
                     } else {
-                        this.addTextLayer(); // إضافة نص جديد
+                        this.addTextLayer();
                     }
                 } else {
-                    // باقي الأزرار تفتح اللوحات السفلية العادية
-                    this.switchTab(item.dataset.panel);
+                    this.switchTab(panel);
                 }
             });
         });
         
-        // Text input (الإصدار الاحترافي النهائي)
-        this.elements.textInput.addEventListener('input', (e) => {
-            if (this.state.layers.length === 0 || !this.state.selectedElement) {
-                this.textProperties.color = '#000000'; 
-                if (this.elements.textColorPicker) this.elements.textColorPicker.value = '#000000';
-                this.updateColorPreview('text', '#000000');
-                this.addTextLayer();
-            }
-            
-            this.textProperties.text = e.target.value;
-            this.elements.charCount.textContent = e.target.value.length;
-            
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.text = e.target.value;
-                // السر هنا: يأخذ اللون الحالي الذي اخترته أنت، ولا يفرضه أسود دائماً
-                activeLayer.properties.color = this.textProperties.color; 
-            }
-            
-            this.render();
-        });
-
-        
-        // Font size slider
-        this.elements.fontSizeSlider.addEventListener('input', (e) => {
-            this.textProperties.fontSize = parseInt(e.target.value);
-            this.elements.fontSizeValue.textContent = `${e.target.value}px`;
-            
-            // نقل الحجم للطبقة المحددة
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.fontSize = parseInt(e.target.value);
-            }
-            this.render();
-        });
-
-        // Color pickers (تحديث لون النص في الطبقة)
-        this.elements.textColorPicker.addEventListener('input', (e) => {
-            this.textProperties.color = e.target.value;
-            this.updateColorPreview('text', e.target.value);
-            
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.color = e.target.value;
-            }
-            this.render();
-        });
-        
-        // Letter spacing slider
-        this.elements.letterSpacingSlider.addEventListener('input', (e) => {
-            this.textProperties.letterSpacing = parseInt(e.target.value);
-            this.elements.letterSpacingValue.textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        // Line height slider
-        this.elements.lineHeightSlider.addEventListener('input', (e) => {
-            this.textProperties.lineHeight = parseInt(e.target.value) / 100;
-            this.elements.lineHeightValue.textContent = (parseInt(e.target.value) / 100).toFixed(2);
-            this.render();
-        });
+        // Text sliders
+        this.setupSliders();
         
         // Format buttons
-        this.elements.boldBtn.addEventListener('click', () => this.toggleBold());
-        this.elements.italicBtn.addEventListener('click', () => this.toggleItalic());
-        this.elements.underlineBtn.addEventListener('click', () => this.toggleUnderline());
-        this.elements.strikethroughBtn.addEventListener('click', () => this.toggleStrikethrough());
-        
-        // Alignment buttons
-        this.elements.alignRightBtn.addEventListener('click', () => this.setTextAlign('right'));
-        this.elements.alignCenterBtn.addEventListener('click', () => this.setTextAlign('center'));
-        this.elements.alignLeftBtn.addEventListener('click', () => this.setTextAlign('left'));
-        this.elements.alignJustifyBtn.addEventListener('click', () => this.setTextAlign('justify'));
+        this.setupFormatButtons();
         
         // Color pickers
-        this.elements.textColorPicker.addEventListener('input', (e) => {
-            this.textProperties.color = e.target.value;
-            this.updateColorPreview('text', e.target.value);
+        this.setupColorPickers();
+        
+        // Font management
+        this.setupFontManagement();
+        
+        // OpenType features
+        this.setupOpenTypeFeatures();
+        
+        // Zoom controls
+        this.elements.zoomIn?.addEventListener('click', () => this.zoomIn());
+        this.elements.zoomOut?.addEventListener('click', () => this.zoomOut());
+        this.elements.zoomFit?.addEventListener('click', () => this.fitCanvasToViewport());
+        
+        // Canvas tools
+        this.elements.selectTool?.addEventListener('click', () => this.setTool('select'));
+        this.elements.textTool?.addEventListener('click', () => this.setTool('text'));
+        this.elements.imageTool?.addEventListener('click', () => this.setTool('image'));
+        this.elements.shapeTool?.addEventListener('click', () => this.setTool('shape'));
+        this.elements.addTextBtn?.addEventListener('click', () => this.addTextLayer());
+        
+        // Header buttons
+        this.elements.undoBtn?.addEventListener('click', () => this.undo());
+        this.elements.redoBtn?.addEventListener('click', () => this.redo());
+        this.elements.exportBtn?.addEventListener('click', () => this.openExportModal());
+        
+        // Export modal
+        this.setupExportModal();
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        
+        // Window resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => this.fitCanvasToViewport(), 100);
+        });
+        
+        // Home Screen
+        this.setupHomeScreen();
+        
+        // Mouse wheel zoom
+        this.elements.canvasContainer?.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                e.deltaY < 0 ? this.zoomIn() : this.zoomOut();
+            }
+        }, { passive: false });
+    }
+    
+    setupInShotEditor() {
+        if (!this.elements.inshotInput) return;
+        
+        this.elements.inshotInput.addEventListener('input', (e) => {
+            const text = e.target.value;
+            this.textProperties.text = text;
+            
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.text = text;
+            }
+            this.render();
+        });
+
+        this.elements.inshotClear?.addEventListener('click', () => {
+            this.elements.inshotInput.value = '';
+            this.elements.inshotInput.dispatchEvent(new Event('input'));
+            this.elements.inshotInput.focus();
+        });
+
+        this.elements.inshotDone?.addEventListener('click', () => this.closeInShotEditor());
+        this.elements.inshotClose?.addEventListener('click', () => this.closeInShotEditor());
+        this.elements.inshotOverlay?.addEventListener('click', () => this.closeInShotEditor());
+
+        this.elements.inshotToolBtns?.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.elements.inshotToolBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const target = btn.dataset.target;
+                if (target === 'keyboard') {
+                    this.closeBottomPanel();
+                    this.elements.inshotInput.focus();
+                } else if (target === 'format') {
+                    this.switchTab('text');
+                } else {
+                    this.switchTab(target);
+                }
+            });
+        });
+    }
+    
+    setupSliders() {
+        // Font size
+        this.elements.fontSizeSlider?.addEventListener('input', (e) => {
+            const size = parseInt(e.target.value);
+            this.textProperties.fontSize = size;
+            this.elements.fontSizeValue.textContent = `${size}px`;
+            
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.fontSize = size;
+            }
             this.render();
         });
         
-        this.elements.textColorHex.addEventListener('change', (e) => {
+        // Letter spacing
+        this.elements.letterSpacingSlider?.addEventListener('input', (e) => {
+            const spacing = parseInt(e.target.value);
+            this.textProperties.letterSpacing = spacing;
+            this.elements.letterSpacingValue.textContent = `${spacing}px`;
+            
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.letterSpacing = spacing;
+            }
+            this.render();
+        });
+        
+        // Line height
+        this.elements.lineHeightSlider?.addEventListener('input', (e) => {
+            const height = parseInt(e.target.value) / 100;
+            this.textProperties.lineHeight = height;
+            this.elements.lineHeightValue.textContent = height.toFixed(2);
+            
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.lineHeight = height;
+            }
+            this.render();
+        });
+        
+        // Opacity
+        this.elements.textOpacitySlider?.addEventListener('input', (e) => {
+            const opacity = parseInt(e.target.value) / 100;
+            this.textProperties.opacity = opacity;
+            this.elements.textOpacityValue.textContent = `${e.target.value}%`;
+            
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.opacity = opacity;
+            }
+            this.render();
+        });
+        
+        // Shadow controls
+        this.elements.textShadowToggle?.addEventListener('change', (e) => {
+            this.textProperties.shadow.enabled = e.target.checked;
+            this.elements.textShadowControls.style.display = e.target.checked ? 'block' : 'none';
+            this.render();
+        });
+        
+        this.elements.shadowXSlider?.addEventListener('input', (e) => {
+            this.textProperties.shadow.x = parseInt(e.target.value);
+            document.getElementById('shadow-x-value').textContent = `${e.target.value}px`;
+            this.render();
+        });
+        
+        this.elements.shadowYSlider?.addEventListener('input', (e) => {
+            this.textProperties.shadow.y = parseInt(e.target.value);
+            document.getElementById('shadow-y-value').textContent = `${e.target.value}px`;
+            this.render();
+        });
+        
+        this.elements.shadowBlurSlider?.addEventListener('input', (e) => {
+            this.textProperties.shadow.blur = parseInt(e.target.value);
+            document.getElementById('shadow-blur-value').textContent = `${e.target.value}px`;
+            this.render();
+        });
+        
+        this.elements.shadowColorPicker?.addEventListener('input', (e) => {
+            this.textProperties.shadow.color = e.target.value;
+            this.render();
+        });
+        
+        // Stroke controls
+        this.elements.textStrokeToggle?.addEventListener('change', (e) => {
+            this.textProperties.stroke.enabled = e.target.checked;
+            this.elements.textStrokeControls.style.display = e.target.checked ? 'block' : 'none';
+            this.render();
+        });
+        
+        this.elements.strokeWidthSlider?.addEventListener('input', (e) => {
+            this.textProperties.stroke.width = parseInt(e.target.value);
+            document.getElementById('stroke-width-value').textContent = `${e.target.value}px`;
+            this.render();
+        });
+        
+        this.elements.strokeColorPicker?.addEventListener('input', (e) => {
+            this.textProperties.stroke.color = e.target.value;
+            this.render();
+        });
+    }
+    
+    setupFormatButtons() {
+        this.elements.boldBtn?.addEventListener('click', () => this.toggleBold());
+        this.elements.italicBtn?.addEventListener('click', () => this.toggleItalic());
+        this.elements.underlineBtn?.addEventListener('click', () => this.toggleUnderline());
+        this.elements.strikethroughBtn?.addEventListener('click', () => this.toggleStrikethrough());
+        
+        this.elements.alignRightBtn?.addEventListener('click', () => this.setTextAlign('right'));
+        this.elements.alignCenterBtn?.addEventListener('click', () => this.setTextAlign('center'));
+        this.elements.alignLeftBtn?.addEventListener('click', () => this.setTextAlign('left'));
+        this.elements.alignJustifyBtn?.addEventListener('click', () => this.setTextAlign('justify'));
+    }
+    
+    setupColorPickers() {
+        // Text color
+        this.elements.textColorPicker?.addEventListener('input', (e) => {
+            const color = e.target.value;
+            this.textProperties.color = color;
+            this.elements.textColorHex.value = color.toUpperCase();
+            this.updateColorPreview('text', color);
+            
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                activeLayer.properties.color = color;
+            }
+            this.render();
+        });
+        
+        this.elements.textColorHex?.addEventListener('change', (e) => {
             const color = this.validateHexColor(e.target.value);
             if (color) {
                 this.textProperties.color = color;
@@ -555,13 +602,16 @@ class FontStudioApp {
             }
         });
         
-        this.elements.bgColorPicker.addEventListener('input', (e) => {
-            this.canvasProperties.backgroundColor = e.target.value;
-            this.updateColorPreview('bg', e.target.value);
+        // Background color
+        this.elements.bgColorPicker?.addEventListener('input', (e) => {
+            const color = e.target.value;
+            this.canvasProperties.backgroundColor = color;
+            this.elements.bgColorHex.value = color.toUpperCase();
+            this.updateColorPreview('bg', color);
             this.render();
         });
         
-        this.elements.bgColorHex.addEventListener('change', (e) => {
+        this.elements.bgColorHex?.addEventListener('change', (e) => {
             const color = this.validateHexColor(e.target.value);
             if (color) {
                 this.canvasProperties.backgroundColor = color;
@@ -579,6 +629,11 @@ class FontStudioApp {
                 this.elements.textColorPicker.value = color;
                 this.elements.textColorHex.value = color.toUpperCase();
                 this.updateColorPreview('text', color);
+                
+                const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+                if (activeLayer && activeLayer.type === 'text') {
+                    activeLayer.properties.color = color;
+                }
                 this.render();
             });
         });
@@ -593,125 +648,52 @@ class FontStudioApp {
                 this.render();
             });
         });
-        
-        // Opacity slider
-        this.elements.textOpacitySlider.addEventListener('input', (e) => {
-            this.textProperties.opacity = parseInt(e.target.value) / 100;
-            this.elements.textOpacityValue.textContent = `${e.target.value}%`;
-            this.render();
-        });
-        
-        // Shadow toggle
-        this.elements.textShadowToggle.addEventListener('change', (e) => {
-            this.textProperties.shadow.enabled = e.target.checked;
-            this.elements.textShadowControls.style.display = e.target.checked ? 'block' : 'none';
-            this.render();
-        });
-        
-        // Shadow controls
-        this.elements.shadowXSlider.addEventListener('input', (e) => {
-            this.textProperties.shadow.x = parseInt(e.target.value);
-            document.getElementById('shadow-x-value').textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        this.elements.shadowYSlider.addEventListener('input', (e) => {
-            this.textProperties.shadow.y = parseInt(e.target.value);
-            document.getElementById('shadow-y-value').textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        this.elements.shadowBlurSlider.addEventListener('input', (e) => {
-            this.textProperties.shadow.blur = parseInt(e.target.value);
-            document.getElementById('shadow-blur-value').textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        this.elements.shadowColorPicker.addEventListener('input', (e) => {
-            this.textProperties.shadow.color = e.target.value;
-            this.render();
-        });
-        
-        // Stroke toggle
-        this.elements.textStrokeToggle.addEventListener('change', (e) => {
-            this.textProperties.stroke.enabled = e.target.checked;
-            this.elements.textStrokeControls.style.display = e.target.checked ? 'block' : 'none';
-            this.render();
-        });
-        
-        // Stroke controls
-        this.elements.strokeWidthSlider.addEventListener('input', (e) => {
-            this.textProperties.stroke.width = parseInt(e.target.value);
-            document.getElementById('stroke-width-value').textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        this.elements.strokeColorPicker.addEventListener('input', (e) => {
-            this.textProperties.stroke.color = e.target.value;
-            this.render();
-        });
-        
-        // Font search
-        this.elements.fontSearch.addEventListener('input', (e) => {
+    }
+    
+    setupFontManagement() {
+        this.elements.fontSearch?.addEventListener('input', (e) => {
             this.filterFonts(e.target.value);
         });
         
-        // Font file input
-        this.elements.addFontsArea.addEventListener('click', () => {
+        this.elements.addFontsArea?.addEventListener('click', () => {
             this.elements.fontFileInput.click();
         });
         
-        this.elements.fontFileInput.addEventListener('change', (e) => {
+        this.elements.fontFileInput?.addEventListener('change', (e) => {
             this.handleFontFiles(e.target.files);
         });
         
-        // Drag and drop for fonts
-        this.elements.addFontsArea.addEventListener('dragover', (e) => {
+        // Drag and drop
+        this.elements.addFontsArea?.addEventListener('dragover', (e) => {
             e.preventDefault();
             this.elements.addFontsArea.classList.add('dragging');
         });
         
-        this.elements.addFontsArea.addEventListener('dragleave', () => {
+        this.elements.addFontsArea?.addEventListener('dragleave', () => {
             this.elements.addFontsArea.classList.remove('dragging');
         });
         
-        this.elements.addFontsArea.addEventListener('drop', (e) => {
+        this.elements.addFontsArea?.addEventListener('drop', (e) => {
             e.preventDefault();
             this.elements.addFontsArea.classList.remove('dragging');
             this.handleFontFiles(e.dataTransfer.files);
         });
-        
-        // OpenType features
-        this.elements.openTypeFeaturesGrid.addEventListener('click', (e) => {
+    }
+    
+    setupOpenTypeFeatures() {
+        this.elements.openTypeFeaturesGrid?.addEventListener('click', (e) => {
             const feature = e.target.closest('.opentype-feature');
-            if (feature) {
+            if (feature && !feature.classList.contains('unavailable')) {
                 this.toggleOpenTypeFeature(feature.dataset.feature);
             }
         });
+    }
+    
+    setupExportModal() {
+        this.elements.closeExportModal?.addEventListener('click', () => this.closeExportModal());
+        this.elements.cancelExport?.addEventListener('click', () => this.closeExportModal());
+        this.elements.confirmExport?.addEventListener('click', () => this.exportImage());
         
-        // Zoom controls
-        this.elements.zoomIn.addEventListener('click', () => this.zoomIn());
-        this.elements.zoomOut.addEventListener('click', () => this.zoomOut());
-        this.elements.zoomFit.addEventListener('click', () => this.fitCanvasToViewport());
-        
-        // Canvas tools
-        this.elements.selectTool.addEventListener('click', () => this.setTool('select'));
-        this.elements.textTool.addEventListener('click', () => this.setTool('text'));
-        this.elements.imageTool.addEventListener('click', () => this.setTool('image'));
-        this.elements.shapeTool.addEventListener('click', () => this.setTool('shape'));
-        this.elements.addTextBtn.addEventListener('click', () => this.addTextLayer());
-        
-        // Header buttons
-        this.elements.undoBtn.addEventListener('click', () => this.undo());
-        this.elements.redoBtn.addEventListener('click', () => this.redo());
-        this.elements.exportBtn.addEventListener('click', () => this.openExportModal());
-        
-        // Export modal
-        this.elements.closeExportModal.addEventListener('click', () => this.closeExportModal());
-        this.elements.cancelExport.addEventListener('click', () => this.closeExportModal());
-        this.elements.confirmExport.addEventListener('click', () => this.exportImage());
-        
-        // Export format selection
         document.querySelectorAll('.export-format').forEach(format => {
             format.addEventListener('click', () => {
                 document.querySelectorAll('.export-format').forEach(f => f.classList.remove('active'));
@@ -719,7 +701,6 @@ class FontStudioApp {
             });
         });
         
-        // Quality presets
         document.querySelectorAll('.quality-preset').forEach(preset => {
             preset.addEventListener('click', () => {
                 document.querySelectorAll('.quality-preset').forEach(p => p.classList.remove('active'));
@@ -727,29 +708,15 @@ class FontStudioApp {
                 this.elements.exportQualitySlider.value = parseFloat(preset.dataset.quality) * 100;
             });
         });
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-        
-        // Window resize (مطور ليتجاهل فتح لوحة المفاتيح)
-        let lastWidth = window.innerWidth;
-        window.addEventListener('resize', () => {
-            if (window.innerWidth !== lastWidth) {
-                lastWidth = window.innerWidth;
-                this.fitCanvasToViewport();
-            }
-        });
-        
-        // -----------------------------------------
-        // 🏠 برمجة الشاشة الرئيسية (Home Screen)
-        // -----------------------------------------
-        
+    }
+    
+    setupHomeScreen() {
         let selectedWidth = 1080;
         let selectedHeight = 1080;
         let selectedBgColor = '#ffffff';
         
-        // 1. اختيار المقاس من الكروت الجاهزة
-        this.elements.presetCards.forEach(card => {
+        // اختيار المقاس
+        this.elements.presetCards?.forEach(card => {
             card.addEventListener('click', () => {
                 this.elements.presetCards.forEach(c => c.classList.remove('active'));
                 card.classList.add('active');
@@ -758,13 +725,13 @@ class FontStudioApp {
             });
         });
 
-        // 2. اختيار لون الخلفية
-        this.elements.homeBgColor.addEventListener('input', (e) => {
+        // لون الخلفية
+        this.elements.homeBgColor?.addEventListener('input', (e) => {
             selectedBgColor = e.target.value;
             this.elements.homePresetColors.forEach(c => c.classList.remove('active'));
         });
 
-        this.elements.homePresetColors.forEach(preset => {
+        this.elements.homePresetColors?.forEach(preset => {
             preset.addEventListener('click', () => {
                 this.elements.homePresetColors.forEach(c => c.classList.remove('active'));
                 preset.classList.add('active');
@@ -773,15 +740,12 @@ class FontStudioApp {
             });
         });
 
-        // 3. زر "مساحة فارغة" - الدخول للوحة التصميم
-        this.elements.startEmptyBtn.addEventListener('click', () => {
-            // السحر هنا: مسح أي مشروع قديم معلق
+        // زر مساحة فارغة
+        this.elements.startEmptyBtn?.addEventListener('click', () => {
+            // مسح البيانات القديمة
             localforage.removeItem(CONFIG.STORAGE.CURRENT_PROJECT);
             
-            // الضربة القاضية: إغلاق أي لوحة فارغة "شبح" قد تظهر في البداية وإزالة التحديد
-            this.closeBottomPanel();
-            
-            this.state.layers = []; // تنظيف تام للطبقات القديمة
+            this.state.layers = [];
             this.state.selectedElement = null;
             
             this.canvasProperties.width = selectedWidth;
@@ -793,10 +757,13 @@ class FontStudioApp {
             
             this.elements.canvasWrapper.style.width = `${selectedWidth}px`;
             this.elements.canvasWrapper.style.height = `${selectedHeight}px`;
-            this.elements.canvasWrapper.style.aspectRatio = `${selectedWidth} / ${selectedHeight}`;
             
-            this.elements.appContainer.style.display = 'flex';
+            // إظهار التطبيق وإخفاء الشاشة الرئيسية
+            this.elements.app.style.display = 'flex';
             this.elements.homeScreen.classList.add('hidden-slide');
+            
+            // إغلاق أي لوحة شبح
+            this.closeBottomPanel();
             
             setTimeout(() => {
                 this.updateLayersList();
@@ -806,8 +773,8 @@ class FontStudioApp {
             }, 100);
         });
 
-        // 4. زر "من صورة" - اختيار صورة كخلفية والبدء فوراً
-        this.elements.startImageBtn.addEventListener('click', () => {
+        // زر من صورة
+        this.elements.startImageBtn?.addEventListener('click', () => {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*';
@@ -826,17 +793,21 @@ class FontStudioApp {
                             const layer = {
                                 id: `layer_bg_${Date.now()}`,
                                 type: 'image',
-                                name: `خلفية الصورة`,
+                                name: 'خلفية الصورة',
                                 visible: true,
                                 locked: true,
                                 opacity: 1,
                                 image: img,
-                                x: 0, y: 0, width: img.width, height: img.height
+                                x: 0, y: 0,
+                                width: img.width,
+                                height: img.height
                             };
-                            this.state.layers = [layer]; // مسح أي طبقات قديمة ووضع الصورة
+                            this.state.layers = [layer];
 
-                            this.elements.appContainer.style.display = 'flex';
+                            this.elements.app.style.display = 'flex';
                             this.elements.homeScreen.classList.add('hidden-slide');
+                            
+                            this.closeBottomPanel();
                             
                             setTimeout(() => {
                                 this.updateLayersList();
@@ -852,63 +823,60 @@ class FontStudioApp {
             };
             input.click();
         });
-        
-        // Mouse wheel zoom
-        this.elements.canvasContainer.addEventListener('wheel', (e) => {
-            if (e.ctrlKey) {
-                e.preventDefault();
-                if (e.deltaY < 0) {
-                    this.zoomIn();
-                } else {
-                    this.zoomOut();
-                }
-            }
-        }, { passive: false });
     }
     
     // =====================================================
-    // 👆 Touch Gestures
+    // 👆 Touch Gestures (Hammer.js - مُحسّن)
     // =====================================================
     
     setupTouchGestures() {
         const container = this.elements.canvasContainer;
+        if (!container || typeof Hammer === 'undefined') return;
+        
         const hammer = new Hammer.Manager(container);
         
+        // إعداد الإيماءات مع حساسية مناسبة
         const pinch = new Hammer.Pinch();
-        // السحر هنا: زيادة الحساسية إلى 10 لمنع سرقة الضغطة (Tap)
-        const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 }); 
+        const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
         const tap = new Hammer.Tap({ taps: 1 });
         
         hammer.add([pinch, pan, tap]);
-        pan.recognizeWith(tap); // السماح لهما بالعمل معاً بذكاء
+        pinch.recognizeWith(pan);
         
-        let isDraggingLayer = false;
+        let isDragging = false;
         let draggedLayer = null;
-        let initialLayerX = 0;
-        let initialLayerY = 0;
-        let initialFontSize = 48; // لتكبير النص
+        let initialX = 0;
+        let initialY = 0;
+        let initialFontSize = 48;
 
+        // دالة لإيجاد الطبقة تحت إصبع المستخدم
         const getHitLayer = (center) => {
             const rect = this.elements.canvas.getBoundingClientRect();
             const x = (center.x - rect.left) * (this.elements.canvas.width / rect.width);
             const y = (center.y - rect.top) * (this.elements.canvas.height / rect.height);
             
             const ctx = this.elements.ctx;
-            const layers = [...this.state.layers].reverse(); 
+            const layers = [...this.state.layers].reverse();
             
             for (const layer of layers) {
                 if (!layer.visible || layer.locked) continue;
+                
                 if (layer.type === 'text') {
                     ctx.save();
                     ctx.font = `${layer.properties.fontSize}px "${layer.properties.fontFamily}"`;
-                    const metrics = ctx.measureText(layer.properties.text || " ");
+                    const metrics = ctx.measureText(layer.properties.text || ' ');
                     const width = metrics.width;
                     const height = layer.properties.fontSize;
                     ctx.restore();
                     
-                    // مساحة التقاط ممتازة حول النص
-                    if (x >= layer.x - width/2 - 40 && x <= layer.x + width/2 + 40 &&
-                        y >= layer.y - height/2 - 40 && y <= layer.y + height/2 + 40) {
+                    const hitPadding = 30;
+                    if (x >= layer.x - width/2 - hitPadding && x <= layer.x + width/2 + hitPadding &&
+                        y >= layer.y - height/2 - hitPadding && y <= layer.y + height/2 + hitPadding) {
+                        return layer;
+                    }
+                } else if (layer.type === 'image') {
+                    if (x >= layer.x && x <= layer.x + layer.width &&
+                        y >= layer.y && y <= layer.y + layer.height) {
                         return layer;
                     }
                 }
@@ -916,24 +884,26 @@ class FontStudioApp {
             return null;
         };
         
-        // 1. الضغط (Tap): تحديد النص وفتح الكيبورد فوراً
+        // Tap: تحديد النص وفتح المحرر
         hammer.on('tap', (e) => {
             const hitLayer = getHitLayer(e.center);
+            
             if (hitLayer && hitLayer.type === 'text') {
                 this.selectLayer(hitLayer.id);
-                this.openInShotEditor(); // فتح الكيبورد تلقائياً!
+                this.openInShotEditor();
             } else {
                 this.state.selectedElement = null;
                 this.closeInShotEditor();
+                this.closeBottomPanel();
                 this.render();
             }
         });
 
-        // 2. التكبير والتصغير بإصبعين (Pinch to Resize) - حصرياً للنص
+        // Pinch: تكبير/تصغير النص
         hammer.on('pinchstart', (e) => {
             const hitLayer = getHitLayer(e.center);
             if (hitLayer && hitLayer.type === 'text') {
-                isDraggingLayer = true;
+                isDragging = true;
                 draggedLayer = hitLayer;
                 this.selectLayer(hitLayer.id);
                 initialFontSize = hitLayer.properties.fontSize;
@@ -941,48 +911,55 @@ class FontStudioApp {
         });
 
         hammer.on('pinchmove', (e) => {
-            if (isDraggingLayer && draggedLayer && draggedLayer.type === 'text') {
+            if (isDragging && draggedLayer && draggedLayer.type === 'text') {
                 let newSize = initialFontSize * e.scale;
-                newSize = Math.max(10, Math.min(800, newSize)); // حدود التكبير
-                draggedLayer.properties.fontSize = newSize;
-                this.textProperties.fontSize = newSize;
+                newSize = Math.max(CONFIG.TEXT.MIN_SIZE, Math.min(CONFIG.TEXT.MAX_SIZE, newSize));
                 
-                if(this.elements.fontSizeSlider) {
+                draggedLayer.properties.fontSize = Math.round(newSize);
+                this.textProperties.fontSize = Math.round(newSize);
+                
+                if (this.elements.fontSizeSlider) {
                     this.elements.fontSizeSlider.value = newSize;
                     this.elements.fontSizeValue.textContent = `${Math.round(newSize)}px`;
                 }
                 this.render();
             }
         });
+
+        hammer.on('pinchend', () => {
+            if (isDragging) {
+                this.saveHistory();
+                isDragging = false;
+                draggedLayer = null;
+            }
+        });
         
-        // 3. السحب بإصبع واحد (Pan to Move)
+        // Pan: تحريك النص
         hammer.on('panstart', (e) => {
-            this.closeBottomPanel(); // إغلاق أي لوحة منبثقة عند لمس الشاشة
+            this.closeBottomPanel();
+            
             const hitLayer = getHitLayer(e.center);
-            if (hitLayer) {
-                isDraggingLayer = true;
+            if (hitLayer && !hitLayer.locked) {
+                isDragging = true;
                 draggedLayer = hitLayer;
                 this.selectLayer(hitLayer.id);
-                initialLayerX = hitLayer.x;
-                initialLayerY = hitLayer.y;
-            } else {
-                isDraggingLayer = false;
+                initialX = hitLayer.x;
+                initialY = hitLayer.y;
             }
         });
         
         hammer.on('panmove', (e) => {
-            if (isDraggingLayer && draggedLayer) {
-                // تحريك الطبقة بسلاسة
-                draggedLayer.x = initialLayerX + (e.deltaX / this.state.zoom);
-                draggedLayer.y = initialLayerY + (e.deltaY / this.state.zoom);
+            if (isDragging && draggedLayer) {
+                draggedLayer.x = initialX + (e.deltaX / this.state.zoom);
+                draggedLayer.y = initialY + (e.deltaY / this.state.zoom);
                 this.render();
             }
         });
         
-        hammer.on('panend', (e) => {
-            if (isDraggingLayer) {
-                this.saveHistory(); 
-                isDraggingLayer = false;
+        hammer.on('panend', () => {
+            if (isDragging) {
+                this.saveHistory();
+                isDragging = false;
                 draggedLayer = null;
             }
         });
@@ -991,16 +968,17 @@ class FontStudioApp {
     // =====================================================
     // 🎨 Rendering
     // =====================================================
-
     
     render() {
         const ctx = this.elements.ctx;
         const canvas = this.elements.canvas;
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // رسم الخلفية
         this.drawBackground();
         
-        // السحر هنا: تم حذف drawText() المزعجة، ونكتفي برسم الطبقات فقط لكي لا يتكرر النص!
+        // رسم الطبقات
         this.drawLayers();
     }
     
@@ -1008,28 +986,24 @@ class FontStudioApp {
         const ctx = this.elements.ctx;
         const canvas = this.elements.canvas;
         
-        // Background color
         ctx.fillStyle = this.canvasProperties.backgroundColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Background image
         if (this.canvasProperties.backgroundImage) {
             ctx.drawImage(
                 this.canvasProperties.backgroundImage,
-                0, 0,
-                canvas.width, canvas.height
+                0, 0, canvas.width, canvas.height
             );
         }
     }
     
     drawLayers() {
-        // Draw each layer
         this.state.layers.forEach(layer => {
             if (!layer.visible) return;
             
             const ctx = this.elements.ctx;
             ctx.save();
-            ctx.globalAlpha = layer.opacity;
+            ctx.globalAlpha = layer.opacity || 1;
             
             switch (layer.type) {
                 case 'image':
@@ -1049,14 +1023,16 @@ class FontStudioApp {
     
     drawImageLayer(layer) {
         const ctx = this.elements.ctx;
-        ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
+        if (layer.image) {
+            ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
+        }
     }
     
     drawShapeLayer(layer) {
         const ctx = this.elements.ctx;
-        ctx.fillStyle = layer.fill;
-        ctx.strokeStyle = layer.stroke;
-        ctx.lineWidth = layer.strokeWidth;
+        ctx.fillStyle = layer.fill || '#ffffff';
+        ctx.strokeStyle = layer.stroke || '#000000';
+        ctx.lineWidth = layer.strokeWidth || 1;
         
         switch (layer.shape) {
             case 'rectangle':
@@ -1080,16 +1056,7 @@ class FontStudioApp {
     }
     
     drawTextLayer(layer) {
-        // نمرر id الطبقة لكي نعرف متى نرسم مربع التحديد
         this.drawTextWithProperties(layer.properties, layer.x, layer.y, layer.id);
-    }
-    
-    drawText() {
-        if (!this.textProperties.text) return;
-        const canvas = this.elements.canvas;
-        const x = canvas.width / 2;
-        const y = canvas.height / 2;
-        this.drawTextWithProperties(this.textProperties, x, y, null);
     }
     
     drawTextWithProperties(props, x, y, layerId) {
@@ -1098,27 +1065,23 @@ class FontStudioApp {
         
         ctx.save();
         
-        // تطبيق خصائص OpenType
-        this.elements.canvas.style.fontFeatureSettings = props.openTypeFeatures || 'normal';
-        this.elements.canvas.style.fontVariantLigatures = 'normal';
-        
-        let fontStyle = props.fontStyle === 'italic' ? 'italic ' : '';
-        let fontWeight = props.fontWeight === 'bold' ? 'bold ' : '';
-        
+        // Font
+        const fontStyle = props.fontStyle === 'italic' ? 'italic ' : '';
+        const fontWeight = props.fontWeight === 'bold' ? 'bold ' : '';
         ctx.font = `${fontStyle}${fontWeight}${props.fontSize}px "${props.fontFamily}"`;
         ctx.textAlign = props.textAlign === 'justify' ? 'center' : props.textAlign;
         ctx.textBaseline = 'middle';
-        ctx.globalAlpha = props.opacity;
-        ctx.letterSpacing = `${props.letterSpacing}px`;
+        ctx.globalAlpha = props.opacity || 1;
         
         const lines = props.text.split('\n');
-        const lineHeightPx = props.fontSize * props.lineHeight;
+        const lineHeightPx = props.fontSize * (props.lineHeight || 1.5);
         const totalHeight = lines.length * lineHeightPx;
         const startY = y - totalHeight / 2 + lineHeightPx / 2;
         
         lines.forEach((line, index) => {
             const lineY = startY + index * lineHeightPx;
             
+            // Shadow
             if (props.shadow && props.shadow.enabled) {
                 ctx.shadowColor = props.shadow.color;
                 ctx.shadowOffsetX = props.shadow.x;
@@ -1126,107 +1089,41 @@ class FontStudioApp {
                 ctx.shadowBlur = props.shadow.blur;
             }
             
+            // Stroke
             if (props.stroke && props.stroke.enabled) {
                 ctx.strokeStyle = props.stroke.color;
                 ctx.lineWidth = props.stroke.width * 2;
                 ctx.lineJoin = 'round';
-                this.drawTextLine(ctx, line, x, lineY, props.letterSpacing, true);
+                this.drawTextLine(ctx, line, x, lineY, props.letterSpacing || 0, true);
             }
             
+            // Clear shadow for fill
             if (props.shadow && props.shadow.enabled) {
                 ctx.shadowColor = 'transparent';
             }
             
+            // Fill
             ctx.fillStyle = props.color;
-            this.drawTextLine(ctx, line, x, lineY, props.letterSpacing, false);
+            this.drawTextLine(ctx, line, x, lineY, props.letterSpacing || 0, false);
             
-            if (props.textDecoration === 'underline') {
-                const textWidth = ctx.measureText(line).width;
-                const underlineY = lineY + props.fontSize * 0.15;
-                ctx.beginPath();
-                ctx.strokeStyle = props.color;
-                ctx.lineWidth = props.fontSize * 0.05;
-                ctx.moveTo(x - textWidth / 2, underlineY);
-                ctx.lineTo(x + textWidth / 2, underlineY);
-                ctx.stroke();
-            }
-            
-            if (props.textDecoration === 'line-through') {
-                const textWidth = ctx.measureText(line).width;
-                ctx.beginPath();
-                ctx.strokeStyle = props.color;
-                ctx.lineWidth = props.fontSize * 0.05;
-                ctx.moveTo(x - textWidth / 2, lineY);
-                ctx.lineTo(x + textWidth / 2, lineY);
-                ctx.stroke();
-            }
+            // Text decoration
+            this.drawTextDecoration(ctx, line, x, lineY, props);
         });
         
-        // ==========================================
-        // 🌟 رسم مربع التحديد الاحترافي (InShot Style Box)
-        // ==========================================
+        // رسم مربع التحديد (InShot Style)
         if (layerId && this.state.selectedElement === layerId) {
-            // قياس أعرض سطر لضبط عرض المربع
-            let maxLineWidth = 0;
-            lines.forEach(line => {
-                const w = ctx.measureText(line).width;
-                if(w > maxLineWidth) maxLineWidth = w;
-            });
-            
-            const boxWidth = maxLineWidth + 60; // مساحة إضافية مريحة
-            const boxHeight = totalHeight + 40;
-            const boxX = x - boxWidth / 2;
-            const boxY = y - boxHeight / 2;
-
-            // رسم الإطار الأبيض
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 3;
-            ctx.shadowColor = 'rgba(0,0,0,0.5)';
-            ctx.shadowBlur = 5;
-            ctx.setLineDash([]); // إرجاع الخط لحالته الطبيعية (متصل 100%)
-            ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
-
-            ctx.shadowColor = 'transparent';
-
-            // زر الحذف (أحمر أعلى اليسار)
-            ctx.fillStyle = '#ff4d4f';
-            ctx.beginPath();
-            ctx.arc(boxX, boxY, 18, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 20px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('×', boxX, boxY);
-
-            // زر التكبير/التصغير (أبيض أسفل اليمين)
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(boxX + boxWidth, boxY + boxHeight, 18, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 16px Arial';
-            ctx.fillText('⤢', boxX + boxWidth, boxY + boxHeight);
+            this.drawSelectionBox(ctx, props, x, y, lines, lineHeightPx, totalHeight);
         }
 
         ctx.restore();
-        this.elements.canvas.style.fontFeatureSettings = 'normal';
     }
     
     drawTextLine(ctx, text, x, y, letterSpacing, isStroke) {
         if (letterSpacing === 0) {
-            if (isStroke) {
-                ctx.strokeText(text, x, y);
-            } else {
-                ctx.fillText(text, x, y);
-            }
+            isStroke ? ctx.strokeText(text, x, y) : ctx.fillText(text, x, y);
             return;
         }
         
-        // Draw with letter spacing
         const chars = [...text];
         let totalWidth = 0;
         const charWidths = chars.map(char => {
@@ -1234,20 +1131,93 @@ class FontStudioApp {
             totalWidth += width + letterSpacing;
             return width;
         });
-        totalWidth -= letterSpacing; 
+        totalWidth -= letterSpacing;
         
         let currentX = x - totalWidth / 2;
         
         chars.forEach((char, i) => {
-            if (isStroke) {
-                ctx.strokeText(char, currentX + charWidths[i] / 2, y);
-            } else {
-                ctx.fillText(char, currentX + charWidths[i] / 2, y);
-            }
+            const drawX = currentX + charWidths[i] / 2;
+            isStroke ? ctx.strokeText(char, drawX, y) : ctx.fillText(char, drawX, y);
             currentX += charWidths[i] + letterSpacing;
         });
     }
+    
+    drawTextDecoration(ctx, line, x, lineY, props) {
+        if (!props.textDecoration || props.textDecoration === 'none') return;
+        
+        const textWidth = ctx.measureText(line).width;
+        ctx.strokeStyle = props.color;
+        ctx.lineWidth = props.fontSize * 0.05;
+        
+        if (props.textDecoration === 'underline') {
+            const underlineY = lineY + props.fontSize * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(x - textWidth / 2, underlineY);
+            ctx.lineTo(x + textWidth / 2, underlineY);
+            ctx.stroke();
+        }
+        
+        if (props.textDecoration === 'line-through') {
+            ctx.beginPath();
+            ctx.moveTo(x - textWidth / 2, lineY);
+            ctx.lineTo(x + textWidth / 2, lineY);
+            ctx.stroke();
+        }
+    }
+    
+    drawSelectionBox(ctx, props, x, y, lines, lineHeightPx, totalHeight) {
+        // حساب عرض أطول سطر
+        let maxLineWidth = 0;
+        lines.forEach(line => {
+            const w = ctx.measureText(line).width;
+            if (w > maxLineWidth) maxLineWidth = w;
+        });
+        
+        const padding = 25;
+        const boxWidth = maxLineWidth + padding * 2;
+        const boxHeight = totalHeight + padding * 2;
+        const boxX = x - boxWidth / 2;
+        const boxY = y - boxHeight / 2;
 
+        // إطار أبيض
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 2;
+        ctx.setLineDash([]);
+        ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+        
+        ctx.shadowColor = 'transparent';
+
+        // زر الحذف (أحمر - أعلى اليسار)
+        const btnRadius = 14;
+        ctx.fillStyle = '#ff4d4f';
+        ctx.beginPath();
+        ctx.arc(boxX, boxY, btnRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('×', boxX, boxY);
+
+        // زر التكبير (أبيض - أسفل اليمين)
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(boxX + boxWidth, boxY + boxHeight, btnRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('⤢', boxX + boxWidth, boxY + boxHeight);
+    }
     
     // =====================================================
     // 🔤 OpenType Features
@@ -1256,33 +1226,22 @@ class FontStudioApp {
     buildOpenTypeFontFeatureSettings() {
         const features = [];
         
-        // Active features
-        this.state.activeOpenTypeFeatures.forEach(feature => {
-            features.push(`"${feature}" 1`);
-        });
-        
-        // Stylistic sets
-        this.state.activeStylisticSets.forEach(ss => {
-            features.push(`"${ss}" 1`);
-        });
-        
-        // Character variants
-        this.state.activeCharacterVariants.forEach(cv => {
-            features.push(`"${cv}" 1`);
-        });
+        this.state.activeOpenTypeFeatures.forEach(f => features.push(`"${f}" 1`));
+        this.state.activeStylisticSets.forEach(ss => features.push(`"${ss}" 1`));
+        this.state.activeCharacterVariants.forEach(cv => features.push(`"${cv}" 1`));
         
         return features.join(', ') || 'normal';
     }
     
     toggleOpenTypeFeature(featureTag) {
-        const featureElement = document.querySelector(`.opentype-feature[data-feature="${featureTag}"]`);
+        const el = document.querySelector(`.opentype-feature[data-feature="${featureTag}"]`);
         
         if (this.state.activeOpenTypeFeatures.has(featureTag)) {
             this.state.activeOpenTypeFeatures.delete(featureTag);
-            featureElement?.classList.remove('active');
+            el?.classList.remove('active');
         } else {
             this.state.activeOpenTypeFeatures.add(featureTag);
-            featureElement?.classList.add('active');
+            el?.classList.add('active');
         }
         
         this.updateOpenTypeFeaturesCount();
@@ -1291,14 +1250,14 @@ class FontStudioApp {
     }
     
     toggleStylisticSet(ssTag) {
-        const ssElement = document.querySelector(`.stylistic-set[data-ss="${ssTag}"]`);
+        const el = document.querySelector(`.stylistic-set[data-ss="${ssTag}"]`);
         
         if (this.state.activeStylisticSets.has(ssTag)) {
             this.state.activeStylisticSets.delete(ssTag);
-            ssElement?.classList.remove('active');
+            el?.classList.remove('active');
         } else {
             this.state.activeStylisticSets.add(ssTag);
-            ssElement?.classList.add('active');
+            el?.classList.add('active');
         }
         
         this.updateOpenTypeFeaturesCount();
@@ -1307,14 +1266,14 @@ class FontStudioApp {
     }
     
     toggleCharacterVariant(cvTag) {
-        const cvElement = document.querySelector(`.stylistic-set[data-cv="${cvTag}"]`);
+        const el = document.querySelector(`.stylistic-set[data-cv="${cvTag}"]`);
         
         if (this.state.activeCharacterVariants.has(cvTag)) {
             this.state.activeCharacterVariants.delete(cvTag);
-            cvElement?.classList.remove('active');
+            el?.classList.remove('active');
         } else {
             this.state.activeCharacterVariants.add(cvTag);
-            cvElement?.classList.add('active');
+            el?.classList.add('active');
         }
         
         this.updateOpenTypeFeaturesCount();
@@ -1324,82 +1283,72 @@ class FontStudioApp {
     
     applyOpenTypeFeatures() {
         const featureSettings = this.buildOpenTypeFontFeatureSettings();
-        
-        // Apply to text input for preview
-        this.elements.textInput.style.fontFeatureSettings = featureSettings;
-        
-        // Store in text properties
         this.textProperties.openTypeFeatures = featureSettings;
+        
+        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+        if (activeLayer && activeLayer.type === 'text') {
+            activeLayer.properties.openTypeFeatures = featureSettings;
+        }
     }
     
     updateOpenTypeFeaturesCount() {
         const total = this.state.activeOpenTypeFeatures.size + 
                       this.state.activeStylisticSets.size + 
                       this.state.activeCharacterVariants.size;
-        this.elements.openTypeFeaturesCount.textContent = total;
+        
+        if (this.elements.openTypeFeaturesCount) {
+            this.elements.openTypeFeaturesCount.textContent = total;
+        }
     }
     
     generateStylisticSetsUI() {
-        // Generate SS01-SS20
+        // SS01-SS20
         const ssGrid = this.elements.stylisticSetsGrid;
-        ssGrid.innerHTML = '';
-        
-        for (let i = 1; i <= 20; i++) {
-            const ssTag = `ss${i.toString().padStart(2, '0')}`;
-            const ssElement = document.createElement('div');
-            ssElement.className = 'stylistic-set';
-            ssElement.dataset.ss = ssTag;
-            ssElement.textContent = `SS${i.toString().padStart(2, '0')}`;
-            ssElement.addEventListener('click', () => this.toggleStylisticSet(ssTag));
-            ssGrid.appendChild(ssElement);
+        if (ssGrid) {
+            ssGrid.innerHTML = '';
+            for (let i = 1; i <= 20; i++) {
+                const ssTag = `ss${i.toString().padStart(2, '0')}`;
+                const el = document.createElement('div');
+                el.className = 'stylistic-set';
+                el.dataset.ss = ssTag;
+                el.textContent = `SS${i.toString().padStart(2, '0')}`;
+                el.addEventListener('click', () => this.toggleStylisticSet(ssTag));
+                ssGrid.appendChild(el);
+            }
         }
         
-        // Generate CV01-CV20 (can be extended to CV99)
+        // CV01-CV20
         const cvGrid = this.elements.characterVariantsGrid;
-        cvGrid.innerHTML = '';
-        
-        for (let i = 1; i <= 20; i++) {
-            const cvTag = `cv${i.toString().padStart(2, '0')}`;
-            const cvElement = document.createElement('div');
-            cvElement.className = 'stylistic-set';
-            cvElement.dataset.cv = cvTag;
-            cvElement.textContent = `CV${i.toString().padStart(2, '0')}`;
-            cvElement.addEventListener('click', () => this.toggleCharacterVariant(cvTag));
-            cvGrid.appendChild(cvElement);
+        if (cvGrid) {
+            cvGrid.innerHTML = '';
+            for (let i = 1; i <= 20; i++) {
+                const cvTag = `cv${i.toString().padStart(2, '0')}`;
+                const el = document.createElement('div');
+                el.className = 'stylistic-set';
+                el.dataset.cv = cvTag;
+                el.textContent = `CV${i.toString().padStart(2, '0')}`;
+                el.addEventListener('click', () => this.toggleCharacterVariant(cvTag));
+                cvGrid.appendChild(el);
+            }
         }
     }
     
     async detectFontOpenTypeFeatures(fontData) {
         try {
-            // Use opentype.js to parse the font and detect features
+            if (typeof opentype === 'undefined') return new Set();
+            
             const font = await opentype.parse(fontData);
-            const availableFeatures = new Set();
+            const features = new Set();
             
-            // Check GSUB table (Glyph Substitution)
-            if (font.tables.gsub) {
-                const gsub = font.tables.gsub;
-                if (gsub.features) {
-                    gsub.features.forEach(feature => {
-                        if (feature.tag) {
-                            availableFeatures.add(feature.tag);
-                        }
-                    });
-                }
+            if (font.tables.gsub?.features) {
+                font.tables.gsub.features.forEach(f => f.tag && features.add(f.tag));
             }
             
-            // Check GPOS table (Glyph Positioning)
-            if (font.tables.gpos) {
-                const gpos = font.tables.gpos;
-                if (gpos.features) {
-                    gpos.features.forEach(feature => {
-                        if (feature.tag) {
-                            availableFeatures.add(feature.tag);
-                        }
-                    });
-                }
+            if (font.tables.gpos?.features) {
+                font.tables.gpos.features.forEach(f => f.tag && features.add(f.tag));
             }
             
-            return availableFeatures;
+            return features;
         } catch (error) {
             console.warn('Could not detect OpenType features:', error);
             return new Set();
@@ -1407,38 +1356,17 @@ class FontStudioApp {
     }
     
     updateFeatureAvailability(availableFeatures) {
-        // Update feature buttons
-        document.querySelectorAll('.opentype-feature').forEach(element => {
-            const feature = element.dataset.feature;
-            if (availableFeatures.has(feature)) {
-                element.classList.remove('unavailable');
-                element.style.opacity = '1';
-                element.style.pointerEvents = 'auto';
-            } else {
-                element.classList.add('unavailable');
-                element.style.opacity = '0.4';
-                // Still allow clicking but show it's not available
-            }
+        document.querySelectorAll('.opentype-feature').forEach(el => {
+            const feature = el.dataset.feature;
+            el.classList.toggle('unavailable', !availableFeatures.has(feature));
         });
         
-        // Update stylistic sets
-        document.querySelectorAll('.stylistic-set[data-ss]').forEach(element => {
-            const ss = element.dataset.ss;
-            if (availableFeatures.has(ss)) {
-                element.classList.remove('unavailable');
-            } else {
-                element.classList.add('unavailable');
-            }
+        document.querySelectorAll('.stylistic-set[data-ss]').forEach(el => {
+            el.classList.toggle('unavailable', !availableFeatures.has(el.dataset.ss));
         });
         
-        // Update character variants
-        document.querySelectorAll('.stylistic-set[data-cv]').forEach(element => {
-            const cv = element.dataset.cv;
-            if (availableFeatures.has(cv)) {
-                element.classList.remove('unavailable');
-            } else {
-                element.classList.add('unavailable');
-            }
+        document.querySelectorAll('.stylistic-set[data-cv]').forEach(el => {
+            el.classList.toggle('unavailable', !availableFeatures.has(el.dataset.cv));
         });
     }
     
@@ -1461,19 +1389,14 @@ class FontStudioApp {
             try {
                 const fontData = await this.readFileAsArrayBuffer(file);
                 const fontName = file.name.replace(/\.[^.]+$/, '');
-                
-                // Create a unique font family name
                 const fontFamily = `CustomFont_${Date.now()}_${fontName}`;
                 
-                // Load font using FontFace API
                 const fontFace = new FontFace(fontFamily, fontData);
                 await fontFace.load();
                 document.fonts.add(fontFace);
                 
-                // Detect OpenType features
                 const features = await this.detectFontOpenTypeFeatures(fontData);
                 
-                // Store font info
                 this.state.loadedFonts.set(fontFamily, {
                     name: fontName,
                     family: fontFamily,
@@ -1484,7 +1407,6 @@ class FontStudioApp {
                 
                 addedCount++;
                 
-                // If this is the first font, select it
                 if (this.state.loadedFonts.size === 1) {
                     this.selectFont(fontFamily);
                 }
@@ -1512,24 +1434,25 @@ class FontStudioApp {
     
     updateFontList() {
         const fontList = this.elements.fontList;
+        if (!fontList) return;
+        
         fontList.innerHTML = '';
         
-        // Add system fonts
         const systemFonts = ['Cairo', 'Tajawal', 'Arial', 'Tahoma', 'Times New Roman'];
         
         systemFonts.forEach(fontName => {
-            const fontItem = this.createFontListItem(fontName, fontName, true);
-            fontList.appendChild(fontItem);
+            const item = this.createFontListItem(fontName, fontName, true);
+            fontList.appendChild(item);
         });
         
-        // Add custom fonts
         this.state.loadedFonts.forEach((fontInfo, fontFamily) => {
-            const fontItem = this.createFontListItem(fontInfo.name, fontFamily, false);
-            fontList.appendChild(fontItem);
+            const item = this.createFontListItem(fontInfo.name, fontFamily, false);
+            fontList.appendChild(item);
         });
         
-        // Update count
-        this.elements.fontsCount.textContent = systemFonts.length + this.state.loadedFonts.size;
+        if (this.elements.fontsCount) {
+            this.elements.fontsCount.textContent = systemFonts.length + this.state.loadedFonts.size;
+        }
     }
     
     createFontListItem(displayName, fontFamily, isSystem) {
@@ -1542,40 +1465,23 @@ class FontStudioApp {
         }
         
         item.innerHTML = `
-            <div class="font-item-content">
-                <div class="font-item-preview" style="font-family: '${fontFamily}'">
-                    أبجد هوز حطي
-                </div>
+            <div style="flex: 1;">
+                <div class="font-item-preview" style="font-family: '${fontFamily}'">أبجد هوز حطي</div>
                 <div class="font-item-name">${displayName}</div>
             </div>
-            <div class="font-item-actions">
-                ${!isSystem ? `
-                    <button class="font-action-btn edit-font" title="تعديل الاسم">
-                        <i class="fas fa-pen"></i>
-                    </button>
-                    <button class="font-action-btn delete delete-font" title="حذف">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : ''}
-            </div>
+            ${!isSystem ? `
+                <button class="section-btn delete-font" title="حذف" style="color: var(--danger-500);">
+                    <i class="fas fa-trash"></i>
+                </button>
+            ` : ''}
         `;
         
         item.addEventListener('click', (e) => {
-            if (!e.target.closest('.font-action-btn')) {
+            if (!e.target.closest('.delete-font')) {
                 this.selectFont(fontFamily);
             }
         });
         
-        // Edit font name
-        const editBtn = item.querySelector('.edit-font');
-        if (editBtn) {
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.editFontName(fontFamily);
-            });
-        }
-        
-        // Delete font
         const deleteBtn = item.querySelector('.delete-font');
         if (deleteBtn) {
             deleteBtn.addEventListener('click', (e) => {
@@ -1590,20 +1496,19 @@ class FontStudioApp {
     selectFont(fontFamily) {
         this.textProperties.fontFamily = fontFamily;
         
-        // Update UI
         document.querySelectorAll('.font-item').forEach(item => {
             item.classList.toggle('active', item.dataset.family === fontFamily);
         });
         
-        // Update text input preview
-        this.elements.textInput.style.fontFamily = `"${fontFamily}"`;
+        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+        if (activeLayer && activeLayer.type === 'text') {
+            activeLayer.properties.fontFamily = fontFamily;
+        }
         
-        // Update OpenType features availability
         const fontInfo = this.state.loadedFonts.get(fontFamily);
         if (fontInfo && fontInfo.features) {
             this.updateFeatureAvailability(fontInfo.features);
         } else {
-            // For system fonts, enable all features
             this.updateFeatureAvailability(new Set(Object.keys(CONFIG.OPENTYPE_FEATURES)));
         }
         
@@ -1616,23 +1521,9 @@ class FontStudioApp {
         const lowerQuery = query.toLowerCase();
         
         items.forEach(item => {
-            const name = item.querySelector('.font-item-name').textContent.toLowerCase();
-            const matches = name.includes(lowerQuery);
-            item.style.display = matches ? '' : 'none';
+            const name = item.querySelector('.font-item-name')?.textContent.toLowerCase() || '';
+            item.style.display = name.includes(lowerQuery) ? '' : 'none';
         });
-    }
-    
-    editFontName(fontFamily) {
-        const fontInfo = this.state.loadedFonts.get(fontFamily);
-        if (!fontInfo) return;
-        
-        const newName = prompt('أدخل الاسم الجديد للخط:', fontInfo.name);
-        if (newName && newName.trim()) {
-            fontInfo.name = newName.trim();
-            this.updateFontList();
-            this.saveFontsToStorage();
-            this.showToast('تم تعديل الاسم', 'success');
-        }
     }
     
     deleteFont(fontFamily) {
@@ -1641,7 +1532,6 @@ class FontStudioApp {
             this.updateFontList();
             this.saveFontsToStorage();
             
-            // If deleted font was selected, select first available
             if (this.textProperties.fontFamily === fontFamily) {
                 this.selectFont('Cairo');
             }
@@ -1654,12 +1544,11 @@ class FontStudioApp {
         try {
             const fontsData = [];
             
-            this.state.loadedFonts.forEach((fontInfo, fontFamily) => {
-                // Convert ArrayBuffer to Base64 for storage
+            this.state.loadedFonts.forEach((fontInfo) => {
                 const base64 = this.arrayBufferToBase64(fontInfo.data);
                 fontsData.push({
                     name: fontInfo.name,
-                    family: fontFamily,
+                    family: fontInfo.family,
                     file: fontInfo.file,
                     features: Array.from(fontInfo.features),
                     dataBase64: base64
@@ -1679,15 +1568,11 @@ class FontStudioApp {
             if (fontsData && Array.isArray(fontsData)) {
                 for (const fontData of fontsData) {
                     try {
-                        // Convert Base64 back to ArrayBuffer
                         const arrayBuffer = this.base64ToArrayBuffer(fontData.dataBase64);
-                        
-                        // Load font
                         const fontFace = new FontFace(fontData.family, arrayBuffer);
                         await fontFace.load();
                         document.fonts.add(fontFace);
                         
-                        // Store font info
                         this.state.loadedFonts.set(fontData.family, {
                             name: fontData.name,
                             family: fontData.family,
@@ -1732,42 +1617,65 @@ class FontStudioApp {
     toggleBold() {
         const newWeight = this.textProperties.fontWeight === 'bold' ? 'normal' : 'bold';
         this.textProperties.fontWeight = newWeight;
-        this.elements.boldBtn.classList.toggle('active', newWeight === 'bold');
+        this.elements.boldBtn?.classList.toggle('active', newWeight === 'bold');
+        
+        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+        if (activeLayer && activeLayer.type === 'text') {
+            activeLayer.properties.fontWeight = newWeight;
+        }
         this.render();
     }
     
     toggleItalic() {
         const newStyle = this.textProperties.fontStyle === 'italic' ? 'normal' : 'italic';
         this.textProperties.fontStyle = newStyle;
-        this.elements.italicBtn.classList.toggle('active', newStyle === 'italic');
+        this.elements.italicBtn?.classList.toggle('active', newStyle === 'italic');
+        
+        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+        if (activeLayer && activeLayer.type === 'text') {
+            activeLayer.properties.fontStyle = newStyle;
+        }
         this.render();
     }
     
     toggleUnderline() {
-        const newDecoration = this.textProperties.textDecoration === 'underline' ? 'none' : 'underline';
-        this.textProperties.textDecoration = newDecoration;
-        this.elements.underlineBtn.classList.toggle('active', newDecoration === 'underline');
-        this.elements.strikethroughBtn.classList.remove('active');
+        const newDec = this.textProperties.textDecoration === 'underline' ? 'none' : 'underline';
+        this.textProperties.textDecoration = newDec;
+        this.elements.underlineBtn?.classList.toggle('active', newDec === 'underline');
+        this.elements.strikethroughBtn?.classList.remove('active');
+        
+        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+        if (activeLayer && activeLayer.type === 'text') {
+            activeLayer.properties.textDecoration = newDec;
+        }
         this.render();
     }
     
     toggleStrikethrough() {
-        const newDecoration = this.textProperties.textDecoration === 'line-through' ? 'none' : 'line-through';
-        this.textProperties.textDecoration = newDecoration;
-        this.elements.strikethroughBtn.classList.toggle('active', newDecoration === 'line-through');
-        this.elements.underlineBtn.classList.remove('active');
+        const newDec = this.textProperties.textDecoration === 'line-through' ? 'none' : 'line-through';
+        this.textProperties.textDecoration = newDec;
+        this.elements.strikethroughBtn?.classList.toggle('active', newDec === 'line-through');
+        this.elements.underlineBtn?.classList.remove('active');
+        
+        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+        if (activeLayer && activeLayer.type === 'text') {
+            activeLayer.properties.textDecoration = newDec;
+        }
         this.render();
     }
     
     setTextAlign(align) {
         this.textProperties.textAlign = align;
         
-        // Update buttons
-        this.elements.alignRightBtn.classList.toggle('active', align === 'right');
-        this.elements.alignCenterBtn.classList.toggle('active', align === 'center');
-        this.elements.alignLeftBtn.classList.toggle('active', align === 'left');
-        this.elements.alignJustifyBtn.classList.toggle('active', align === 'justify');
+        this.elements.alignRightBtn?.classList.toggle('active', align === 'right');
+        this.elements.alignCenterBtn?.classList.toggle('active', align === 'center');
+        this.elements.alignLeftBtn?.classList.toggle('active', align === 'left');
+        this.elements.alignJustifyBtn?.classList.toggle('active', align === 'justify');
         
+        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+        if (activeLayer && activeLayer.type === 'text') {
+            activeLayer.properties.textAlign = align;
+        }
         this.render();
     }
     
@@ -1778,49 +1686,45 @@ class FontStudioApp {
     updateColorPreview(type, color) {
         const previewId = type === 'text' ? 'text-color-preview' : 'bg-color-preview';
         const preview = document.getElementById(previewId);
-        const inner = preview.querySelector('.color-preview-inner');
-        inner.style.background = color;
+        const inner = preview?.querySelector('.color-preview-inner');
+        if (inner) inner.style.background = color;
     }
     
     validateHexColor(value) {
         const hex = value.startsWith('#') ? value : `#${value}`;
-        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-            return hex;
-        }
+        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
         if (/^#[0-9A-Fa-f]{3}$/.test(hex)) {
-            // Expand shorthand
             return `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
         }
         return null;
     }
     
     switchTab(tabName) {
-        // حماية فولاذية: إذا حاول أي كود فتح لوحة "النص" القديمة (الشبح)، امنعه وأغلق اللوحة فوراً!
+        // منع فتح لوحة النص القديمة
         if (tabName === 'text') {
-            this.closeBottomPanel();
+            // بدلاً من ذلك، نفتح محرر InShot إذا كان هناك نص محدد
+            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+            if (activeLayer && activeLayer.type === 'text') {
+                this.openInShotEditor();
+            }
             return;
         }
 
-        // إظهار اللوحة المناسبة للتبويبات الأخرى
-        this.elements.sidebarPanels.forEach(panel => {
+        this.elements.sidebarPanels?.forEach(panel => {
             panel.classList.toggle('active', panel.id === `panel-${tabName}`);
         });
         
-        // تلوين الأيقونة في الشريط السفلي
-        this.elements.bottomNavItems.forEach(item => {
+        this.elements.bottomNavItems?.forEach(item => {
             item.classList.toggle('active', item.dataset.panel === tabName);
         });
         
-        // رفع اللوحة من الأسفل
-        this.elements.sidebar.classList.add('active');
+        this.elements.sidebar?.classList.add('active');
     }
 
     closeBottomPanel() {
-        // إنزال اللوحة للأسفل
-        this.elements.sidebar.classList.remove('active');
+        this.elements.sidebar?.classList.remove('active');
         
-        // إزالة التحديد من جميع أيقونات الشريط السفلي
-        this.elements.bottomNavItems.forEach(item => {
+        this.elements.bottomNavItems?.forEach(item => {
             item.classList.remove('active');
         });
     }
@@ -1829,15 +1733,18 @@ class FontStudioApp {
         if (!this.elements.inshotToolbar) return;
         
         this.elements.inshotToolbar.classList.remove('hidden');
-        document.querySelector('.bottom-nav').style.display = 'none';
+        this.elements.inshotOverlay?.classList.remove('hidden');
         
-        // إخفاء كبسولة الأدوات العائمة (الأيقونات فوق الشريط) لمنع التداخل
-        if(this.elements.canvasTools) this.elements.canvasTools.style.display = 'none';
+        if (this.elements.bottomNav) this.elements.bottomNav.style.display = 'none';
+        if (this.elements.canvasTools) this.elements.canvasTools.style.display = 'none';
         
-        // إغلاق أي لوحة كبيرة كانت مفتوحة بالقوة
         this.closeBottomPanel();
         
-        this.elements.inshotInput.value = this.textProperties.text || '';
+        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+        if (activeLayer && activeLayer.type === 'text') {
+            this.elements.inshotInput.value = activeLayer.properties.text || '';
+        }
+        
         setTimeout(() => this.elements.inshotInput.focus(), 100);
     }
 
@@ -1845,36 +1752,28 @@ class FontStudioApp {
         if (!this.elements.inshotToolbar) return;
         
         this.elements.inshotToolbar.classList.add('hidden');
-        document.querySelector('.bottom-nav').style.display = 'flex';
+        this.elements.inshotOverlay?.classList.add('hidden');
         
-        // إظهار كبسولة الأدوات العائمة مرة أخرى عند الانتهاء
-        if(this.elements.canvasTools) this.elements.canvasTools.style.display = 'flex';
+        if (this.elements.bottomNav) this.elements.bottomNav.style.display = 'flex';
+        if (this.elements.canvasTools) this.elements.canvasTools.style.display = 'flex';
         
         this.closeBottomPanel();
-        
-        // إزالة التحديد عند الانتهاء لتنظيف الشاشة تماماً
-        this.state.selectedElement = null;
+        this.saveHistory();
         this.render();
     }
-
     
     setTool(tool) {
         this.state.currentTool = tool;
         
-        // Update tool buttons
-        this.elements.selectTool.classList.toggle('active', tool === 'select');
-        this.elements.textTool.classList.toggle('active', tool === 'text');
-        this.elements.imageTool.classList.toggle('active', tool === 'image');
-        this.elements.shapeTool.classList.toggle('active', tool === 'shape');
+        this.elements.selectTool?.classList.toggle('active', tool === 'select');
+        this.elements.textTool?.classList.toggle('active', tool === 'text');
+        this.elements.imageTool?.classList.toggle('active', tool === 'image');
+        this.elements.shapeTool?.classList.toggle('active', tool === 'shape');
         
-        // Change cursor
-        const cursors = {
-            'select': 'default',
-            'text': 'text',
-            'image': 'crosshair',
-            'shape': 'crosshair'
-        };
-        this.elements.canvasContainer.style.cursor = cursors[tool] || 'default';
+        const cursors = { 'select': 'default', 'text': 'text', 'image': 'crosshair', 'shape': 'crosshair' };
+        if (this.elements.canvasContainer) {
+            this.elements.canvasContainer.style.cursor = cursors[tool] || 'default';
+        }
     }
     
     // =====================================================
@@ -1896,14 +1795,17 @@ class FontStudioApp {
     // =====================================================
     
     addTextLayer() {
-        // إضافة "نص جديد" كقيمة افتراضية لكي يظهر فوراً للمستخدم
         const defaultText = 'نص جديد';
-        const initialProps = { ...this.textProperties, text: defaultText, color: '#000000' };
+        const initialProps = {
+            ...this.textProperties,
+            text: defaultText,
+            color: '#000000'
+        };
         
         const layer = {
             id: `layer_${Date.now()}`,
             type: 'text',
-            name: `طبقة نص ${this.state.layers.length + 1}`,
+            name: `نص ${this.state.layers.filter(l => l.type === 'text').length + 1}`,
             visible: true,
             locked: false,
             opacity: 1,
@@ -1913,31 +1815,22 @@ class FontStudioApp {
         };
         
         this.state.layers.push(layer);
-        
-        // تحديث الواجهة فوراً
-        if (this.elements.textInput) {
-            this.elements.textInput.value = defaultText;
-            this.elements.charCount.textContent = defaultText.length;
-        }
-        
         this.updateLayersList();
         this.selectLayer(layer.id);
         this.saveHistory();
         this.render();
         
-        // السحر: فتح شريط InShot المدمج
-        setTimeout(() => {
-            this.openInShotEditor();
-        }, 50);
+        setTimeout(() => this.openInShotEditor(), 50);
         
         this.showToast('تمت الإضافة', 'success', 'تم إضافة طبقة نص جديدة');
     }
     
     updateLayersList() {
         const list = this.elements.layersList;
+        if (!list) return;
+        
         list.innerHTML = '';
         
-        // Reverse to show top layers first
         [...this.state.layers].reverse().forEach(layer => {
             const item = document.createElement('div');
             item.className = `layer-item ${layer.id === this.state.selectedElement ? 'active' : ''}`;
@@ -1946,13 +1839,14 @@ class FontStudioApp {
             const icon = layer.type === 'text' ? 'fa-font' : 
                          layer.type === 'image' ? 'fa-image' : 'fa-shapes';
             
+            const typeName = layer.type === 'text' ? 'نص' : 
+                             layer.type === 'image' ? 'صورة' : 'شكل';
+            
             item.innerHTML = `
-                <div class="layer-thumb">
-                    <i class="fas ${icon}"></i>
-                </div>
+                <div class="layer-thumb"><i class="fas ${icon}"></i></div>
                 <div class="layer-info">
                     <div class="layer-name">${layer.name}</div>
-                    <div class="layer-type">${layer.type === 'text' ? 'نص' : layer.type === 'image' ? 'صورة' : 'شكل'}</div>
+                    <div class="layer-type">${typeName}</div>
                 </div>
                 <div class="layer-actions">
                     <button class="layer-action-btn ${layer.visible ? 'active' : ''}" data-action="visibility" title="الرؤية">
@@ -1990,33 +1884,29 @@ class FontStudioApp {
     selectLayer(layerId) {
         this.state.selectedElement = layerId;
         
-        // التزامن الذكي: تحديث الواجهة لتطابق الطبقة المحددة!
         const activeLayer = this.state.layers.find(l => l.id === layerId);
         if (activeLayer && activeLayer.type === 'text') {
             this.textProperties = { ...activeLayer.properties };
             
-            // تحديث مربع النص
-            if (this.elements.textInput) {
-                this.elements.textInput.value = this.textProperties.text || '';
-                this.elements.charCount.textContent = (this.textProperties.text || '').length;
-            }
-            
-            // تحديث الحجم
+            // تحديث واجهة المستخدم
             if (this.elements.fontSizeSlider) {
                 this.elements.fontSizeSlider.value = this.textProperties.fontSize;
                 this.elements.fontSizeValue.textContent = `${this.textProperties.fontSize}px`;
             }
             
-            // تحديث اللون
             if (this.elements.textColorPicker) {
                 this.elements.textColorPicker.value = this.textProperties.color;
                 this.updateColorPreview('text', this.textProperties.color);
             }
+            
+            if (this.elements.letterSpacingSlider) {
+                this.elements.letterSpacingSlider.value = this.textProperties.letterSpacing || 0;
+                this.elements.letterSpacingValue.textContent = `${this.textProperties.letterSpacing || 0}px`;
+            }
         }
         
         this.updateLayersList();
-        // السحر هنا: إجبار الكانفاس على تحديث ورسم مربع التحديد فوراً عند اللمس!
-        this.render(); 
+        this.render();
     }
     
     deleteSelectedLayer() {
@@ -2038,10 +1928,8 @@ class FontStudioApp {
     // =====================================================
     
     saveHistory() {
-        // Remove any redo history
         this.state.history = this.state.history.slice(0, this.state.historyIndex + 1);
         
-        // Save current state
         const snapshot = {
             layers: JSON.parse(JSON.stringify(this.state.layers)),
             textProperties: JSON.parse(JSON.stringify(this.textProperties)),
@@ -2051,7 +1939,6 @@ class FontStudioApp {
         this.state.history.push(snapshot);
         this.state.historyIndex = this.state.history.length - 1;
         
-        // Limit history size
         if (this.state.history.length > 50) {
             this.state.history.shift();
             this.state.historyIndex--;
@@ -2086,8 +1973,12 @@ class FontStudioApp {
     }
     
     updateHistoryButtons() {
-        this.elements.undoBtn.disabled = this.state.historyIndex <= 0;
-        this.elements.redoBtn.disabled = this.state.historyIndex >= this.state.history.length - 1;
+        if (this.elements.undoBtn) {
+            this.elements.undoBtn.disabled = this.state.historyIndex <= 0;
+        }
+        if (this.elements.redoBtn) {
+            this.elements.redoBtn.disabled = this.state.historyIndex >= this.state.history.length - 1;
+        }
     }
     
     // =====================================================
@@ -2097,7 +1988,7 @@ class FontStudioApp {
     async saveProject() {
         try {
             const project = {
-                name: this.elements.projectNameInput.value,
+                name: this.elements.projectNameInput?.value || 'تصميم جديد',
                 version: CONFIG.VERSION,
                 timestamp: Date.now(),
                 canvas: this.canvasProperties,
@@ -2121,47 +2012,28 @@ class FontStudioApp {
             const project = await localforage.getItem(CONFIG.STORAGE.CURRENT_PROJECT);
             
             if (project) {
-                this.elements.projectNameInput.value = project.name || 'تصميم جديد';
+                if (this.elements.projectNameInput) {
+                    this.elements.projectNameInput.value = project.name || 'تصميم جديد';
+                }
+                
                 this.canvasProperties = { ...this.canvasProperties, ...project.canvas };
                 this.textProperties = { ...this.textProperties, ...project.text };
                 this.state.layers = project.layers || [];
                 
-                // Restore OpenType features
                 if (project.openTypeFeatures) {
                     this.state.activeOpenTypeFeatures = new Set(project.openTypeFeatures);
-                    project.openTypeFeatures.forEach(f => {
-                        const el = document.querySelector(`.opentype-feature[data-feature="${f}"]`);
-                        el?.classList.add('active');
-                    });
                 }
                 
                 if (project.stylisticSets) {
                     this.state.activeStylisticSets = new Set(project.stylisticSets);
-                    project.stylisticSets.forEach(ss => {
-                        const el = document.querySelector(`.stylistic-set[data-ss="${ss}"]`);
-                        el?.classList.add('active');
-                    });
                 }
                 
                 if (project.characterVariants) {
                     this.state.activeCharacterVariants = new Set(project.characterVariants);
-                    project.characterVariants.forEach(cv => {
-                        const el = document.querySelector(`.stylistic-set[data-cv="${cv}"]`);
-                        el?.classList.add('active');
-                    });
                 }
                 
-                // Update UI
-                this.elements.textInput.value = this.textProperties.text;
-                this.elements.charCount.textContent = this.textProperties.text.length;
-                
-                // إخفاء نافذة البداية إذا تم تحميل مشروع محفوظ بنجاح
-                if (this.elements.startupModal) {
-                    this.elements.startupModal.classList.remove('active');
-                }
                 this.updateLayersList();
                 this.updateOpenTypeFeaturesCount();
-                this.render();
             }
         } catch (error) {
             console.error('Error loading project:', error);
@@ -2169,18 +2041,28 @@ class FontStudioApp {
     }
     
     openExportModal() {
-        this.elements.exportModal.classList.add('active');
-        document.getElementById('export-width').textContent = this.canvasProperties.width;
-        document.getElementById('export-height').textContent = this.canvasProperties.height;
+        this.elements.exportModal?.classList.add('active');
+        
+        const exportWidth = document.getElementById('export-width');
+        const exportHeight = document.getElementById('export-height');
+        
+        if (exportWidth) exportWidth.textContent = this.canvasProperties.width;
+        if (exportHeight) exportHeight.textContent = this.canvasProperties.height;
     }
     
     closeExportModal() {
-        this.elements.exportModal.classList.remove('active');
+        this.elements.exportModal?.classList.remove('active');
     }
     
     exportImage() {
-        const format = document.querySelector('.export-format.active').dataset.format;
-        const quality = parseInt(this.elements.exportQualitySlider.value) / 100;
+        const formatEl = document.querySelector('.export-format.active');
+        const format = formatEl?.dataset.format || 'png';
+        const quality = parseInt(this.elements.exportQualitySlider?.value || 90) / 100;
+        
+        // إلغاء تحديد أي عنصر قبل التصدير
+        const previousSelection = this.state.selectedElement;
+        this.state.selectedElement = null;
+        this.render();
         
         const canvas = this.elements.canvas;
         let mimeType = 'image/png';
@@ -2198,10 +2080,24 @@ class FontStudioApp {
         }
         
         canvas.toBlob((blob) => {
-            const fileName = `${this.elements.projectNameInput.value || 'design'}.${extension}`;
-            saveAs(blob, fileName);
+            const fileName = `${this.elements.projectNameInput?.value || 'design'}.${extension}`;
+            
+            if (typeof saveAs !== 'undefined') {
+                saveAs(blob, fileName);
+            } else {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            }
+            
             this.closeExportModal();
             this.showToast('تم التصدير', 'success', `تم حفظ الصورة بصيغة ${format.toUpperCase()}`);
+            
+            // استعادة التحديد
+            this.state.selectedElement = previousSelection;
+            this.render();
         }, mimeType, quality);
     }
     
@@ -2210,16 +2106,11 @@ class FontStudioApp {
     // =====================================================
     
     handleKeyboard(e) {
-        // Ctrl/Cmd shortcuts
         if (e.ctrlKey || e.metaKey) {
             switch (e.key.toLowerCase()) {
                 case 'z':
                     e.preventDefault();
-                    if (e.shiftKey) {
-                        this.redo();
-                    } else {
-                        this.undo();
-                    }
+                    e.shiftKey ? this.redo() : this.undo();
                     break;
                 case 'y':
                     e.preventDefault();
@@ -2261,7 +2152,6 @@ class FontStudioApp {
             }
         }
         
-        // Delete key
         if (e.key === 'Delete' || e.key === 'Backspace') {
             if (document.activeElement.tagName !== 'INPUT' && 
                 document.activeElement.tagName !== 'TEXTAREA') {
@@ -2269,39 +2159,13 @@ class FontStudioApp {
             }
         }
         
-        // Escape
         if (e.key === 'Escape') {
             this.closeExportModal();
+            this.closeInShotEditor();
+            this.closeBottomPanel();
             this.state.selectedElement = null;
-            this.updateLayersList();
+            this.render();
         }
-    }
-    
-    // =====================================================
-    // 🌓 Theme Toggle
-    // =====================================================
-    
-    toggleTheme() {
-        const body = document.body;
-        const currentTheme = body.dataset.theme;
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
-        body.dataset.theme = newTheme;
-        
-        // Update icon
-        const icon = this.elements.themeToggle.querySelector('i');
-        icon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        
-        // Save preference
-        localStorage.setItem('theme', newTheme);
-    }
-    
-    loadTheme() {
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.dataset.theme = savedTheme;
-        
-        const icon = this.elements.themeToggle.querySelector('i');
-        icon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
     }
     
     // =====================================================
@@ -2309,6 +2173,9 @@ class FontStudioApp {
     // =====================================================
     
     showToast(title, type = 'info', message = '') {
+        const container = this.elements.toastContainer;
+        if (!container) return;
+        
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         
@@ -2320,74 +2187,47 @@ class FontStudioApp {
         };
         
         toast.innerHTML = `
-            <div class="toast-icon">
-                <i class="fas ${icons[type] || icons.info}"></i>
-            </div>
+            <div class="toast-icon"><i class="fas ${icons[type] || icons.info}"></i></div>
             <div class="toast-content">
                 <div class="toast-title">${title}</div>
                 ${message ? `<div class="toast-message">${message}</div>` : ''}
             </div>
-            <button class="toast-close">
-                <i class="fas fa-times"></i>
-            </button>
+            <button class="toast-close"><i class="fas fa-times"></i></button>
         `;
         
-        this.elements.toastContainer.appendChild(toast);
+        container.appendChild(toast);
         
-        // Animate in
-        requestAnimationFrame(() => {
-            toast.classList.add('show');
-        });
+        requestAnimationFrame(() => toast.classList.add('show'));
         
-        // Close button
         toast.querySelector('.toast-close').addEventListener('click', () => {
             this.removeToast(toast);
         });
         
-        // Auto remove
-        setTimeout(() => {
-            this.removeToast(toast);
-        }, 4000);
+        setTimeout(() => this.removeToast(toast), 4000);
     }
     
     removeToast(toast) {
         toast.classList.remove('show');
-        setTimeout(() => {
-            toast.remove();
-        }, 300);
+        setTimeout(() => toast.remove(), 300);
     }
     
     // =====================================================
-    // 🚀 Splash Screen
+    // 🚀 Splash Screen & Data Loading
     // =====================================================
     
     hideSplashScreen() {
-        // تم تقليل الوقت من 1500 إلى 150 ملي ثانية فقط لفتح التطبيق كالصاروخ
         setTimeout(() => {
-            this.elements.splashScreen.classList.add('hidden');
-        }, 150);
+            this.elements.splashScreen?.classList.add('hidden');
+        }, 300);
     }
     
-    // =====================================================
-    // 💾 Load Saved Data
-    // =====================================================
-    
     async loadSavedData() {
-        // تم حذف loadTheme() لأننا نعتمد الآن على التصميم الليلي الفخم دائماً
-        
-        // Load fonts
         await this.loadFontsFromStorage();
-        
-        // Load project
         await this.loadProject();
         
-        // Initialize font list
-        this.updateFontList();
-        
-        // الضربة القاضية للشبح: إجبار اللوحة السفلية على الإغلاق فوراً عند فتح التطبيق
+        // إغلاق اللوحات عند بدء التشغيل
         this.closeBottomPanel();
         
-        // Save initial history state
         this.saveHistory();
     }
 }
@@ -2396,33 +2236,24 @@ class FontStudioApp {
 // 🎬 Initialize Application
 // =====================================================
 
-// Wait for DOM and fonts to load
 document.addEventListener('DOMContentLoaded', () => {
-    // Wait for web fonts
     document.fonts.ready.then(() => {
-        // Initialize app
         window.fontStudio = new FontStudioApp();
     });
 });
 
-// Register Service Worker for PWA
+// Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
-            .then(registration => {
-                console.log('ServiceWorker registered:', registration.scope);
-            })
-            .catch(error => {
-                console.log('ServiceWorker registration failed:', error);
-            });
+            .then(reg => console.log('ServiceWorker registered:', reg.scope))
+            .catch(err => console.log('ServiceWorker registration failed:', err));
     });
 }
 
-
-// Handle app install prompt
+// Install prompt
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Can show install button here
 });
