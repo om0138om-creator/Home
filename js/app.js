@@ -384,6 +384,15 @@ class FontStudioApp {
         const p = layer.props;
         if (!p.text) return;
 
+        // --- 🪄 سحر الأوبن تايب: تطبيق الخصائص على الكانفاس ---
+        let otFeatures = [];
+        this.state.activeFeatures.forEach(f => otFeatures.push(`"${f}" 1`));
+        this.state.activeSS.forEach(f => otFeatures.push(`"${f}" 1`));
+        const featureString = otFeatures.length > 0 ? otFeatures.join(', ') : 'normal';
+        this.el.canvas.style.fontFeatureSettings = featureString;
+        this.el.canvas.style.fontVariantLigatures = 'normal';
+        // ----------------------------------------------------
+
         const fontStyle = p.fontStyle === 'italic' ? 'italic ' : '';
         const fontWeight = p.fontWeight === 'bold' ? 'bold ' : '';
         ctx.font = `${fontStyle}${fontWeight}${p.fontSize}px "${p.fontFamily}"`;
@@ -421,6 +430,9 @@ class FontStudioApp {
         if (layer.id === this.state.selectedLayer) {
             this.drawSelectionBox(ctx, layer, lines, lineHeight, totalHeight);
         }
+        
+        // إغلاق التأثير بعد رسم الطبقة لكي لا يؤثر على باقي الطبقات
+        this.el.canvas.style.fontFeatureSettings = 'normal';
     }
 
     drawTextLine(ctx, text, x, y, spacing, isStroke) {
@@ -891,10 +903,22 @@ class FontStudioApp {
                 const buffer = await this.readAsArrayBuffer(file);
                 const name = file.name.replace(/\.[^.]+$/, '');
                 const family = 'CustomFont_' + Date.now() + '_' + name;
+                
+                // 1. تحميل الخط
                 const fontFace = new FontFace(family, buffer);
                 await fontFace.load();
                 document.fonts.add(fontFace);
-                this.fonts.set(family, { name, family, file: file.name, data: buffer });
+                
+                // 2. فحص الخط بذكاء لمعرفة الخصائص المتاحة فيه (Dimming logic)
+                let availableFeatures = new Set();
+                try {
+                    const parsedFont = opentype.parse(buffer);
+                    if (parsedFont.tables.gsub && parsedFont.tables.gsub.features) {
+                        parsedFont.tables.gsub.features.forEach(f => availableFeatures.add(f.tag));
+                    }
+                } catch(e) { console.warn("لم نتمكن من قراءة خصائص الأوبن تايب للخط:", name); }
+
+                this.fonts.set(family, { name, family, file: file.name, data: buffer, features: availableFeatures });
                 count++;
                 if (count === 1) this.selectFont(family);
             } catch (err) {
@@ -964,7 +988,41 @@ class FontStudioApp {
         document.querySelectorAll('.font-item').forEach(el => {
             el.classList.toggle('active', el.dataset.family === family);
         });
+        
+        // تحديث إضاءة أزرار الأوبن تايب بناءً على الخط المحدد
+        this.updateOpenTypeUI(family);
         this.updateSelectedLayer();
+    }
+
+    updateOpenTypeUI(family) {
+        const fontInfo = this.fonts.get(family);
+        const available = fontInfo && fontInfo.features ? fontInfo.features : new Set();
+        
+        // تظليم/إضاءة الخصائص الأساسية (Swash, Ligatures...)
+        document.querySelectorAll('.opentype-feature').forEach(el => {
+            const tag = el.dataset.feature;
+            if (available.has(tag)) {
+                el.classList.remove('unavailable');
+            } else {
+                el.classList.add('unavailable');
+                el.classList.remove('active');
+                this.state.activeFeatures.delete(tag);
+            }
+        });
+        
+        // تظليم/إضاءة المجموعات الأسلوبية (SS01-SS20)
+        document.querySelectorAll('.stylistic-set').forEach(el => {
+            const tag = el.dataset.ss;
+            if (available.has(tag)) {
+                el.classList.remove('unavailable');
+            } else {
+                el.classList.add('unavailable');
+                el.classList.remove('active');
+                this.state.activeSS.delete(tag);
+            }
+        });
+        
+        this.updateOTCount();
     }
 
     filterFonts(query) {
@@ -995,7 +1053,17 @@ class FontStudioApp {
                     const fontFace = new FontFace(item.family, buffer);
                     await fontFace.load();
                     document.fonts.add(fontFace);
-                    this.fonts.set(item.family, { name: item.name, family: item.family, file: item.file, data: buffer });
+                    
+                    // استخراج الخصائص عند التحميل من الذاكرة
+                    let availableFeatures = new Set();
+                    try {
+                        const parsedFont = opentype.parse(buffer);
+                        if (parsedFont.tables.gsub && parsedFont.tables.gsub.features) {
+                            parsedFont.tables.gsub.features.forEach(f => availableFeatures.add(f.tag));
+                        }
+                    } catch(e) {}
+
+                    this.fonts.set(item.family, { name: item.name, family: item.family, file: item.file, data: buffer, features: availableFeatures });
                 } catch (e) { console.warn('Load font error:', item.name); }
             }
             this.updateFontList();
