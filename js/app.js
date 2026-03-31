@@ -379,9 +379,9 @@ class FontStudioApp {
     }
     
     updateCanvasTransform() {
+        // تم إيقاف تحريك وتكبير الشاشة من الجذور! الكانفاس ثابت مسطرة.
         const wrapper = this.elements.canvasWrapper;
-        wrapper.style.transform = `scale(${this.state.zoom}) translate(${this.state.panX}px, ${this.state.panY}px)`;
-        this.elements.zoomValue.textContent = `${Math.round(this.state.zoom * 100)}%`;
+        wrapper.style.transform = `none`; 
     }
     
     // =====================================================
@@ -921,13 +921,18 @@ class FontStudioApp {
             return null;
         };
         
-        // التكبير والتصغير (Pinch to zoom)
-        hammer.on('pinchstart', () => { initialZoom = this.state.zoom; });
-        hammer.on('pinchmove', (e) => {
-            let newZoom = initialZoom * e.scale;
-            newZoom = Math.max(CONFIG.CANVAS.MIN_ZOOM, Math.min(CONFIG.CANVAS.MAX_ZOOM, newZoom));
-            this.state.zoom = newZoom;
-            this.updateCanvasTransform();
+        // تم إلغاء التكبير والتصغير للشاشة تماماً (InShot Style)
+        hammer.on('pinchstart', () => { return false; });
+        hammer.on('pinchmove', (e) => { return false; });
+        
+        hammer.on('panmove', (e) => {
+            if (isDraggingLayer && draggedLayer) {
+                // تحريك النص المباشر فقط بإصبعك
+                draggedLayer.x = initialLayerX + e.deltaX;
+                draggedLayer.y = initialLayerY + e.deltaY;
+                this.render();
+            }
+            // السحر هنا: الكانفاس مستحيل يتحرك من مكانه مهما سحبت
         });
         
         // السحب والتحريك (Pan)
