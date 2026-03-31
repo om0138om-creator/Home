@@ -8,9 +8,19 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Font Studio Pro</title>
     
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="manifest" href="manifest.json">
+    
+    <!-- تنظيف الكاش -->
+    <script>
+    if('serviceWorker' in navigator){
+        navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister()));
+    }
+    if('caches' in window){
+        caches.keys().then(k=>k.forEach(n=>caches.delete(n)));
+    }
+    </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,36 +33,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
                 
     <style>
-        /*=====================================================
-          🎨 CSS Variables
-        =====================================================*/
         :root {
             --primary: #6366f1;
-            --primary-dark: #4f46e5;
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
             --gold: #d4af37;
-            
             --bg-dark: #0f172a;
             --bg-card: #1e293b;
             --bg-input: #334155;
             --text-white: #f8fafc;
             --text-gray: #94a3b8;
             --text-muted: #64748b;
-            --border: #475569;
-            
             --header-height: 52px;
             --bottom-nav-height: 56px;
             --panel-height: 300px;
-            
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
         
-        /*=====================================================
-          🔄 Reset
-        =====================================================*/
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -81,9 +80,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
         
-        /*=====================================================
-          ⏳ Splash Screen
-        =====================================================*/
+        /* Splash */
         #splash-screen {
             position: fixed;
             inset: 0;
@@ -95,1245 +92,605 @@
             z-index: 99999;
             transition: opacity 0.5s, visibility 0.5s;
         }
-        
-        #splash-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-        
-        .splash-logo {
-            width: 90px;
-            height: 90px;
-            margin-bottom: 20px;
-        }
-        
-        .splash-logo svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
-        }
-        
+        #splash-screen.hidden { opacity: 0; visibility: hidden; }
+        .splash-logo { width: 90px; height: 90px; margin-bottom: 20px; }
+        .splash-logo svg { width: 100%; height: 100%; filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5)); }
         .splash-title {
-            font-size: 1.6rem;
-            font-weight: 800;
+            font-size: 1.6rem; font-weight: 800;
             background: linear-gradient(135deg, #6366f1, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
         }
-        
-        .splash-subtitle {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 30px;
-        }
-        
+        .splash-subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 30px; }
         .splash-loader {
-            width: 150px;
-            height: 3px;
+            width: 150px; height: 3px;
             background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            overflow: hidden;
+            border-radius: 10px; overflow: hidden;
         }
-        
         .splash-loader::after {
-            content: '';
-            display: block;
-            width: 40%;
-            height: 100%;
+            content: ''; display: block; width: 40%; height: 100%;
             background: linear-gradient(90deg, #6366f1, #a855f7);
-            border-radius: 10px;
-            animation: loading 1s ease-in-out infinite;
+            border-radius: 10px; animation: loading 1s ease-in-out infinite;
         }
+        @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
         
-        @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
-        }
-        
-        /*=====================================================
-          🏠 Home Screen
-        =====================================================*/
+        /* Home Screen */
         #home-screen {
-            position: fixed;
-            inset: 0;
+            position: fixed; inset: 0;
             background: var(--bg-dark);
             z-index: 1000;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             overflow-y: auto;
             padding-top: var(--safe-top);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s;
+            transition: transform 0.4s ease, opacity 0.4s;
         }
-        
-        #home-screen.hidden {
-            transform: translateY(-100%);
-            opacity: 0;
-            pointer-events: none;
-        }
+        #home-screen.hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
         
         .home-header {
-            padding: 30px 20px 25px;
-            text-align: center;
+            padding: 30px 20px 25px; text-align: center;
             background: linear-gradient(to bottom, rgba(99, 102, 241, 0.1), transparent);
         }
-        
         .home-logo {
-            width: 65px;
-            height: 65px;
-            margin: 0 auto 12px;
+            width: 65px; height: 65px; margin: 0 auto 12px;
             background: linear-gradient(135deg, #6366f1, #a855f7);
             border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; color: white;
             box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
         }
-        
-        .home-header h1 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-        
-        .home-header p {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
+        .home-header h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .home-header p { color: var(--text-muted); font-size: 0.8rem; }
         
         .home-content {
-            flex: 1;
-            padding: 20px;
+            flex: 1; padding: 20px;
             padding-bottom: calc(80px + var(--safe-bottom));
             background: var(--bg-card);
             border-radius: 25px 25px 0 0;
         }
-        
         .section-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 0.85rem; font-weight: 700; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 6px;
         }
-        
         .section-title i { color: var(--primary); font-size: 0.8rem; }
         
-        .main-actions-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        
+        .main-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
         .action-card {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 20px 12px;
-            text-align: center;
+            border-radius: 16px; padding: 20px 12px; text-align: center;
             transition: transform 0.2s, background 0.2s;
         }
-        
-        .action-card:active {
-            transform: scale(0.96);
-            background: rgba(255,255,255,0.06);
-        }
-        
+        .action-card:active { transform: scale(0.96); background: rgba(255,255,255,0.06); }
         .action-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+            width: 50px; height: 50px; border-radius: 50%;
             margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: white;
         }
-        
-        .action-card span {
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
+        .action-card span { font-weight: 600; font-size: 0.85rem; }
         
         .presets-scroll {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            display: flex; gap: 10px; overflow-x: auto;
+            padding-bottom: 10px; margin-bottom: 20px;
             scrollbar-width: none;
         }
-        
         .presets-scroll::-webkit-scrollbar { display: none; }
-        
         .preset-card {
             flex: 0 0 95px;
             background: rgba(255,255,255,0.03);
             border: 2px solid transparent;
-            border-radius: 12px;
-            padding: 12px 8px;
-            text-align: center;
+            border-radius: 12px; padding: 12px 8px; text-align: center;
             transition: all 0.2s;
         }
-        
-        .preset-card.active {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
-        
+        .preset-card.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
         .preset-ratio {
             margin: 0 auto 8px;
             border: 2px solid var(--text-muted);
             border-radius: 3px;
-            transition: border-color 0.2s;
         }
-        
         .preset-card.active .preset-ratio { border-color: var(--primary); }
-        
         .ratio-1-1 { width: 26px; height: 26px; }
         .ratio-9-16 { width: 18px; height: 32px; }
         .ratio-4-5 { width: 24px; height: 30px; }
         .ratio-16-9 { width: 32px; height: 18px; }
-        
         .preset-name { display: block; font-size: 0.7rem; font-weight: 600; margin-bottom: 2px; }
         .preset-size { display: block; font-size: 0.6rem; color: var(--text-muted); }
         
         .home-color-picker {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: flex; align-items: center; gap: 12px;
             background: rgba(255,255,255,0.03);
-            padding: 12px;
-            border-radius: 12px;
+            padding: 12px; border-radius: 12px;
         }
-        
-        #home-bg-color {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            padding: 0;
-        }
-        
-        .preset-colors {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
+        #home-bg-color { width: 36px; height: 36px; border: none; border-radius: 8px; cursor: pointer; padding: 0; }
+        .preset-colors { display: flex; gap: 8px; flex-wrap: wrap; }
         .preset-color {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.2s;
+            width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+            border: 2px solid transparent; transition: all 0.2s;
         }
-        
         .preset-color:active { transform: scale(0.9); }
         .preset-color.active { border-color: white; box-shadow: 0 0 0 2px var(--primary); }
         
-        /*=====================================================
-          📱 App Layout
-        =====================================================*/
+        /* App */
         #app {
-            position: fixed;
-            inset: 0;
-            display: none;
-            flex-direction: column;
+            position: fixed; inset: 0;
+            display: none; flex-direction: column;
             background: var(--bg-dark);
             padding-top: var(--safe-top);
         }
+        #app.active { display: flex; }
         
-        #app.active {
-            display: flex;
-        }
-        
-        /*=====================================================
-          📱 Header (مصلح 100%)
-        =====================================================*/
+        /* Header */
         .app-header {
             flex: 0 0 var(--header-height);
             height: var(--header-height);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
             padding: 0 12px;
             background: var(--bg-dark);
             border-bottom: 1px solid rgba(255,255,255,0.05);
             z-index: 100;
         }
-        
-        .header-left {
-            flex: 0 0 auto;
-        }
-        
-        .header-center {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            padding: 0 10px;
-            min-width: 0;
-        }
-        
-        .header-right {
-            flex: 0 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .app-name {
-            font-size: 1rem;
-            font-weight: 800;
-            color: var(--gold);
-            white-space: nowrap;
-            letter-spacing: 0.3px;
-        }
-        
+        .header-left { flex: 0 0 auto; }
+        .header-center { flex: 1; display: flex; justify-content: center; padding: 0 10px; min-width: 0; }
+        .header-right { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; }
+        .app-name { font-size: 1rem; font-weight: 800; color: var(--gold); white-space: nowrap; }
         .project-name {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            display: flex; align-items: center; gap: 6px;
             background: rgba(255,255,255,0.06);
-            padding: 6px 12px;
-            border-radius: 20px;
-            max-width: 130px;
+            padding: 6px 12px; border-radius: 20px; max-width: 130px;
         }
-        
-        .project-name input {
-            width: 100%;
-            color: var(--text-white);
-            font-size: 0.75rem;
-            text-align: center;
-        }
-        
-        .project-name i {
-            color: var(--text-muted);
-            font-size: 0.65rem;
-        }
-        
+        .project-name input { width: 100%; color: var(--text-white); font-size: 0.75rem; text-align: center; }
+        .project-name i { color: var(--text-muted); font-size: 0.65rem; }
         .header-btn {
-            width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 34px; height: 34px;
+            display: flex; align-items: center; justify-content: center;
             background: rgba(255,255,255,0.06);
-            border-radius: 50%;
-            color: var(--text-white);
-            font-size: 0.85rem;
+            border-radius: 50%; color: var(--text-white); font-size: 0.85rem;
             transition: all 0.2s;
         }
-        
         .header-btn:active { transform: scale(0.9); }
         .header-btn:disabled { opacity: 0.4; }
         .header-btn#export-btn { background: rgba(212, 175, 55, 0.15); color: var(--gold); }
         
-        /*=====================================================
-          🎨 Canvas Area (مصلح 100%)
-        =====================================================*/
-        .app-main {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-        
+        /* Canvas */
+        .app-main { flex: 1; position: relative; overflow: hidden; }
         .canvas-container {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
             background: #16161a;
             overflow: hidden;
         }
-        
         .canvas-wrapper {
             position: relative;
             background: white;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
             transform-origin: center center;
-            /* لا نستخدم أي width/height هنا - يتم التحكم من JS فقط */
         }
+        #main-canvas { display: block; }
+        .selection-layer { position: absolute; inset: 0; pointer-events: none; }
         
-        #main-canvas {
-            display: block;
-            /* لا نستخدم width/height 100% - الكانفاس يحدد حجمه الخاص */
-        }
-        
-        .selection-layer {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-        }
-        
-        /* Canvas Tools */
         .canvas-tools {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; gap: 5px;
             padding: 6px 10px;
             background: rgba(0,0,0,0.8);
             border-radius: 25px;
             border: 1px solid rgba(255,255,255,0.1);
             z-index: 50;
         }
-        
         .canvas-tool-btn {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            color: var(--text-gray);
-            font-size: 0.85rem;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; color: var(--text-gray); font-size: 0.85rem;
             transition: all 0.2s;
         }
-        
         .canvas-tool-btn:active { transform: scale(0.9); }
         .canvas-tool-btn.active { color: var(--primary); }
         .canvas-tool-btn.primary { background: var(--primary); color: white; }
-        
         .zoom-controls {
-            display: flex;
-            align-items: center;
-            gap: 3px;
+            display: flex; align-items: center; gap: 3px;
             padding: 0 8px;
             border-left: 1px solid rgba(255,255,255,0.1);
             border-right: 1px solid rgba(255,255,255,0.1);
             margin: 0 3px;
         }
+        .zoom-value { font-size: 0.7rem; font-weight: 600; color: var(--text-gray); min-width: 40px; text-align: center; }
         
-        .zoom-value {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-gray);
-            min-width: 40px;
-            text-align: center;
-        }
-        
-        /*=====================================================
-          📋 Bottom Panel (مصلح للأبد)
-        =====================================================*/
+        /* Sidebar */
         .sidebar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: var(--panel-height);
+            position: fixed; bottom: 0; left: 0;
+            width: 100%; height: var(--panel-height);
             background: var(--bg-card);
             border-radius: 20px 20px 0 0;
             z-index: 500;
             transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
             padding-bottom: var(--safe-bottom);
         }
-        
-        .sidebar.active {
-            transform: translateY(0);
-        }
-        
+        .sidebar.active { transform: translateY(0); }
         .panel-handle {
-            width: 40px;
-            height: 4px;
+            width: 40px; height: 4px;
             background: rgba(255,255,255,0.2);
             border-radius: 10px;
             margin: 10px auto 8px;
             cursor: pointer;
         }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 5px 15px 15px; }
+        .sidebar-panel { display: none; }
+        .sidebar-panel.active { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .panel-section { margin-bottom: 15px; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         
-        .sidebar-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 5px 15px 15px;
-        }
-        
-        .sidebar-panel {
-            display: none;
-        }
-        
-        .sidebar-panel.active {
-            display: block;
-            animation: fadeIn 0.2s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .panel-section {
-            margin-bottom: 15px;
-        }
-        
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        /*=====================================================
-          ✏️ Text Formatting
-        =====================================================*/
+        /* Format Tools */
         .text-format-tools {
-            display: flex;
-            gap: 6px;
-            padding: 8px;
+            display: flex; gap: 6px; padding: 8px;
             background: rgba(255,255,255,0.03);
             border-radius: 12px;
-            overflow-x: auto;
-            justify-content: center;
+            overflow-x: auto; justify-content: center;
         }
-        
         .format-btn {
-            width: 38px;
-            height: 38px;
-            min-width: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            color: var(--text-gray);
-            font-size: 0.9rem;
+            width: 38px; height: 38px; min-width: 38px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; color: var(--text-gray); font-size: 0.9rem;
             background: rgba(255,255,255,0.05);
             transition: all 0.2s;
         }
-        
         .format-btn:active { transform: scale(0.9); }
         .format-btn.active { background: var(--primary); color: white; }
         
         /* Sliders */
-        .slider-wrapper {
-            margin-bottom: 12px;
-        }
-        
-        .slider-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-        
+        .slider-wrapper { margin-bottom: 12px; }
+        .slider-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
         .slider-label { font-size: 0.75rem; color: var(--text-gray); }
         .slider-value { font-size: 0.75rem; font-weight: 600; color: var(--primary); }
-        
         .slider {
-            width: 100%;
-            height: 4px;
-            -webkit-appearance: none;
-            appearance: none;
+            width: 100%; height: 4px;
+            -webkit-appearance: none; appearance: none;
             background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            outline: none;
+            border-radius: 10px; outline: none;
         }
-        
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: white;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            width: 18px; height: 18px;
+            background: white; border-radius: 50%;
+            cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         
-        /*=====================================================
-          🔤 Fonts Panel
-        =====================================================*/
-        .font-search-wrapper {
-            position: relative;
-            margin-bottom: 12px;
-        }
-        
+        /* Fonts */
+        .font-search-wrapper { position: relative; margin-bottom: 12px; }
         .font-search {
-            width: 100%;
-            padding: 10px 40px 10px 12px;
+            width: 100%; padding: 10px 40px 10px 12px;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            color: var(--text-white);
-            font-size: 0.85rem;
+            border-radius: 10px; color: var(--text-white); font-size: 0.85rem;
         }
-        
         .font-search:focus { border-color: var(--primary); }
-        
         .font-search-icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 0.8rem;
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); font-size: 0.8rem;
         }
-        
-        .font-list {
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        
+        .font-list { max-height: 150px; overflow-y: auto; }
         .font-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-bottom: 4px;
+            display: flex; align-items: center; padding: 10px;
+            border-radius: 8px; cursor: pointer; margin-bottom: 4px;
             transition: background 0.2s;
         }
-        
         .font-item:active { background: rgba(255,255,255,0.08); }
-        
-        .font-item.active {
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid var(--primary);
-        }
-        
+        .font-item.active { background: rgba(99, 102, 241, 0.15); border: 1px solid var(--primary); }
         .font-item-preview { flex: 1; font-size: 1rem; }
         .font-item-name { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
-        
         .add-fonts-area {
             border: 2px dashed rgba(255,255,255,0.15);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
+            border-radius: 12px; padding: 20px; text-align: center;
             transition: all 0.2s;
         }
-        
-        .add-fonts-area:active,
-        .add-fonts-area.dragging {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.05);
+        .add-fonts-area:active, .add-fonts-area.dragging {
+            border-color: var(--primary); background: rgba(99, 102, 241, 0.05);
         }
-        
         .add-fonts-icon {
-            width: 45px;
-            height: 45px;
-            margin: 0 auto 10px;
+            width: 45px; height: 45px; margin: 0 auto 10px;
             background: linear-gradient(135deg, #6366f1, #a855f7);
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.2rem;
         }
-        
         .add-fonts-text { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
         .add-fonts-hint { font-size: 0.7rem; color: var(--text-muted); }
         
-        /*=====================================================
-          ✨ OpenType Features (كبسولات)
-        =====================================================*/
+        /* OpenType */
         .opentype-panel {
             background: rgba(255,255,255,0.02);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
+            border-radius: 12px; padding: 12px; margin-bottom: 12px;
         }
-        
-        .opentype-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .opentype-title {
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
+        .opentype-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .opentype-title { font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
         .opentype-title i { color: var(--success); }
-        
         .opentype-badge {
-            padding: 2px 8px;
-            background: var(--success);
-            color: white;
-            font-size: 0.6rem;
-            font-weight: 700;
-            border-radius: 10px;
+            padding: 2px 8px; background: var(--success);
+            color: white; font-size: 0.6rem; font-weight: 700; border-radius: 10px;
         }
-        
         .opentype-features-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-            max-height: 120px;
-            overflow-y: auto;
+            display: flex; flex-wrap: wrap; gap: 6px;
+            justify-content: center; max-height: 120px; overflow-y: auto;
         }
-        
         .opentype-feature {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+            display: inline-flex; align-items: center; gap: 5px;
             padding: 5px 10px;
             background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 15px; border: 1px solid transparent;
+            cursor: pointer; transition: all 0.2s;
         }
-        
         .opentype-feature:active { transform: scale(0.95); }
         .opentype-feature.active { background: var(--primary); border-color: var(--primary); }
         .opentype-feature.unavailable { opacity: 0.3; pointer-events: none; }
-        
         .feature-name { font-size: 0.7rem; font-weight: 600; }
         .feature-tag { font-size: 0.55rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 4px; color: var(--text-muted); }
-        .opentype-feature.active .feature-name,
-        .opentype-feature.active .feature-tag { color: white; }
-        
-        .stylistic-sets-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            justify-content: center;
-            margin-top: 8px;
-        }
-        
+        .opentype-feature.active .feature-name, .opentype-feature.active .feature-tag { color: white; }
+        .stylistic-sets-grid { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 8px; }
         .stylistic-set {
             padding: 5px 12px;
             background: rgba(255,255,255,0.05);
             border: 1px solid transparent;
-            border-radius: 15px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-gray);
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 15px; font-size: 0.7rem; font-weight: 600;
+            color: var(--text-gray); cursor: pointer; transition: all 0.2s;
         }
-        
         .stylistic-set:active { transform: scale(0.95); }
         .stylistic-set.active { background: var(--primary); border-color: var(--primary); color: white; }
         .stylistic-set.unavailable { opacity: 0.25; pointer-events: none; }
         
-        /*=====================================================
-          🎨 Colors Panel
-        =====================================================*/
-        .color-picker-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-        
+        /* Colors */
+        .color-picker-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .color-preview {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 40px; height: 40px; border-radius: 10px;
             border: 2px solid rgba(255,255,255,0.2);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
+            position: relative; overflow: hidden; cursor: pointer;
         }
-        
-        .color-preview input {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        .color-preview-inner {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-        }
-        
+        .color-preview input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .color-preview-inner { position: absolute; inset: 0; pointer-events: none; }
         .color-hex-input {
-            flex: 1;
-            padding: 8px 12px;
+            flex: 1; padding: 8px 12px;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            color: var(--text-white);
-            font-family: monospace;
-            font-size: 0.8rem;
-            text-transform: uppercase;
+            border-radius: 8px; color: var(--text-white);
+            font-family: monospace; font-size: 0.8rem; text-transform: uppercase;
         }
-        
         .color-hex-input:focus { border-color: var(--primary); }
-        
-        /* Toggle */
-        .toggle-switch {
-            position: relative;
-            width: 44px;
-            height: 24px;
-        }
-        
+        .toggle-switch { position: relative; width: 44px; height: 24px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        
         .toggle-slider {
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             background: rgba(255,255,255,0.2);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.3s;
+            border-radius: 12px; cursor: pointer; transition: 0.3s;
         }
-        
         .toggle-slider::before {
-            content: '';
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            left: 3px;
-            top: 3px;
-            background: white;
-            border-radius: 50%;
-            transition: 0.3s;
+            content: ''; position: absolute;
+            width: 18px; height: 18px; left: 3px; top: 3px;
+            background: white; border-radius: 50%; transition: 0.3s;
         }
-        
         .toggle-switch input:checked + .toggle-slider { background: var(--primary); }
         .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
         
-        /*=====================================================
-          📚 Layers Panel
-        =====================================================*/
-        .layers-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        
+        /* Layers */
+        .layers-list { display: flex; flex-direction: column; gap: 6px; }
         .layer-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
+            display: flex; align-items: center; gap: 10px; padding: 10px;
             background: rgba(255,255,255,0.03);
-            border-radius: 10px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 10px; border: 2px solid transparent;
+            cursor: pointer; transition: all 0.2s;
         }
-        
         .layer-item:active { background: rgba(255,255,255,0.06); }
         .layer-item.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
-        
         .layer-thumb {
-            width: 36px;
-            height: 36px;
+            width: 36px; height: 36px;
             background: rgba(255,255,255,0.05);
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); font-size: 0.85rem;
         }
-        
         .layer-info { flex: 1; min-width: 0; }
         .layer-name { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .layer-type { font-size: 0.65rem; color: var(--text-muted); }
-        
         .layer-actions { display: flex; gap: 3px; }
-        
         .layer-action-btn {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            color: var(--text-muted);
-            font-size: 0.7rem;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; color: var(--text-muted); font-size: 0.7rem;
             transition: all 0.2s;
         }
-        
         .layer-action-btn:active { background: rgba(255,255,255,0.1); }
         .layer-action-btn.active { color: var(--primary); }
-        
         .section-actions { display: flex; gap: 4px; }
-        
         .section-btn {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            color: var(--text-muted);
-            font-size: 0.75rem;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; color: var(--text-muted); font-size: 0.75rem;
             transition: all 0.2s;
         }
-        
         .section-btn:active { background: rgba(255,255,255,0.1); color: var(--text-white); }
         
-        /*=====================================================
-          📱 Bottom Navigation
-        =====================================================*/
+        /* Bottom Nav */
         .bottom-nav {
             flex: 0 0 var(--bottom-nav-height);
             height: var(--bottom-nav-height);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
+            display: flex; justify-content: space-around; align-items: center;
             background: #0a0a0f;
             border-top: 1px solid rgba(255,255,255,0.05);
             padding-bottom: var(--safe-bottom);
         }
-        
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            padding: 6px 12px;
-            color: var(--text-muted);
-            font-size: 0.6rem;
-            transition: color 0.2s;
-            min-width: 50px;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            padding: 6px 12px; color: var(--text-muted); font-size: 0.6rem;
+            transition: color 0.2s; min-width: 50px;
         }
-        
         .nav-item i { font-size: 1.1rem; }
         .nav-item.active { color: var(--primary); }
         .nav-item:active { transform: scale(0.95); }
         
-        /*=====================================================
-          🎬 InShot Text Editor
-        =====================================================*/
+        /* InShot Toolbar */
         .inshot-overlay {
-            position: fixed;
-            inset: 0;
+            position: fixed; inset: 0;
             background: rgba(0,0,0,0.4);
-            z-index: 600;
-            opacity: 0;
-            visibility: hidden;
+            z-index: 600; opacity: 0; visibility: hidden;
             transition: all 0.2s;
         }
-        
-        .inshot-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
+        .inshot-overlay.active { opacity: 1; visibility: visible; }
         .inshot-toolbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #1a1a1f;
-            z-index: 700;
+            position: fixed; bottom: 0; left: 0;
+            width: 100%; background: #1a1a1f; z-index: 700;
             transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s ease;
             padding-bottom: var(--safe-bottom);
             border-radius: 16px 16px 0 0;
         }
-        
-        .inshot-toolbar.active {
-            transform: translateY(0);
-        }
-        
+        .inshot-toolbar.active { transform: translateY(0); }
         .inshot-input-row {
-            display: flex;
-            align-items: center;
+            display: flex; align-items: center;
             background: rgba(255,255,255,0.08);
-            margin: 12px;
-            border-radius: 25px;
-            padding: 4px 12px;
+            margin: 12px; border-radius: 25px; padding: 4px 12px;
         }
-        
         .inshot-input {
-            flex: 1;
-            height: 44px;
-            background: transparent;
-            color: white;
-            font-size: 1rem;
-            text-align: center;
-            padding: 0 10px;
+            flex: 1; height: 44px; background: transparent;
+            color: white; font-size: 1rem; text-align: center; padding: 0 10px;
         }
-        
         .inshot-input::placeholder { color: var(--text-muted); }
-        
-        .inshot-clear {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            padding: 8px;
-        }
-        
+        .inshot-clear { color: var(--text-muted); font-size: 1.1rem; padding: 8px; }
         .inshot-tools-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             padding: 10px 20px 15px;
             border-top: 1px solid rgba(255,255,255,0.05);
         }
-        
-        .inshot-center-tools {
-            display: flex;
-            gap: 25px;
-        }
-        
-        .inshot-tool-btn {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            transition: color 0.2s;
-        }
-        
+        .inshot-center-tools { display: flex; gap: 25px; }
+        .inshot-tool-btn { color: var(--text-muted); font-size: 1.1rem; transition: color 0.2s; }
         .inshot-tool-btn.active { color: white; }
-        
         .inshot-action-btn {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.2rem;
         }
-        
         .inshot-action-btn.done { color: var(--success); }
         
-        /*=====================================================
-          📤 Export Modal
-        =====================================================*/
+        /* Modal */
         .modal-overlay {
-            position: fixed;
-            inset: 0;
+            position: fixed; inset: 0;
             background: rgba(0,0,0,0.7);
             backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            padding: 20px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: all 0.3s; padding: 20px;
         }
-        
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
+        .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal {
-            width: 100%;
-            max-width: 380px;
+            width: 100%; max-width: 380px;
             background: var(--bg-card);
-            border-radius: 20px;
-            overflow: hidden;
-            transform: scale(0.9);
-            transition: transform 0.3s;
+            border-radius: 20px; overflow: hidden;
+            transform: scale(0.9); transition: transform 0.3s;
         }
-        
-        .modal-overlay.active .modal {
-            transform: scale(1);
-        }
-        
+        .modal-overlay.active .modal { transform: scale(1); }
         .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        
         .modal-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 0.95rem; font-weight: 700;
+            display: flex; align-items: center; gap: 8px;
         }
-        
         .modal-title i { color: var(--primary); }
-        
         .modal-close {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            color: var(--text-muted);
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; color: var(--text-muted);
         }
-        
         .modal-close:active { background: rgba(255,255,255,0.1); }
-        
-        .modal-body {
-            padding: 16px;
-            max-height: 50vh;
-            overflow-y: auto;
-        }
-        
+        .modal-body { padding: 16px; max-height: 50vh; overflow-y: auto; }
         .modal-footer {
             padding: 12px 16px;
             border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
+            display: flex; gap: 10px; justify-content: flex-end;
         }
-        
         .btn {
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            padding: 10px 20px; border-radius: 10px;
+            font-size: 0.85rem; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 6px;
             transition: all 0.2s;
         }
-        
         .btn:active { transform: scale(0.97); }
         .btn-primary { background: var(--primary); color: white; }
         .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text-white); }
-        
-        .export-format-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        
+        .export-format-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
         .export-format {
             padding: 12px 8px;
             background: rgba(255,255,255,0.03);
             border: 2px solid transparent;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 10px; text-align: center;
+            cursor: pointer; transition: all 0.2s;
         }
-        
-        .export-format.active {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
-        
+        .export-format.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
         .export-format-icon {
-            width: 36px;
-            height: 36px;
-            margin: 0 auto 6px;
+            width: 36px; height: 36px; margin: 0 auto 6px;
             background: rgba(255,255,255,0.05);
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: var(--text-muted);
         }
-        
         .export-format.active .export-format-icon { background: var(--primary); color: white; }
-        
         .export-format-name { font-size: 0.8rem; font-weight: 600; }
         .export-format-ext { font-size: 0.65rem; color: var(--text-muted); }
-        
-        .quality-presets {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-        
+        .quality-presets { display: flex; gap: 6px; margin-bottom: 10px; }
         .quality-preset {
-            flex: 1;
-            padding: 8px;
+            flex: 1; padding: 8px;
             background: rgba(255,255,255,0.05);
             border: 1px solid transparent;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-gray);
-            cursor: pointer;
+            border-radius: 8px; text-align: center;
+            font-size: 0.7rem; font-weight: 600;
+            color: var(--text-gray); cursor: pointer;
         }
-        
         .quality-preset.active { background: var(--primary); color: white; }
-        
         .export-size-info {
-            display: flex;
-            justify-content: space-around;
+            display: flex; justify-content: space-around;
             padding: 12px;
             background: rgba(255,255,255,0.03);
-            border-radius: 10px;
-            margin-top: 12px;
+            border-radius: 10px; margin-top: 12px;
         }
-        
         .size-info-item { text-align: center; }
         .size-info-value { font-size: 0.95rem; font-weight: 700; }
         .size-info-label { font-size: 0.65rem; color: var(--text-muted); }
         
-        /*=====================================================
-          🔔 Toast
-        =====================================================*/
+        /* Toast */
         .toast-container {
             position: fixed;
             top: calc(var(--header-height) + var(--safe-top) + 10px);
-            right: 10px;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            right: 10px; z-index: 2000;
+            display: flex; flex-direction: column; gap: 8px;
         }
-        
         .toast {
             padding: 12px 16px;
             background: var(--bg-card);
             border-radius: 12px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 220px;
-            max-width: 300px;
+            display: flex; align-items: center; gap: 10px;
+            min-width: 220px; max-width: 300px;
             transform: translateX(120%);
             transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             border-right: 3px solid var(--primary);
         }
-        
         .toast.show { transform: translateX(0); }
         .toast.success { border-right-color: var(--success); }
         .toast.error { border-right-color: var(--danger); }
         .toast.warning { border-right-color: var(--warning); }
-        
         .toast-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
             background: rgba(99, 102, 241, 0.2);
-            color: var(--primary);
-            font-size: 0.8rem;
+            color: var(--primary); font-size: 0.8rem;
         }
-        
         .toast.success .toast-icon { background: rgba(34, 197, 94, 0.2); color: var(--success); }
         .toast.error .toast-icon { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        
         .toast-content { flex: 1; }
         .toast-title { font-size: 0.8rem; font-weight: 600; }
         .toast-message { font-size: 0.7rem; color: var(--text-gray); }
+        .toast-close { color: var(--text-muted); font-size: 0.8rem; padding: 4px; }
         
-        .toast-close {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            padding: 4px;
-        }
-        
-        /*=====================================================
-          🔧 Utilities
-        =====================================================*/
         .hidden { display: none !important; }
         .mt-sm { margin-top: 8px; }
         
@@ -1346,16 +703,10 @@
     </style>
 </head>
 <body>
-    <!-- Splash -->
     <div id="splash-screen">
         <div class="splash-logo">
             <svg viewBox="0 0 100 100" fill="none">
-                <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#6366f1"/>
-                        <stop offset="100%" stop-color="#a855f7"/>
-                    </linearGradient>
-                </defs>
+                <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#a855f7"/></linearGradient></defs>
                 <rect x="10" y="10" width="80" height="80" rx="20" fill="url(#grad)"/>
                 <text x="50" y="60" text-anchor="middle" fill="white" font-size="32" font-weight="bold">ف</text>
             </svg>
@@ -1365,7 +716,6 @@
         <div class="splash-loader"></div>
     </div>
 
-    <!-- Home Screen -->
     <div id="home-screen">
         <div class="home-header">
             <div class="home-logo"><i class="fas fa-font"></i></div>
@@ -1376,43 +726,21 @@
             <h3 class="section-title"><i class="fas fa-rocket"></i> ابدأ التصميم</h3>
             <div class="main-actions-grid">
                 <div class="action-card" id="start-empty-btn">
-                    <div class="action-icon" style="background: linear-gradient(135deg, #6366f1, #a855f7);">
-                        <i class="fas fa-plus"></i>
-                    </div>
+                    <div class="action-icon" style="background: linear-gradient(135deg, #6366f1, #a855f7);"><i class="fas fa-plus"></i></div>
                     <span>مساحة فارغة</span>
                 </div>
                 <div class="action-card" id="start-image-btn">
-                    <div class="action-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
-                        <i class="fas fa-image"></i>
-                    </div>
+                    <div class="action-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);"><i class="fas fa-image"></i></div>
                     <span>من صورة</span>
                 </div>
             </div>
-
             <h3 class="section-title"><i class="fas fa-expand"></i> المقاس</h3>
             <div class="presets-scroll" id="presets-scroll">
-                <div class="preset-card active" data-width="1080" data-height="1080">
-                    <div class="preset-ratio ratio-1-1"></div>
-                    <span class="preset-name">مربع</span>
-                    <span class="preset-size">1080×1080</span>
-                </div>
-                <div class="preset-card" data-width="1080" data-height="1920">
-                    <div class="preset-ratio ratio-9-16"></div>
-                    <span class="preset-name">ستوري</span>
-                    <span class="preset-size">1080×1920</span>
-                </div>
-                <div class="preset-card" data-width="1080" data-height="1350">
-                    <div class="preset-ratio ratio-4-5"></div>
-                    <span class="preset-name">بورتريه</span>
-                    <span class="preset-size">1080×1350</span>
-                </div>
-                <div class="preset-card" data-width="1920" data-height="1080">
-                    <div class="preset-ratio ratio-16-9"></div>
-                    <span class="preset-name">أفقي</span>
-                    <span class="preset-size">1920×1080</span>
-                </div>
+                <div class="preset-card active" data-width="1080" data-height="1080"><div class="preset-ratio ratio-1-1"></div><span class="preset-name">مربع</span><span class="preset-size">1080×1080</span></div>
+                <div class="preset-card" data-width="1080" data-height="1920"><div class="preset-ratio ratio-9-16"></div><span class="preset-name">ستوري</span><span class="preset-size">1080×1920</span></div>
+                <div class="preset-card" data-width="1080" data-height="1350"><div class="preset-ratio ratio-4-5"></div><span class="preset-name">بورتريه</span><span class="preset-size">1080×1350</span></div>
+                <div class="preset-card" data-width="1920" data-height="1080"><div class="preset-ratio ratio-16-9"></div><span class="preset-name">أفقي</span><span class="preset-size">1920×1080</span></div>
             </div>
-
             <h3 class="section-title"><i class="fas fa-palette"></i> لون الخلفية</h3>
             <div class="home-color-picker">
                 <input type="color" id="home-bg-color" value="#ffffff">
@@ -1428,18 +756,10 @@
         </div>
     </div>
 
-    <!-- App -->
     <div id="app">
         <header class="app-header">
-            <div class="header-left">
-                <span class="app-name">Font Studio</span>
-            </div>
-            <div class="header-center">
-                <div class="project-name">
-                    <input type="text" value="تصميم جديد" id="project-name-input">
-                    <i class="fas fa-pen"></i>
-                </div>
-            </div>
+            <div class="header-left"><span class="app-name">Font Studio</span></div>
+            <div class="header-center"><div class="project-name"><input type="text" value="تصميم جديد" id="project-name-input"><i class="fas fa-pen"></i></div></div>
             <div class="header-right">
                 <button class="header-btn" id="undo-btn" disabled><i class="fas fa-undo"></i></button>
                 <button class="header-btn" id="redo-btn" disabled><i class="fas fa-redo"></i></button>
@@ -1469,12 +789,9 @@
             <aside class="sidebar" id="sidebar">
                 <div class="panel-handle" id="panel-handle"></div>
                 <div class="sidebar-content">
-                    <!-- Text Panel -->
                     <div class="sidebar-panel active" id="panel-text">
                         <div class="panel-section">
-                            <div class="section-header">
-                                <h3 class="section-title"><i class="fas fa-text-width"></i> التنسيق</h3>
-                            </div>
+                            <div class="section-header"><h3 class="section-title"><i class="fas fa-text-width"></i> التنسيق</h3></div>
                             <div class="text-format-tools">
                                 <button class="format-btn" id="bold-btn"><i class="fas fa-bold"></i></button>
                                 <button class="format-btn" id="italic-btn"><i class="fas fa-italic"></i></button>
@@ -1485,43 +802,20 @@
                             </div>
                         </div>
                         <div class="panel-section">
-                            <div class="slider-wrapper">
-                                <div class="slider-header">
-                                    <span class="slider-label">حجم الخط</span>
-                                    <span class="slider-value" id="font-size-value">48px</span>
-                                </div>
-                                <input type="range" class="slider" id="font-size-slider" min="12" max="200" value="48">
-                            </div>
-                            <div class="slider-wrapper">
-                                <div class="slider-header">
-                                    <span class="slider-label">تباعد الأحرف</span>
-                                    <span class="slider-value" id="letter-spacing-value">0px</span>
-                                </div>
-                                <input type="range" class="slider" id="letter-spacing-slider" min="-10" max="30" value="0">
-                            </div>
-                            <div class="slider-wrapper">
-                                <div class="slider-header">
-                                    <span class="slider-label">ارتفاع السطر</span>
-                                    <span class="slider-value" id="line-height-value">1.5</span>
-                                </div>
-                                <input type="range" class="slider" id="line-height-slider" min="100" max="250" value="150">
-                            </div>
+                            <div class="slider-wrapper"><div class="slider-header"><span class="slider-label">حجم الخط</span><span class="slider-value" id="font-size-value">48px</span></div><input type="range" class="slider" id="font-size-slider" min="12" max="200" value="48"></div>
+                            <div class="slider-wrapper"><div class="slider-header"><span class="slider-label">تباعد الأحرف</span><span class="slider-value" id="letter-spacing-value">0px</span></div><input type="range" class="slider" id="letter-spacing-slider" min="-10" max="30" value="0"></div>
+                            <div class="slider-wrapper"><div class="slider-header"><span class="slider-label">ارتفاع السطر</span><span class="slider-value" id="line-height-value">1.5</span></div><input type="range" class="slider" id="line-height-slider" min="100" max="250" value="150"></div>
                         </div>
                     </div>
 
-                    <!-- Fonts Panel -->
                     <div class="sidebar-panel" id="panel-fonts">
                         <div class="panel-section">
-                            <div class="font-search-wrapper">
-                                <input type="text" class="font-search" id="font-search" placeholder="ابحث عن خط...">
-                                <i class="fas fa-search font-search-icon"></i>
-                            </div>
+                            <div class="font-search-wrapper"><input type="text" class="font-search" id="font-search" placeholder="ابحث عن خط..."><i class="fas fa-search font-search-icon"></i></div>
                             <div class="font-list" id="font-list"></div>
                         </div>
                         <div class="panel-section">
                             <div class="add-fonts-area" id="add-fonts-area">
-                                <!-- مهم جداً: accept="*/*" لحل مشكلة الخطوط الرمادية -->
-                                <input type="file" id="font-file-input" accept="*/*" multiple hidden>
+                                <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2,application/font-sfnt,font/ttf,font/otf" multiple hidden>
                                 <div class="add-fonts-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                                 <p class="add-fonts-text">اضغط لإضافة خطوط</p>
                                 <p class="add-fonts-hint">TTF, OTF, WOFF, WOFF2</p>
@@ -1529,13 +823,9 @@
                         </div>
                     </div>
 
-                    <!-- OpenType Panel -->
                     <div class="sidebar-panel" id="panel-opentype">
                         <div class="opentype-panel">
-                            <div class="opentype-header">
-                                <h3 class="opentype-title"><i class="fas fa-magic"></i> OpenType</h3>
-                                <span class="opentype-badge" id="ot-count">0</span>
-                            </div>
+                            <div class="opentype-header"><h3 class="opentype-title"><i class="fas fa-magic"></i> OpenType</h3><span class="opentype-badge" id="ot-count">0</span></div>
                             <div class="opentype-features-grid" id="ot-features">
                                 <div class="opentype-feature" data-feature="liga"><span class="feature-name">Ligatures</span><span class="feature-tag">liga</span></div>
                                 <div class="opentype-feature" data-feature="calt"><span class="feature-name">Contextual</span><span class="feature-tag">calt</span></div>
@@ -1547,23 +837,13 @@
                                 <div class="opentype-feature" data-feature="frac"><span class="feature-name">Fractions</span><span class="feature-tag">frac</span></div>
                             </div>
                         </div>
-                        <div class="panel-section">
-                            <div class="section-header"><h3 class="section-title"><i class="fas fa-star"></i> Stylistic Sets</h3></div>
-                            <div class="stylistic-sets-grid" id="ss-grid"></div>
-                        </div>
+                        <div class="panel-section"><div class="section-header"><h3 class="section-title"><i class="fas fa-star"></i> Stylistic Sets</h3></div><div class="stylistic-sets-grid" id="ss-grid"></div></div>
                     </div>
 
-                    <!-- Colors Panel -->
                     <div class="sidebar-panel" id="panel-colors">
                         <div class="panel-section">
                             <div class="section-header"><h3 class="section-title"><i class="fas fa-fill-drip"></i> لون النص</h3></div>
-                            <div class="color-picker-wrapper">
-                                <div class="color-preview" id="text-color-preview">
-                                    <input type="color" id="text-color-picker" value="#000000">
-                                    <div class="color-preview-inner" style="background:#000"></div>
-                                </div>
-                                <input type="text" class="color-hex-input" id="text-color-hex" value="#000000">
-                            </div>
+                            <div class="color-picker-wrapper"><div class="color-preview" id="text-color-preview"><input type="color" id="text-color-picker" value="#000000"><div class="color-preview-inner" style="background:#000"></div></div><input type="text" class="color-hex-input" id="text-color-hex" value="#000000"></div>
                             <div class="preset-colors mt-sm" id="text-preset-colors">
                                 <div class="preset-color" style="background:#000" data-color="#000000"></div>
                                 <div class="preset-color" style="background:#fff" data-color="#ffffff"></div>
@@ -1577,67 +857,26 @@
                         </div>
                         <div class="panel-section">
                             <div class="section-header"><h3 class="section-title"><i class="fas fa-square"></i> لون الخلفية</h3></div>
-                            <div class="color-picker-wrapper">
-                                <div class="color-preview" id="bg-color-preview">
-                                    <input type="color" id="bg-color-picker" value="#ffffff">
-                                    <div class="color-preview-inner" style="background:#fff"></div>
-                                </div>
-                                <input type="text" class="color-hex-input" id="bg-color-hex" value="#FFFFFF">
-                            </div>
+                            <div class="color-picker-wrapper"><div class="color-preview" id="bg-color-preview"><input type="color" id="bg-color-picker" value="#ffffff"><div class="color-preview-inner" style="background:#fff"></div></div><input type="text" class="color-hex-input" id="bg-color-hex" value="#FFFFFF"></div>
                         </div>
                         <div class="panel-section">
-                            <div class="section-header">
-                                <h3 class="section-title"><i class="fas fa-adjust"></i> الشفافية</h3>
-                            </div>
-                            <div class="slider-wrapper">
-                                <div class="slider-header">
-                                    <span class="slider-label">شفافية النص</span>
-                                    <span class="slider-value" id="opacity-value">100%</span>
-                                </div>
-                                <input type="range" class="slider" id="opacity-slider" min="0" max="100" value="100">
-                            </div>
+                            <div class="section-header"><h3 class="section-title"><i class="fas fa-adjust"></i> الشفافية</h3></div>
+                            <div class="slider-wrapper"><div class="slider-header"><span class="slider-label">شفافية النص</span><span class="slider-value" id="opacity-value">100%</span></div><input type="range" class="slider" id="opacity-slider" min="0" max="100" value="100"></div>
                         </div>
                         <div class="panel-section">
-                            <div class="section-header">
-                                <h3 class="section-title"><i class="fas fa-moon"></i> الظل</h3>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="shadow-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
+                            <div class="section-header"><h3 class="section-title"><i class="fas fa-moon"></i> الظل</h3><label class="toggle-switch"><input type="checkbox" id="shadow-toggle"><span class="toggle-slider"></span></label></div>
                             <div id="shadow-controls" class="hidden">
-                                <div class="slider-wrapper">
-                                    <div class="slider-header"><span class="slider-label">X</span><span class="slider-value" id="shadow-x-val">2px</span></div>
-                                    <input type="range" class="slider" id="shadow-x" min="-20" max="20" value="2">
-                                </div>
-                                <div class="slider-wrapper">
-                                    <div class="slider-header"><span class="slider-label">Y</span><span class="slider-value" id="shadow-y-val">2px</span></div>
-                                    <input type="range" class="slider" id="shadow-y" min="-20" max="20" value="2">
-                                </div>
-                                <div class="slider-wrapper">
-                                    <div class="slider-header"><span class="slider-label">Blur</span><span class="slider-value" id="shadow-blur-val">4px</span></div>
-                                    <input type="range" class="slider" id="shadow-blur" min="0" max="30" value="4">
-                                </div>
-                                <div class="color-picker-wrapper mt-sm">
-                                    <div class="color-preview" id="shadow-color-preview">
-                                        <input type="color" id="shadow-color" value="#000000">
-                                        <div class="color-preview-inner" style="background:#000"></div>
-                                    </div>
-                                </div>
+                                <div class="slider-wrapper"><div class="slider-header"><span class="slider-label">X</span><span class="slider-value" id="shadow-x-val">2px</span></div><input type="range" class="slider" id="shadow-x" min="-20" max="20" value="2"></div>
+                                <div class="slider-wrapper"><div class="slider-header"><span class="slider-label">Y</span><span class="slider-value" id="shadow-y-val">2px</span></div><input type="range" class="slider" id="shadow-y" min="-20" max="20" value="2"></div>
+                                <div class="slider-wrapper"><div class="slider-header"><span class="slider-label">Blur</span><span class="slider-value" id="shadow-blur-val">4px</span></div><input type="range" class="slider" id="shadow-blur" min="0" max="30" value="4"></div>
+                                <div class="color-picker-wrapper mt-sm"><div class="color-preview" id="shadow-color-preview"><input type="color" id="shadow-color" value="#000000"><div class="color-preview-inner" style="background:#000"></div></div></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Layers Panel -->
                     <div class="sidebar-panel" id="panel-layers">
                         <div class="panel-section">
-                            <div class="section-header">
-                                <h3 class="section-title"><i class="fas fa-layer-group"></i> الطبقات</h3>
-                                <div class="section-actions">
-                                    <button class="section-btn" id="add-layer-btn"><i class="fas fa-plus"></i></button>
-                                    <button class="section-btn" id="delete-layer-btn"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
+                            <div class="section-header"><h3 class="section-title"><i class="fas fa-layer-group"></i> الطبقات</h3><div class="section-actions"><button class="section-btn" id="add-layer-btn"><i class="fas fa-plus"></i></button><button class="section-btn" id="delete-layer-btn"><i class="fas fa-trash"></i></button></div></div>
                             <div class="layers-list" id="layers-list"></div>
                         </div>
                     </div>
@@ -1645,13 +884,9 @@
             </aside>
         </main>
 
-        <!-- InShot Toolbar -->
         <div class="inshot-overlay" id="inshot-overlay"></div>
         <div class="inshot-toolbar" id="inshot-toolbar">
-            <div class="inshot-input-row">
-                <button class="inshot-clear" id="inshot-clear"><i class="fas fa-times-circle"></i></button>
-                <input type="text" class="inshot-input" id="inshot-input" placeholder="اكتب هنا...">
-            </div>
+            <div class="inshot-input-row"><button class="inshot-clear" id="inshot-clear"><i class="fas fa-times-circle"></i></button><input type="text" class="inshot-input" id="inshot-input" placeholder="اكتب هنا..."></div>
             <div class="inshot-tools-row">
                 <button class="inshot-action-btn done" id="inshot-done"><i class="fas fa-check"></i></button>
                 <div class="inshot-center-tools">
@@ -1673,30 +908,14 @@
         </nav>
     </div>
 
-    <!-- Export Modal -->
     <div class="modal-overlay" id="export-modal">
         <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title"><i class="fas fa-download"></i> تصدير</h2>
-                <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="modal-header"><h2 class="modal-title"><i class="fas fa-download"></i> تصدير</h2><button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
                 <div class="export-format-grid">
-                    <div class="export-format active" data-format="png">
-                        <div class="export-format-icon"><i class="fas fa-image"></i></div>
-                        <div class="export-format-name">PNG</div>
-                        <div class="export-format-ext">شفاف</div>
-                    </div>
-                    <div class="export-format" data-format="jpg">
-                        <div class="export-format-icon"><i class="fas fa-file-image"></i></div>
-                        <div class="export-format-name">JPG</div>
-                        <div class="export-format-ext">مضغوط</div>
-                    </div>
-                    <div class="export-format" data-format="webp">
-                        <div class="export-format-icon"><i class="fas fa-globe"></i></div>
-                        <div class="export-format-name">WebP</div>
-                        <div class="export-format-ext">ويب</div>
-                    </div>
+                    <div class="export-format active" data-format="png"><div class="export-format-icon"><i class="fas fa-image"></i></div><div class="export-format-name">PNG</div><div class="export-format-ext">شفاف</div></div>
+                    <div class="export-format" data-format="jpg"><div class="export-format-icon"><i class="fas fa-file-image"></i></div><div class="export-format-name">JPG</div><div class="export-format-ext">مضغوط</div></div>
+                    <div class="export-format" data-format="webp"><div class="export-format-icon"><i class="fas fa-globe"></i></div><div class="export-format-name">WebP</div><div class="export-format-ext">ويب</div></div>
                 </div>
                 <div class="quality-presets">
                     <button class="quality-preset" data-q="50">منخفضة</button>
@@ -1704,19 +923,14 @@
                     <button class="quality-preset active" data-q="90">عالية</button>
                     <button class="quality-preset" data-q="100">قصوى</button>
                 </div>
-                <div class="slider-wrapper">
-                    <input type="range" class="slider" id="quality-slider" min="10" max="100" value="90">
-                </div>
+                <div class="slider-wrapper"><input type="range" class="slider" id="quality-slider" min="10" max="100" value="90"></div>
                 <div class="export-size-info">
                     <div class="size-info-item"><div class="size-info-value" id="exp-w">1080</div><div class="size-info-label">العرض</div></div>
                     <div class="size-info-item"><div class="size-info-value">×</div><div class="size-info-label"></div></div>
                     <div class="size-info-item"><div class="size-info-value" id="exp-h">1080</div><div class="size-info-label">الارتفاع</div></div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="export-cancel">إلغاء</button>
-                <button class="btn btn-primary" id="export-confirm"><i class="fas fa-download"></i> تصدير</button>
-            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" id="export-cancel">إلغاء</button><button class="btn btn-primary" id="export-confirm"><i class="fas fa-download"></i> تصدير</button></div>
         </div>
     </div>
 
