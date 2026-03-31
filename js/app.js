@@ -230,6 +230,7 @@ class FontStudioApp {
         this.elements.zoomFit = document.getElementById('zoom-fit');
         this.elements.zoomValue = document.getElementById('zoom-value');
         this.elements.addTextBtn = document.getElementById('add-text-btn');
+        this.elements.canvasTools = document.querySelector('.canvas-tools'); // السحر: تعريف الكبسولة للتحكم بها
         
         // Bottom Panels (بديل الشريط الجانبي)
         this.elements.sidebarPanels = document.querySelectorAll('.sidebar-panel');
@@ -868,36 +869,27 @@ class FontStudioApp {
         const hammer = new Hammer.Manager(container);
         
         const pinch = new Hammer.Pinch();
-        // تفعيل السحب في جميع الاتجاهات بدون تأخير
         const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 0 }); 
-        const tap = new Hammer.Tap({ taps: 2 });
+        const tap = new Hammer.Tap({ taps: 1 }); // السحر: ضغطة واحدة للتحديد والتعديل
         
         hammer.add([pinch, pan, tap]);
         
-        let initialZoom = 1;
-        let initialPanX = 0;
-        let initialPanY = 0;
-        
-        // --- متغيرات تحريك الطبقات (السحر الجديد) ---
         let isDraggingLayer = false;
         let draggedLayer = null;
         let initialLayerX = 0;
         let initialLayerY = 0;
+        let initialFontSize = 48; // لتكبير النص
 
-        // دالة مساعدة لمعرفة هل إصبعك لمس النص/الصورة أم لمس الفراغ
         const getHitLayer = (center) => {
             const rect = this.elements.canvas.getBoundingClientRect();
-            // تحويل إحداثيات الشاشة إلى إحداثيات الكانفاس الداخلية (مثل 1080x1080)
             const x = (center.x - rect.left) * (this.elements.canvas.width / rect.width);
             const y = (center.y - rect.top) * (this.elements.canvas.height / rect.height);
             
             const ctx = this.elements.ctx;
-            // فحص الطبقات العلوية أولاً
             const layers = [...this.state.layers].reverse(); 
             
             for (const layer of layers) {
                 if (!layer.visible || layer.locked) continue;
-                
                 if (layer.type === 'text') {
                     ctx.save();
                     ctx.font = `${layer.properties.fontSize}px "${layer.properties.fontFamily}"`;
@@ -906,14 +898,9 @@ class FontStudioApp {
                     const height = layer.properties.fontSize;
                     ctx.restore();
                     
-                    // التوسيع قليلاً (+30) لتسهيل التقاط النص بالإصبع
-                    if (x >= layer.x - width/2 - 30 && x <= layer.x + width/2 + 30 &&
-                        y >= layer.y - height/2 - 30 && y <= layer.y + height/2 + 30) {
-                        return layer;
-                    }
-                } else if (layer.type === 'image' || layer.type === 'shape') {
-                    if (x >= layer.x && x <= layer.x + layer.width &&
-                        y >= layer.y && y <= layer.y + layer.height) {
+                    // مساحة التقاط ممتازة حول النص
+                    if (x >= layer.x - width/2 - 40 && x <= layer.x + width/2 + 40 &&
+                        y >= layer.y - height/2 - 40 && y <= layer.y + height/2 + 40) {
                         return layer;
                     }
                 }
@@ -921,71 +908,75 @@ class FontStudioApp {
             return null;
         };
         
-        // تم إلغاء التكبير والتصغير للشاشة تماماً (InShot Style)
-        hammer.on('pinchstart', () => { return false; });
-        hammer.on('pinchmove', (e) => { return false; });
-        
-        hammer.on('panmove', (e) => {
-            if (isDraggingLayer && draggedLayer) {
-                // تحريك النص المباشر فقط بإصبعك
-                draggedLayer.x = initialLayerX + e.deltaX;
-                draggedLayer.y = initialLayerY + e.deltaY;
+        // 1. الضغط (Tap): تحديد النص وفتح الكيبورد فوراً
+        hammer.on('tap', (e) => {
+            const hitLayer = getHitLayer(e.center);
+            if (hitLayer && hitLayer.type === 'text') {
+                this.selectLayer(hitLayer.id);
+                this.openInShotEditor(); // فتح الكيبورد تلقائياً!
+            } else {
+                this.state.selectedElement = null;
+                this.closeInShotEditor();
                 this.render();
             }
-            // السحر هنا: الكانفاس مستحيل يتحرك من مكانه مهما سحبت
+        });
+
+        // 2. التكبير والتصغير بإصبعين (Pinch to Resize) - حصرياً للنص
+        hammer.on('pinchstart', (e) => {
+            const hitLayer = getHitLayer(e.center);
+            if (hitLayer && hitLayer.type === 'text') {
+                isDraggingLayer = true;
+                draggedLayer = hitLayer;
+                this.selectLayer(hitLayer.id);
+                initialFontSize = hitLayer.properties.fontSize;
+            }
+        });
+
+        hammer.on('pinchmove', (e) => {
+            if (isDraggingLayer && draggedLayer && draggedLayer.type === 'text') {
+                let newSize = initialFontSize * e.scale;
+                newSize = Math.max(10, Math.min(800, newSize)); // حدود التكبير
+                draggedLayer.properties.fontSize = newSize;
+                this.textProperties.fontSize = newSize;
+                
+                if(this.elements.fontSizeSlider) {
+                    this.elements.fontSizeSlider.value = newSize;
+                    this.elements.fontSizeValue.textContent = `${Math.round(newSize)}px`;
+                }
+                this.render();
+            }
         });
         
-        // السحب والتحريك (Pan)
+        // 3. السحب بإصبع واحد (Pan to Move)
         hammer.on('panstart', (e) => {
-            // السحر: بمجرد أن تلمس الكانفاس بأصبعك، يتم إنزال أي لوحة مفتوحة فوراً!
-            this.closeBottomPanel();
-            
-            isDraggingLayer = false;
-            
-            // إذا كانت أداة (السهم ↖) محددة، حاول التقاط وتحريك العنصر
-            if (this.state.currentTool === 'select') {
-                const hitLayer = getHitLayer(e.center);
-                if (hitLayer) {
-                    isDraggingLayer = true;
-                    draggedLayer = hitLayer;
-                    this.selectLayer(hitLayer.id); // تفعيل الطبقة لظهور خصائصها
-                    initialLayerX = hitLayer.x;
-                    initialLayerY = hitLayer.y;
-                    return; // الخروج لكي لا يتم تحريك الشاشة بأكملها
-                }
+            this.closeBottomPanel(); // إغلاق أي لوحة منبثقة عند لمس الشاشة
+            const hitLayer = getHitLayer(e.center);
+            if (hitLayer) {
+                isDraggingLayer = true;
+                draggedLayer = hitLayer;
+                this.selectLayer(hitLayer.id);
+                initialLayerX = hitLayer.x;
+                initialLayerY = hitLayer.y;
+            } else {
+                isDraggingLayer = false;
             }
-            
-            // إذا لم نلمس عنصراً أو الأداة ليست السهم، حرك الشاشة بأكملها
-            initialPanX = this.state.panX;
-            initialPanY = this.state.panY;
         });
         
         hammer.on('panmove', (e) => {
             if (isDraggingLayer && draggedLayer) {
-                // تحريك النص المباشر فقط (مع مراعاة نسبة التكبير الحالية)
+                // تحريك الطبقة بسلاسة
                 draggedLayer.x = initialLayerX + (e.deltaX / this.state.zoom);
                 draggedLayer.y = initialLayerY + (e.deltaY / this.state.zoom);
                 this.render();
             }
-            // السحر هنا: تم حذف كود تحريك الكانفاس بأكمله!
-            // الآن المستطيل الأبيض سيكون ثابتاً كالطوب ولن يهرب منك يميناً أو يساراً
         });
         
-        // حفظ الخطوة بعد الإفلات للتراجع (Undo)
         hammer.on('panend', (e) => {
             if (isDraggingLayer) {
                 this.saveHistory(); 
                 isDraggingLayer = false;
                 draggedLayer = null;
             }
-        });
-        
-        // نقر مزدوج لضبط حجم الشاشة (Reset zoom)
-        hammer.on('tap', () => {
-            this.state.zoom = 1;
-            this.state.panX = 0;
-            this.state.panY = 0;
-            this.updateCanvasTransform();
         });
     }
 
@@ -1087,52 +1078,37 @@ class FontStudioApp {
     }
     
     drawTextLayer(layer) {
-        // Draw specific text layer
-        this.drawTextWithProperties(layer.properties, layer.x, layer.y);
+        // نمرر id الطبقة لكي نعرف متى نرسم مربع التحديد
+        this.drawTextWithProperties(layer.properties, layer.x, layer.y, layer.id);
     }
     
     drawText() {
         if (!this.textProperties.text) return;
-        
-        const ctx = this.elements.ctx;
         const canvas = this.elements.canvas;
-        const props = this.textProperties;
-        
-        // Calculate position (center of canvas for preview)
         const x = canvas.width / 2;
         const y = canvas.height / 2;
-        
-        this.drawTextWithProperties(props, x, y);
+        this.drawTextWithProperties(this.textProperties, x, y, null);
     }
     
-    drawTextWithProperties(props, x, y) {
+    drawTextWithProperties(props, x, y, layerId) {
         const ctx = this.elements.ctx;
-        
         if (!props.text) return;
         
         ctx.save();
         
-        // ==========================================
-        // 🪄 سحر الأوبن تايب (OpenType Magic)
-        // تطبيق الخصائص على الكانفاس مباشرة لتدعم الزخارف والبدائل العربية
-        // ==========================================
+        // تطبيق خصائص OpenType
         this.elements.canvas.style.fontFeatureSettings = props.openTypeFeatures || 'normal';
         this.elements.canvas.style.fontVariantLigatures = 'normal';
         
-        // Build font string
-        let fontStyle = '';
-        if (props.fontStyle === 'italic') fontStyle = 'italic ';
+        let fontStyle = props.fontStyle === 'italic' ? 'italic ' : '';
         let fontWeight = props.fontWeight === 'bold' ? 'bold ' : '';
         
         ctx.font = `${fontStyle}${fontWeight}${props.fontSize}px "${props.fontFamily}"`;
         ctx.textAlign = props.textAlign === 'justify' ? 'center' : props.textAlign;
         ctx.textBaseline = 'middle';
         ctx.globalAlpha = props.opacity;
-        
-        // Apply letter spacing (using character by character for spacing)
         ctx.letterSpacing = `${props.letterSpacing}px`;
         
-        // Split text into lines
         const lines = props.text.split('\n');
         const lineHeightPx = props.fontSize * props.lineHeight;
         const totalHeight = lines.length * lineHeightPx;
@@ -1141,7 +1117,6 @@ class FontStudioApp {
         lines.forEach((line, index) => {
             const lineY = startY + index * lineHeightPx;
             
-            // Apply shadow
             if (props.shadow && props.shadow.enabled) {
                 ctx.shadowColor = props.shadow.color;
                 ctx.shadowOffsetX = props.shadow.x;
@@ -1149,7 +1124,6 @@ class FontStudioApp {
                 ctx.shadowBlur = props.shadow.blur;
             }
             
-            // Draw stroke
             if (props.stroke && props.stroke.enabled) {
                 ctx.strokeStyle = props.stroke.color;
                 ctx.lineWidth = props.stroke.width * 2;
@@ -1157,16 +1131,13 @@ class FontStudioApp {
                 this.drawTextLine(ctx, line, x, lineY, props.letterSpacing, true);
             }
             
-            // Reset shadow for fill
             if (props.shadow && props.shadow.enabled) {
                 ctx.shadowColor = 'transparent';
             }
             
-            // Draw fill
             ctx.fillStyle = props.color;
             this.drawTextLine(ctx, line, x, lineY, props.letterSpacing, false);
             
-            // Draw underline
             if (props.textDecoration === 'underline') {
                 const textWidth = ctx.measureText(line).width;
                 const underlineY = lineY + props.fontSize * 0.15;
@@ -1178,7 +1149,6 @@ class FontStudioApp {
                 ctx.stroke();
             }
             
-            // Draw strikethrough
             if (props.textDecoration === 'line-through') {
                 const textWidth = ctx.measureText(line).width;
                 ctx.beginPath();
@@ -1190,9 +1160,57 @@ class FontStudioApp {
             }
         });
         
+        // ==========================================
+        // 🌟 رسم مربع التحديد الاحترافي (InShot Style Box)
+        // ==========================================
+        if (layerId && this.state.selectedElement === layerId) {
+            // قياس أعرض سطر لضبط عرض المربع
+            let maxLineWidth = 0;
+            lines.forEach(line => {
+                const w = ctx.measureText(line).width;
+                if(w > maxLineWidth) maxLineWidth = w;
+            });
+            
+            const boxWidth = maxLineWidth + 60; // مساحة إضافية مريحة
+            const boxHeight = totalHeight + 40;
+            const boxX = x - boxWidth / 2;
+            const boxY = y - boxHeight / 2;
+
+            // رسم الإطار الأبيض
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 4;
+            ctx.setLineDash([0, 0]); // خط متصل وليس منقط
+            ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+            ctx.shadowColor = 'transparent';
+
+            // زر الحذف (أحمر أعلى اليسار)
+            ctx.fillStyle = '#ff4d4f';
+            ctx.beginPath();
+            ctx.arc(boxX, boxY, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('×', boxX, boxY);
+
+            // زر التكبير/التصغير (أبيض أسفل اليمين)
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(boxX + boxWidth, boxY + boxHeight, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('⤢', boxX + boxWidth, boxY + boxHeight);
+        }
+
         ctx.restore();
-        
-        // إرجاع الكانفاس لحالته الطبيعية بعد الرسم حتى لا تتأثر الطبقات الأخرى بزخارف هذا النص
         this.elements.canvas.style.fontFeatureSettings = 'normal';
     }
     
@@ -1214,7 +1232,7 @@ class FontStudioApp {
             totalWidth += width + letterSpacing;
             return width;
         });
-        totalWidth -= letterSpacing; // Remove last spacing
+        totalWidth -= letterSpacing; 
         
         let currentX = x - totalWidth / 2;
         
@@ -1227,6 +1245,7 @@ class FontStudioApp {
             currentX += charWidths[i] + letterSpacing;
         });
     }
+
     
     // =====================================================
     // 🔤 OpenType Features
@@ -1800,10 +1819,14 @@ class FontStudioApp {
 
     openInShotEditor() {
         if (!this.elements.inshotToolbar) return;
+        
         this.elements.inshotToolbar.classList.remove('hidden');
         document.querySelector('.bottom-nav').style.display = 'none';
         
-        // السحر هنا: إغلاق اللوحة الكبيرة (الجانبية/السفلية) بالقوة حتى لا تظهر خلف الكيبورد
+        // إخفاء كبسولة الأدوات العائمة (الأيقونات فوق الشريط) لمنع التداخل
+        if(this.elements.canvasTools) this.elements.canvasTools.style.display = 'none';
+        
+        // إغلاق أي لوحة كبيرة كانت مفتوحة بالقوة
         this.closeBottomPanel();
         
         this.elements.inshotInput.value = this.textProperties.text || '';
@@ -1812,14 +1835,20 @@ class FontStudioApp {
 
     closeInShotEditor() {
         if (!this.elements.inshotToolbar) return;
+        
         this.elements.inshotToolbar.classList.add('hidden');
         document.querySelector('.bottom-nav').style.display = 'flex';
+        
+        // إظهار كبسولة الأدوات العائمة مرة أخرى عند الانتهاء
+        if(this.elements.canvasTools) this.elements.canvasTools.style.display = 'flex';
+        
         this.closeBottomPanel();
         
-        // إزالة التحديد الأبيض عند الانتهاء لتنظيف الشاشة تماماً (مثل إنشوت)
+        // إزالة التحديد عند الانتهاء لتنظيف الشاشة تماماً
         this.state.selectedElement = null;
         this.render();
     }
+
     
     setTool(tool) {
         this.state.currentTool = tool;
