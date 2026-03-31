@@ -1,95 +1,46 @@
 /**
- * Font Studio Pro - Service Worker v2.0
- * تم التحديث لحل مشكلة الكاش
+ * =====================================================
+ * 🚀 Font Studio Pro - Service Worker v2.0
+ * =====================================================
  */
 
-const CACHE_VERSION = 'v2.0.1'; // ⭐ غيّر هذا الرقم كل مرة تحدث فيها الملفات
-const CACHE_NAME = 'font-studio-' + CACHE_VERSION;
+const CACHE_VERSION = 'v2.0.3';
+const CACHE_NAME = 'fontstudio-' + CACHE_VERSION;
 
-// =====================================================
-// 📥 Install - تثبيت وتخطي الانتظار فوراً
-// =====================================================
-self.addEventListener('install', (event) => {
-    console.log('🔧 SW: Installing new version...');
-    self.skipWaiting(); // ⭐ تفعيل فوري بدون انتظار
+// التثبيت
+self.addEventListener('install', () => {
+    console.log('⚡ SW ' + CACHE_VERSION + ' installing...');
+    self.skipWaiting();
 });
 
-// =====================================================
-// 🔄 Activate - حذف جميع الكاش القديم
-// =====================================================
+// التفعيل وحذف الكاش القديم
 self.addEventListener('activate', (event) => {
-    console.log('🔧 SW: Activating...');
-    
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    // حذف أي كاش لا يطابق الإصدار الحالي
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('🗑️ Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        }).then(() => {
-            console.log('✅ SW: Activated and claimed clients');
-            return self.clients.claim(); // ⭐ التحكم فوراً في جميع الصفحات
-        })
+        caches.keys().then((keys) => 
+            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+        ).then(() => self.clients.claim())
     );
+    console.log('✅ SW ' + CACHE_VERSION + ' activated');
 });
 
-// =====================================================
-// 🌐 Fetch - استراتيجية Network First (الشبكة أولاً)
-// =====================================================
+// استراتيجية Network First
 self.addEventListener('fetch', (event) => {
-    // تجاهل الطلبات غير GET
     if (event.request.method !== 'GET') return;
-    
-    // تجاهل طلبات chrome-extension وغيرها
     if (!event.request.url.startsWith('http')) return;
-
+    
     event.respondWith(
-        // ⭐ جرب الشبكة أولاً (للحصول على أحدث نسخة)
         fetch(event.request)
-            .then((response) => {
-                // إذا نجح، خزّن نسخة في الكاش
-                if (response.ok) {
-                    const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
-                    });
+            .then((res) => {
+                if (res.ok) {
+                    const clone = res.clone();
+                    caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
                 }
-                return response;
+                return res;
             })
-            .catch(() => {
-                // إذا فشلت الشبكة، استخدم الكاش
-                return caches.match(event.request).then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-                    // صفحة Offline إذا لم يوجد كاش
-                    return new Response('Offline', { 
-                        status: 503, 
-                        statusText: 'Service Unavailable' 
-                    });
-                });
-            })
+            .catch(() => caches.match(event.request))
     );
 });
 
-// =====================================================
-// 📨 Message - استقبال الرسائل من التطبيق
-// =====================================================
-self.addEventListener('message', (event) => {
-    if (event.data === 'skipWaiting') {
-        self.skipWaiting();
-    }
-    
-    if (event.data === 'clearCache') {
-        caches.keys().then((names) => {
-            names.forEach((name) => caches.delete(name));
-        });
-    }
+self.addEventListener('message', (e) => {
+    if (e.data === 'skipWaiting') self.skipWaiting();
 });
-
-console.log('🚀 Font Studio SW v' + CACHE_VERSION + ' loaded');
