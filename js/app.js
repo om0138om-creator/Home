@@ -1,88 +1,62 @@
 /**
  * =====================================================
- * 🎨 Font Studio Pro - Professional Design Application
+ * 🎨 Font Studio Pro - Professional Design App
  * =====================================================
- * تطبيق احترافي لتصميم الصور مع دعم كامل لـ OpenType
- * 
- * @version 2.0.0 (Refactored)
+ * @version 2.0.0 - Final Fixed Version
  */
 
 'use strict';
 
 // =====================================================
-// 🔧 Configuration & Constants
+// 🔧 Configuration
 // =====================================================
 
 const CONFIG = {
-    APP_NAME: 'فونت ستوديو',
-    VERSION: '2.0.0',
-    
     CANVAS: {
         DEFAULT_WIDTH: 1080,
         DEFAULT_HEIGHT: 1080,
         MIN_ZOOM: 0.1,
-        MAX_ZOOM: 5,
+        MAX_ZOOM: 3,
         ZOOM_STEP: 0.1,
-        PADDING: 30
+        PADDING: 20
     },
-    
     TEXT: {
         DEFAULT_SIZE: 48,
-        MIN_SIZE: 8,
-        MAX_SIZE: 500,
-        DEFAULT_COLOR: '#000000',
-        DEFAULT_FONT: 'Cairo'
+        MIN_SIZE: 12,
+        MAX_SIZE: 300,
+        DEFAULT_FONT: 'Cairo',
+        DEFAULT_COLOR: '#000000'
     },
-    
     STORAGE: {
-        FONTS: 'fontStudio_fonts',
-        PROJECTS: 'fontStudio_projects',
-        SETTINGS: 'fontStudio_settings',
-        CURRENT_PROJECT: 'fontStudio_currentProject'
-    },
-    
-    OPENTYPE_FEATURES: {
-        'liga': { name: 'Standard Ligatures', description: 'الرباطات القياسية' },
-        'dlig': { name: 'Discretionary Ligatures', description: 'الرباطات الاختيارية' },
-        'calt': { name: 'Contextual Alternates', description: 'البدائل السياقية' },
-        'salt': { name: 'Stylistic Alternates', description: 'البدائل الأسلوبية' },
-        'swsh': { name: 'Swash', description: 'الزخرفات' },
-        'smcp': { name: 'Small Capitals', description: 'الأحرف الكبيرة الصغيرة' },
-        'lnum': { name: 'Lining Figures', description: 'الأرقام المصفوفة' },
-        'onum': { name: 'Oldstyle Figures', description: 'الأرقام القديمة' },
-        'pnum': { name: 'Proportional Figures', description: 'الأرقام المتناسبة' },
-        'tnum': { name: 'Tabular Figures', description: 'الأرقام الجدولية' },
-        'frac': { name: 'Fractions', description: 'الكسور' },
-        'kern': { name: 'Kerning', description: 'المسافات بين الحروف' },
-        'case': { name: 'Case-Sensitive Forms', description: 'الأشكال الحساسة' }
+        FONTS: 'fs_fonts',
+        PROJECT: 'fs_project'
     }
 };
 
 // =====================================================
-// 🎯 Main Application Class
+// 🎯 Main App Class
 // =====================================================
 
 class FontStudioApp {
     constructor() {
-        // State
         this.state = {
-            currentTool: 'select',
             zoom: 1,
-            panX: 0,
-            panY: 0,
-            selectedElement: null,
-            currentFont: null,
-            loadedFonts: new Map(),
+            selectedLayer: null,
             layers: [],
             history: [],
             historyIndex: -1,
-            activeOpenTypeFeatures: new Set(),
-            activeStylisticSets: new Set(),
-            activeCharacterVariants: new Set()
+            activeFeatures: new Set(),
+            activeSS: new Set()
         };
-        
-        // Text properties
-        this.textProperties = {
+
+        this.canvas = {
+            width: CONFIG.CANVAS.DEFAULT_WIDTH,
+            height: CONFIG.CANVAS.DEFAULT_HEIGHT,
+            bgColor: '#ffffff',
+            bgImage: null
+        };
+
+        this.textProps = {
             text: '',
             fontFamily: CONFIG.TEXT.DEFAULT_FONT,
             fontSize: CONFIG.TEXT.DEFAULT_SIZE,
@@ -93,1337 +67,1083 @@ class FontStudioApp {
             opacity: 1,
             letterSpacing: 0,
             lineHeight: 1.5,
-            textDecoration: 'none',
             shadow: { enabled: false, x: 2, y: 2, blur: 4, color: '#000000' },
-            stroke: { enabled: false, width: 1, color: '#000000' },
-            openTypeFeatures: {}
+            stroke: { enabled: false, width: 1, color: '#000000' }
         };
+
+        this.el = {};
+        this.fonts = new Map();
         
-        // Canvas properties
-        this.canvasProperties = {
-            width: CONFIG.CANVAS.DEFAULT_WIDTH,
-            height: CONFIG.CANVAS.DEFAULT_HEIGHT,
-            backgroundColor: '#ffffff',
-            backgroundImage: null
-        };
-        
-        // Elements cache
-        this.elements = {};
-        
-        // Initialize
         this.init();
     }
-    
+
     // =====================================================
     // 🚀 Initialization
     // =====================================================
-    
-    async init() {
-        console.log(`🎨 ${CONFIG.APP_NAME} v${CONFIG.VERSION} - Initializing...`);
+
+    init() {
+        console.log('🎨 Font Studio Pro - Initializing...');
         
-        try {
-            this.cacheElements();
-            this.setupCanvas();
-            this.setupEventListeners();
-            this.setupTouchGestures();
-            this.generateStylisticSetsUI();
-            this.updateFontList();
-            
-            // إخفاء شاشة التحميل
-            this.hideSplashScreen();
-            
-            // تحميل البيانات المحفوظة في الخلفية
-            await this.loadSavedData();
-            
-            console.log('✅ App initialized successfully');
-        } catch (error) {
-            console.error('❌ Initialization error:', error);
-            this.hideSplashScreen();
-        }
+        this.cacheElements();
+        this.setupEventListeners();
+        this.setupCanvas();
+        this.generateStylisticSets();
+        this.updateFontList();
+        this.loadSavedFonts();
+        
+        // Hide splash after short delay
+        setTimeout(() => {
+            document.getElementById('splash-screen')?.classList.add('hidden');
+        }, 500);
+        
+        console.log('✅ App ready!');
     }
-    
+
     cacheElements() {
-        // Main containers
-        this.elements.app = document.getElementById('app');
-        this.elements.splashScreen = document.getElementById('splash-screen');
-        this.elements.canvasContainer = document.getElementById('canvas-container');
-        this.elements.canvasWrapper = document.getElementById('canvas-wrapper');
-        this.elements.canvas = document.getElementById('main-canvas');
-        this.elements.ctx = this.elements.canvas.getContext('2d');
-        this.elements.selectionLayer = document.getElementById('selection-layer');
-        this.elements.sidebar = document.getElementById('sidebar');
-        this.elements.canvasTools = document.getElementById('canvas-tools');
+        // Screens
+        this.el.splash = document.getElementById('splash-screen');
+        this.el.home = document.getElementById('home-screen');
+        this.el.app = document.getElementById('app');
+        
+        // Home
+        this.el.startEmpty = document.getElementById('start-empty-btn');
+        this.el.startImage = document.getElementById('start-image-btn');
+        this.el.presetCards = document.querySelectorAll('.preset-card');
+        this.el.homeBgColor = document.getElementById('home-bg-color');
+        this.el.homePresetColors = document.querySelectorAll('#home-preset-colors .preset-color');
+        
+        // Canvas
+        this.el.canvasContainer = document.getElementById('canvas-container');
+        this.el.canvasWrapper = document.getElementById('canvas-wrapper');
+        this.el.canvas = document.getElementById('main-canvas');
+        this.el.ctx = this.el.canvas.getContext('2d');
+        this.el.canvasTools = document.getElementById('canvas-tools');
         
         // Header
-        this.elements.undoBtn = document.getElementById('undo-btn');
-        this.elements.redoBtn = document.getElementById('redo-btn');
-        this.elements.exportBtn = document.getElementById('export-btn');
-        this.elements.projectNameInput = document.getElementById('project-name-input');
+        this.el.projectName = document.getElementById('project-name-input');
+        this.el.undoBtn = document.getElementById('undo-btn');
+        this.el.redoBtn = document.getElementById('redo-btn');
+        this.el.exportBtn = document.getElementById('export-btn');
         
-        // Canvas tools
-        this.elements.selectTool = document.getElementById('select-tool');
-        this.elements.textTool = document.getElementById('text-tool');
-        this.elements.imageTool = document.getElementById('image-tool');
-        this.elements.shapeTool = document.getElementById('shape-tool');
-        this.elements.zoomIn = document.getElementById('zoom-in');
-        this.elements.zoomOut = document.getElementById('zoom-out');
-        this.elements.zoomFit = document.getElementById('zoom-fit');
-        this.elements.zoomValue = document.getElementById('zoom-value');
-        this.elements.addTextBtn = document.getElementById('add-text-btn');
+        // Tools
+        this.el.selectTool = document.getElementById('select-tool');
+        this.el.textTool = document.getElementById('text-tool');
+        this.el.imageTool = document.getElementById('image-tool');
+        this.el.addTextBtn = document.getElementById('add-text-btn');
+        this.el.zoomIn = document.getElementById('zoom-in');
+        this.el.zoomOut = document.getElementById('zoom-out');
+        this.el.zoomValue = document.getElementById('zoom-value');
         
-        // Panels
-        this.elements.sidebarPanels = document.querySelectorAll('.sidebar-panel');
-        this.elements.closePanelBtn = document.getElementById('close-panel-btn');
+        // Sidebar
+        this.el.sidebar = document.getElementById('sidebar');
+        this.el.panelHandle = document.getElementById('panel-handle');
+        this.el.panels = document.querySelectorAll('.sidebar-panel');
         
-        // Text panel
-        this.elements.textInput = document.getElementById('text-input');
-        this.elements.charCount = document.getElementById('char-count');
-        this.elements.fontSizeSlider = document.getElementById('font-size-slider');
-        this.elements.fontSizeValue = document.getElementById('font-size-value');
-        this.elements.letterSpacingSlider = document.getElementById('letter-spacing-slider');
-        this.elements.letterSpacingValue = document.getElementById('letter-spacing-value');
-        this.elements.lineHeightSlider = document.getElementById('line-height-slider');
-        this.elements.lineHeightValue = document.getElementById('line-height-value');
+        // Bottom Nav
+        this.el.bottomNav = document.getElementById('bottom-nav');
+        this.el.navItems = document.querySelectorAll('.nav-item');
         
-        // Format buttons
-        this.elements.boldBtn = document.getElementById('bold-btn');
-        this.elements.italicBtn = document.getElementById('italic-btn');
-        this.elements.underlineBtn = document.getElementById('underline-btn');
-        this.elements.strikethroughBtn = document.getElementById('strikethrough-btn');
-        this.elements.alignRightBtn = document.getElementById('align-right-btn');
-        this.elements.alignCenterBtn = document.getElementById('align-center-btn');
-        this.elements.alignLeftBtn = document.getElementById('align-left-btn');
-        this.elements.alignJustifyBtn = document.getElementById('align-justify-btn');
+        // Text Panel
+        this.el.boldBtn = document.getElementById('bold-btn');
+        this.el.italicBtn = document.getElementById('italic-btn');
+        this.el.underlineBtn = document.getElementById('underline-btn');
+        this.el.alignRight = document.getElementById('align-right-btn');
+        this.el.alignCenter = document.getElementById('align-center-btn');
+        this.el.alignLeft = document.getElementById('align-left-btn');
+        this.el.fontSizeSlider = document.getElementById('font-size-slider');
+        this.el.fontSizeValue = document.getElementById('font-size-value');
+        this.el.letterSpacingSlider = document.getElementById('letter-spacing-slider');
+        this.el.letterSpacingValue = document.getElementById('letter-spacing-value');
+        this.el.lineHeightSlider = document.getElementById('line-height-slider');
+        this.el.lineHeightValue = document.getElementById('line-height-value');
         
-        // Fonts panel
-        this.elements.fontSearch = document.getElementById('font-search');
-        this.elements.fontList = document.getElementById('font-list');
-        this.elements.fontsCount = document.getElementById('fonts-count');
-        this.elements.addFontsArea = document.getElementById('add-fonts-area');
-        this.elements.fontFileInput = document.getElementById('font-file-input');
+        // Fonts Panel
+        this.el.fontSearch = document.getElementById('font-search');
+        this.el.fontList = document.getElementById('font-list');
+        this.el.addFontsArea = document.getElementById('add-fonts-area');
+        this.el.fontFileInput = document.getElementById('font-file-input');
         
-        // OpenType panel
-        this.elements.openTypeFeaturesGrid = document.getElementById('opentype-features-grid');
-        this.elements.openTypeFeaturesCount = document.getElementById('opentype-features-count');
-        this.elements.stylisticSetsGrid = document.getElementById('stylistic-sets-grid');
-        this.elements.characterVariantsGrid = document.getElementById('character-variants-grid');
+        // OpenType
+        this.el.otFeatures = document.getElementById('ot-features');
+        this.el.otCount = document.getElementById('ot-count');
+        this.el.ssGrid = document.getElementById('ss-grid');
         
-        // Colors panel
-        this.elements.textColorPicker = document.getElementById('text-color-picker');
-        this.elements.textColorHex = document.getElementById('text-color-hex');
-        this.elements.textColorPreview = document.getElementById('text-color-preview');
-        this.elements.bgColorPicker = document.getElementById('bg-color-picker');
-        this.elements.bgColorHex = document.getElementById('bg-color-hex');
-        this.elements.bgColorPreview = document.getElementById('bg-color-preview');
-        this.elements.textOpacitySlider = document.getElementById('text-opacity-slider');
-        this.elements.textOpacityValue = document.getElementById('text-opacity-value');
+        // Colors
+        this.el.textColorPicker = document.getElementById('text-color-picker');
+        this.el.textColorHex = document.getElementById('text-color-hex');
+        this.el.textColorPreview = document.getElementById('text-color-preview');
+        this.el.bgColorPicker = document.getElementById('bg-color-picker');
+        this.el.bgColorHex = document.getElementById('bg-color-hex');
+        this.el.bgColorPreview = document.getElementById('bg-color-preview');
+        this.el.opacitySlider = document.getElementById('opacity-slider');
+        this.el.opacityValue = document.getElementById('opacity-value');
+        this.el.shadowToggle = document.getElementById('shadow-toggle');
+        this.el.shadowControls = document.getElementById('shadow-controls');
+        this.el.shadowX = document.getElementById('shadow-x');
+        this.el.shadowY = document.getElementById('shadow-y');
+        this.el.shadowBlur = document.getElementById('shadow-blur');
+        this.el.shadowColor = document.getElementById('shadow-color');
         
-        // Shadow controls
-        this.elements.textShadowToggle = document.getElementById('text-shadow-toggle');
-        this.elements.textShadowControls = document.getElementById('text-shadow-controls');
-        this.elements.shadowXSlider = document.getElementById('shadow-x-slider');
-        this.elements.shadowYSlider = document.getElementById('shadow-y-slider');
-        this.elements.shadowBlurSlider = document.getElementById('shadow-blur-slider');
-        this.elements.shadowColorPicker = document.getElementById('shadow-color-picker');
+        // Layers
+        this.el.layersList = document.getElementById('layers-list');
+        this.el.addLayerBtn = document.getElementById('add-layer-btn');
+        this.el.deleteLayerBtn = document.getElementById('delete-layer-btn');
         
-        // Stroke controls
-        this.elements.textStrokeToggle = document.getElementById('text-stroke-toggle');
-        this.elements.textStrokeControls = document.getElementById('text-stroke-controls');
-        this.elements.strokeWidthSlider = document.getElementById('stroke-width-slider');
-        this.elements.strokeColorPicker = document.getElementById('stroke-color-picker');
+        // InShot Toolbar
+        this.el.inshotToolbar = document.getElementById('inshot-toolbar');
+        this.el.inshotOverlay = document.getElementById('inshot-overlay');
+        this.el.inshotInput = document.getElementById('inshot-input');
+        this.el.inshotDone = document.getElementById('inshot-done');
+        this.el.inshotClose = document.getElementById('inshot-close');
+        this.el.inshotClear = document.getElementById('inshot-clear');
+        this.el.inshotTools = document.querySelectorAll('.inshot-tool-btn');
         
-        // Layers panel
-        this.elements.layersList = document.getElementById('layers-list');
-        this.elements.addLayerBtn = document.getElementById('add-layer-btn');
-        this.elements.deleteLayerBtn = document.getElementById('delete-layer-btn');
-        
-        // Export modal
-        this.elements.exportModal = document.getElementById('export-modal');
-        this.elements.closeExportModal = document.getElementById('close-export-modal');
-        this.elements.cancelExport = document.getElementById('cancel-export');
-        this.elements.confirmExport = document.getElementById('confirm-export');
-        this.elements.exportQualitySlider = document.getElementById('export-quality-slider');
+        // Export Modal
+        this.el.exportModal = document.getElementById('export-modal');
+        this.el.modalClose = document.getElementById('modal-close');
+        this.el.exportCancel = document.getElementById('export-cancel');
+        this.el.exportConfirm = document.getElementById('export-confirm');
+        this.el.exportFormats = document.querySelectorAll('.export-format');
+        this.el.qualityPresets = document.querySelectorAll('.quality-preset');
+        this.el.qualitySlider = document.getElementById('quality-slider');
+        this.el.expW = document.getElementById('exp-w');
+        this.el.expH = document.getElementById('exp-h');
         
         // Toast
-        this.elements.toastContainer = document.getElementById('toast-container');
-        
-        // Home Screen
-        this.elements.homeScreen = document.getElementById('home-screen');
-        this.elements.startEmptyBtn = document.getElementById('start-empty-btn');
-        this.elements.startImageBtn = document.getElementById('start-image-btn');
-        this.elements.presetCards = document.querySelectorAll('.preset-card');
-        this.elements.homeBgColor = document.getElementById('home-bg-color');
-        this.elements.homePresetColors = document.querySelectorAll('#home-preset-colors .preset-color');
-        
-        // إخفاء التطبيق في البداية
-        this.elements.app.style.display = 'none';
-        
-        // Bottom nav
-        this.elements.bottomNavItems = document.querySelectorAll('.nav-item');
-        this.elements.bottomNav = document.querySelector('.bottom-nav');
+        this.el.toastContainer = document.getElementById('toast-container');
+    }
 
-        // InShot Toolbar
-        this.elements.inshotToolbar = document.getElementById('inshot-text-toolbar');
-        this.elements.inshotOverlay = document.getElementById('inshot-editor-overlay');
-        this.elements.inshotInput = document.getElementById('inshot-main-input');
-        this.elements.inshotDone = document.getElementById('inshot-done-btn');
-        this.elements.inshotClose = document.getElementById('inshot-close-btn');
-        this.elements.inshotClear = document.getElementById('inshot-clear-text');
-        this.elements.inshotToolBtns = document.querySelectorAll('.inshot-tool-btn');
-    }
-    
     // =====================================================
-    // 🖼️ Canvas Setup (مُصلح بالكامل)
+    // 🖼️ Canvas Setup (المصلح 100%)
     // =====================================================
-    
+
     setupCanvas() {
-        const canvas = this.elements.canvas;
+        this.el.canvas.width = this.canvas.width;
+        this.el.canvas.height = this.canvas.height;
         
-        canvas.width = this.canvasProperties.width;
-        canvas.height = this.canvasProperties.height;
-        
-        // Configure context
-        this.elements.ctx.imageSmoothingEnabled = true;
-        this.elements.ctx.imageSmoothingQuality = 'high';
-        
-        this.fitCanvasToViewport();
+        this.el.ctx.imageSmoothingEnabled = true;
+        this.el.ctx.imageSmoothingQuality = 'high';
     }
-    
+
+    /**
+     * ⭐ الدالة الأهم - ضبط الكانفاس ليناسب الشاشة مع الحفاظ على الأبعاد
+     */
     fitCanvasToViewport() {
-        const container = this.elements.canvasContainer;
-        const wrapper = this.elements.canvasWrapper;
+        const container = this.el.canvasContainer;
+        const wrapper = this.el.canvasWrapper;
         
         if (!container || !wrapper) return;
-        
+
+        // الحصول على أبعاد الحاوية المتاحة
         const containerRect = container.getBoundingClientRect();
         const padding = CONFIG.CANVAS.PADDING;
         
         const availableWidth = containerRect.width - (padding * 2);
         const availableHeight = containerRect.height - (padding * 2);
+
+        // حساب نسبة التصغير المطلوبة
+        const scaleX = availableWidth / this.canvas.width;
+        const scaleY = availableHeight / this.canvas.height;
         
-        const scaleX = availableWidth / this.canvasProperties.width;
-        const scaleY = availableHeight / this.canvasProperties.height;
-        
-        // اختيار أصغر نسبة لضمان ظهور الكانفاس كاملاً
+        // اختيار أصغر نسبة للحفاظ على الكانفاس كاملاً
         this.state.zoom = Math.min(scaleX, scaleY, 1);
+
+        // ⭐ تطبيق الأبعاد الفعلية (المهم جداً!)
+        wrapper.style.width = this.canvas.width + 'px';
+        wrapper.style.height = this.canvas.height + 'px';
         
-        // تطبيق الأبعاد الأصلية على الـ wrapper
-        wrapper.style.width = `${this.canvasProperties.width}px`;
-        wrapper.style.height = `${this.canvasProperties.height}px`;
-        
-        this.updateCanvasTransform();
-        this.render();
-    }
-    
-    updateCanvasTransform() {
-        const wrapper = this.elements.canvasWrapper;
-        if (!wrapper) return;
-        
+        // تطبيق التكبير/التصغير
         wrapper.style.transform = `scale(${this.state.zoom})`;
         
-        if (this.elements.zoomValue) {
-            this.elements.zoomValue.textContent = `${Math.round(this.state.zoom * 100)}%`;
+        // تحديث قيمة الزوم في الواجهة
+        if (this.el.zoomValue) {
+            this.el.zoomValue.textContent = Math.round(this.state.zoom * 100) + '%';
         }
+
+        this.render();
     }
-    
+
     // =====================================================
     // 📱 Event Listeners
     // =====================================================
-    
+
     setupEventListeners() {
-        // إغلاق اللوحة السفلية
-        if (this.elements.closePanelBtn) {
-            this.elements.closePanelBtn.addEventListener('click', () => this.closeBottomPanel());
-        }
+        // ===== HOME SCREEN =====
+        this.setupHomeScreen();
         
-        // InShot Editor
-        this.setupInShotEditor();
-        
-        // إغلاق اللوحة عند لمس الكانفاس
-        this.elements.canvasContainer.addEventListener('click', (e) => {
-            if (e.target === this.elements.canvasContainer) {
-                this.closeBottomPanel();
+        // ===== CANVAS =====
+        this.el.canvasContainer?.addEventListener('click', (e) => {
+            if (e.target === this.el.canvasContainer) {
+                this.closePanel();
+                this.state.selectedLayer = null;
+                this.render();
             }
         });
+
+        // ===== PANEL =====
+        this.el.panelHandle?.addEventListener('click', () => this.closePanel());
         
-        // Bottom nav
-        this.elements.bottomNavItems.forEach(item => {
+        // ===== BOTTOM NAV =====
+        this.el.navItems?.forEach(item => {
             item.addEventListener('click', () => {
                 const panel = item.dataset.panel;
-                
                 if (panel === 'text') {
-                    const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-                    if (activeLayer && activeLayer.type === 'text') {
+                    const layer = this.getSelectedTextLayer();
+                    if (layer) {
                         this.openInShotEditor();
                     } else {
                         this.addTextLayer();
                     }
                 } else {
-                    this.switchTab(panel);
+                    this.openPanel(panel);
                 }
             });
         });
+
+        // ===== TOOLS =====
+        this.el.addTextBtn?.addEventListener('click', () => this.addTextLayer());
+        this.el.zoomIn?.addEventListener('click', () => this.zoom(1));
+        this.el.zoomOut?.addEventListener('click', () => this.zoom(-1));
         
-        // Text sliders
-        this.setupSliders();
-        
-        // Format buttons
+        // ===== FORMAT BUTTONS =====
         this.setupFormatButtons();
         
-        // Color pickers
-        this.setupColorPickers();
+        // ===== SLIDERS =====
+        this.setupSliders();
         
-        // Font management
-        this.setupFontManagement();
+        // ===== COLORS =====
+        this.setupColors();
         
-        // OpenType features
-        this.setupOpenTypeFeatures();
+        // ===== FONTS =====
+        this.setupFonts();
         
-        // Zoom controls
-        this.elements.zoomIn?.addEventListener('click', () => this.zoomIn());
-        this.elements.zoomOut?.addEventListener('click', () => this.zoomOut());
-        this.elements.zoomFit?.addEventListener('click', () => this.fitCanvasToViewport());
+        // ===== OPENTYPE =====
+        this.setupOpenType();
         
-        // Canvas tools
-        this.elements.selectTool?.addEventListener('click', () => this.setTool('select'));
-        this.elements.textTool?.addEventListener('click', () => this.setTool('text'));
-        this.elements.imageTool?.addEventListener('click', () => this.setTool('image'));
-        this.elements.shapeTool?.addEventListener('click', () => this.setTool('shape'));
-        this.elements.addTextBtn?.addEventListener('click', () => this.addTextLayer());
+        // ===== LAYERS =====
+        this.el.addLayerBtn?.addEventListener('click', () => this.addTextLayer());
+        this.el.deleteLayerBtn?.addEventListener('click', () => this.deleteSelectedLayer());
         
-        // Header buttons
-        this.elements.undoBtn?.addEventListener('click', () => this.undo());
-        this.elements.redoBtn?.addEventListener('click', () => this.redo());
-        this.elements.exportBtn?.addEventListener('click', () => this.openExportModal());
+        // ===== INSHOT EDITOR =====
+        this.setupInShotEditor();
         
-        // Export modal
-        this.setupExportModal();
+        // ===== EXPORT =====
+        this.setupExport();
         
-        // Keyboard shortcuts
+        // ===== HEADER =====
+        this.el.undoBtn?.addEventListener('click', () => this.undo());
+        this.el.redoBtn?.addEventListener('click', () => this.redo());
+        this.el.exportBtn?.addEventListener('click', () => this.openExportModal());
+        
+        // ===== TOUCH =====
+        this.setupTouch();
+        
+        // ===== KEYBOARD =====
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
         
-        // Window resize
-        let resizeTimeout;
+        // ===== RESIZE =====
+        let resizeTimer;
         window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => this.fitCanvasToViewport(), 100);
-        });
-        
-        // Home Screen
-        this.setupHomeScreen();
-        
-        // Mouse wheel zoom
-        this.elements.canvasContainer?.addEventListener('wheel', (e) => {
-            if (e.ctrlKey) {
-                e.preventDefault();
-                e.deltaY < 0 ? this.zoomIn() : this.zoomOut();
-            }
-        }, { passive: false });
-    }
-    
-    setupInShotEditor() {
-        if (!this.elements.inshotInput) return;
-        
-        this.elements.inshotInput.addEventListener('input', (e) => {
-            const text = e.target.value;
-            this.textProperties.text = text;
-            
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.text = text;
-            }
-            this.render();
-        });
-
-        this.elements.inshotClear?.addEventListener('click', () => {
-            this.elements.inshotInput.value = '';
-            this.elements.inshotInput.dispatchEvent(new Event('input'));
-            this.elements.inshotInput.focus();
-        });
-
-        this.elements.inshotDone?.addEventListener('click', () => this.closeInShotEditor());
-        this.elements.inshotClose?.addEventListener('click', () => this.closeInShotEditor());
-        this.elements.inshotOverlay?.addEventListener('click', () => this.closeInShotEditor());
-
-        this.elements.inshotToolBtns?.forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.elements.inshotToolBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                const target = btn.dataset.target;
-                if (target === 'keyboard') {
-                    this.closeBottomPanel();
-                    this.elements.inshotInput.focus();
-                } else if (target === 'format') {
-                    this.switchTab('text');
-                } else {
-                    this.switchTab(target);
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (this.el.app.classList.contains('active')) {
+                    this.fitCanvasToViewport();
                 }
-            });
+            }, 150);
         });
     }
-    
-    setupSliders() {
-        // Font size
-        this.elements.fontSizeSlider?.addEventListener('input', (e) => {
-            const size = parseInt(e.target.value);
-            this.textProperties.fontSize = size;
-            this.elements.fontSizeValue.textContent = `${size}px`;
-            
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.fontSize = size;
-            }
-            this.render();
-        });
-        
-        // Letter spacing
-        this.elements.letterSpacingSlider?.addEventListener('input', (e) => {
-            const spacing = parseInt(e.target.value);
-            this.textProperties.letterSpacing = spacing;
-            this.elements.letterSpacingValue.textContent = `${spacing}px`;
-            
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.letterSpacing = spacing;
-            }
-            this.render();
-        });
-        
-        // Line height
-        this.elements.lineHeightSlider?.addEventListener('input', (e) => {
-            const height = parseInt(e.target.value) / 100;
-            this.textProperties.lineHeight = height;
-            this.elements.lineHeightValue.textContent = height.toFixed(2);
-            
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.lineHeight = height;
-            }
-            this.render();
-        });
-        
-        // Opacity
-        this.elements.textOpacitySlider?.addEventListener('input', (e) => {
-            const opacity = parseInt(e.target.value) / 100;
-            this.textProperties.opacity = opacity;
-            this.elements.textOpacityValue.textContent = `${e.target.value}%`;
-            
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.opacity = opacity;
-            }
-            this.render();
-        });
-        
-        // Shadow controls
-        this.elements.textShadowToggle?.addEventListener('change', (e) => {
-            this.textProperties.shadow.enabled = e.target.checked;
-            this.elements.textShadowControls.style.display = e.target.checked ? 'block' : 'none';
-            this.render();
-        });
-        
-        this.elements.shadowXSlider?.addEventListener('input', (e) => {
-            this.textProperties.shadow.x = parseInt(e.target.value);
-            document.getElementById('shadow-x-value').textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        this.elements.shadowYSlider?.addEventListener('input', (e) => {
-            this.textProperties.shadow.y = parseInt(e.target.value);
-            document.getElementById('shadow-y-value').textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        this.elements.shadowBlurSlider?.addEventListener('input', (e) => {
-            this.textProperties.shadow.blur = parseInt(e.target.value);
-            document.getElementById('shadow-blur-value').textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        this.elements.shadowColorPicker?.addEventListener('input', (e) => {
-            this.textProperties.shadow.color = e.target.value;
-            this.render();
-        });
-        
-        // Stroke controls
-        this.elements.textStrokeToggle?.addEventListener('change', (e) => {
-            this.textProperties.stroke.enabled = e.target.checked;
-            this.elements.textStrokeControls.style.display = e.target.checked ? 'block' : 'none';
-            this.render();
-        });
-        
-        this.elements.strokeWidthSlider?.addEventListener('input', (e) => {
-            this.textProperties.stroke.width = parseInt(e.target.value);
-            document.getElementById('stroke-width-value').textContent = `${e.target.value}px`;
-            this.render();
-        });
-        
-        this.elements.strokeColorPicker?.addEventListener('input', (e) => {
-            this.textProperties.stroke.color = e.target.value;
-            this.render();
-        });
-    }
-    
-    setupFormatButtons() {
-        this.elements.boldBtn?.addEventListener('click', () => this.toggleBold());
-        this.elements.italicBtn?.addEventListener('click', () => this.toggleItalic());
-        this.elements.underlineBtn?.addEventListener('click', () => this.toggleUnderline());
-        this.elements.strikethroughBtn?.addEventListener('click', () => this.toggleStrikethrough());
-        
-        this.elements.alignRightBtn?.addEventListener('click', () => this.setTextAlign('right'));
-        this.elements.alignCenterBtn?.addEventListener('click', () => this.setTextAlign('center'));
-        this.elements.alignLeftBtn?.addEventListener('click', () => this.setTextAlign('left'));
-        this.elements.alignJustifyBtn?.addEventListener('click', () => this.setTextAlign('justify'));
-    }
-    
-    setupColorPickers() {
-        // Text color
-        this.elements.textColorPicker?.addEventListener('input', (e) => {
-            const color = e.target.value;
-            this.textProperties.color = color;
-            this.elements.textColorHex.value = color.toUpperCase();
-            this.updateColorPreview('text', color);
-            
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                activeLayer.properties.color = color;
-            }
-            this.render();
-        });
-        
-        this.elements.textColorHex?.addEventListener('change', (e) => {
-            const color = this.validateHexColor(e.target.value);
-            if (color) {
-                this.textProperties.color = color;
-                this.elements.textColorPicker.value = color;
-                this.updateColorPreview('text', color);
-                this.render();
-            }
-        });
-        
-        // Background color
-        this.elements.bgColorPicker?.addEventListener('input', (e) => {
-            const color = e.target.value;
-            this.canvasProperties.backgroundColor = color;
-            this.elements.bgColorHex.value = color.toUpperCase();
-            this.updateColorPreview('bg', color);
-            this.render();
-        });
-        
-        this.elements.bgColorHex?.addEventListener('change', (e) => {
-            const color = this.validateHexColor(e.target.value);
-            if (color) {
-                this.canvasProperties.backgroundColor = color;
-                this.elements.bgColorPicker.value = color;
-                this.updateColorPreview('bg', color);
-                this.render();
-            }
-        });
-        
-        // Preset colors
-        document.querySelectorAll('#text-preset-colors .preset-color').forEach(preset => {
-            preset.addEventListener('click', () => {
-                const color = preset.dataset.color;
-                this.textProperties.color = color;
-                this.elements.textColorPicker.value = color;
-                this.elements.textColorHex.value = color.toUpperCase();
-                this.updateColorPreview('text', color);
-                
-                const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-                if (activeLayer && activeLayer.type === 'text') {
-                    activeLayer.properties.color = color;
-                }
-                this.render();
-            });
-        });
-        
-        document.querySelectorAll('#bg-preset-colors .preset-color').forEach(preset => {
-            preset.addEventListener('click', () => {
-                const color = preset.dataset.color;
-                this.canvasProperties.backgroundColor = color;
-                this.elements.bgColorPicker.value = color;
-                this.elements.bgColorHex.value = color.toUpperCase();
-                this.updateColorPreview('bg', color);
-                this.render();
-            });
-        });
-    }
-    
-    setupFontManagement() {
-        this.elements.fontSearch?.addEventListener('input', (e) => {
-            this.filterFonts(e.target.value);
-        });
-        
-        this.elements.addFontsArea?.addEventListener('click', () => {
-            this.elements.fontFileInput.click();
-        });
-        
-        this.elements.fontFileInput?.addEventListener('change', (e) => {
-            this.handleFontFiles(e.target.files);
-        });
-        
-        // Drag and drop
-        this.elements.addFontsArea?.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            this.elements.addFontsArea.classList.add('dragging');
-        });
-        
-        this.elements.addFontsArea?.addEventListener('dragleave', () => {
-            this.elements.addFontsArea.classList.remove('dragging');
-        });
-        
-        this.elements.addFontsArea?.addEventListener('drop', (e) => {
-            e.preventDefault();
-            this.elements.addFontsArea.classList.remove('dragging');
-            this.handleFontFiles(e.dataTransfer.files);
-        });
-    }
-    
-    setupOpenTypeFeatures() {
-        this.elements.openTypeFeaturesGrid?.addEventListener('click', (e) => {
-            const feature = e.target.closest('.opentype-feature');
-            if (feature && !feature.classList.contains('unavailable')) {
-                this.toggleOpenTypeFeature(feature.dataset.feature);
-            }
-        });
-    }
-    
-    setupExportModal() {
-        this.elements.closeExportModal?.addEventListener('click', () => this.closeExportModal());
-        this.elements.cancelExport?.addEventListener('click', () => this.closeExportModal());
-        this.elements.confirmExport?.addEventListener('click', () => this.exportImage());
-        
-        document.querySelectorAll('.export-format').forEach(format => {
-            format.addEventListener('click', () => {
-                document.querySelectorAll('.export-format').forEach(f => f.classList.remove('active'));
-                format.classList.add('active');
-            });
-        });
-        
-        document.querySelectorAll('.quality-preset').forEach(preset => {
-            preset.addEventListener('click', () => {
-                document.querySelectorAll('.quality-preset').forEach(p => p.classList.remove('active'));
-                preset.classList.add('active');
-                this.elements.exportQualitySlider.value = parseFloat(preset.dataset.quality) * 100;
-            });
-        });
-    }
-    
+
+    // =====================================================
+    // 🏠 Home Screen (المصلح)
+    // =====================================================
+
     setupHomeScreen() {
         let selectedWidth = 1080;
         let selectedHeight = 1080;
         let selectedBgColor = '#ffffff';
-        
-        // اختيار المقاس
-        this.elements.presetCards?.forEach(card => {
+
+        // Preset cards
+        this.el.presetCards?.forEach(card => {
             card.addEventListener('click', () => {
-                this.elements.presetCards.forEach(c => c.classList.remove('active'));
+                this.el.presetCards.forEach(c => c.classList.remove('active'));
                 card.classList.add('active');
                 selectedWidth = parseInt(card.dataset.width);
                 selectedHeight = parseInt(card.dataset.height);
             });
         });
 
-        // لون الخلفية
-        this.elements.homeBgColor?.addEventListener('input', (e) => {
+        // Background color picker
+        this.el.homeBgColor?.addEventListener('input', (e) => {
             selectedBgColor = e.target.value;
-            this.elements.homePresetColors.forEach(c => c.classList.remove('active'));
+            this.el.homePresetColors?.forEach(c => c.classList.remove('active'));
         });
 
-        this.elements.homePresetColors?.forEach(preset => {
-            preset.addEventListener('click', () => {
-                this.elements.homePresetColors.forEach(c => c.classList.remove('active'));
-                preset.classList.add('active');
-                selectedBgColor = preset.dataset.color;
-                this.elements.homeBgColor.value = selectedBgColor;
+        // Preset colors
+        this.el.homePresetColors?.forEach(c => {
+            c.addEventListener('click', () => {
+                this.el.homePresetColors.forEach(x => x.classList.remove('active'));
+                c.classList.add('active');
+                selectedBgColor = c.dataset.color;
+                if (this.el.homeBgColor) this.el.homeBgColor.value = selectedBgColor;
             });
         });
 
-        // زر مساحة فارغة
-        this.elements.startEmptyBtn?.addEventListener('click', () => {
-            // مسح البيانات القديمة
-            localforage.removeItem(CONFIG.STORAGE.CURRENT_PROJECT);
-            
+        // ⭐ Start Empty - المصلح
+        this.el.startEmpty?.addEventListener('click', () => {
+            // تعيين الأبعاد
+            this.canvas.width = selectedWidth;
+            this.canvas.height = selectedHeight;
+            this.canvas.bgColor = selectedBgColor;
+            this.canvas.bgImage = null;
+
+            // تطبيق على الكانفاس
+            this.el.canvas.width = selectedWidth;
+            this.el.canvas.height = selectedHeight;
+
+            // مسح الطبقات
             this.state.layers = [];
-            this.state.selectedElement = null;
-            
-            this.canvasProperties.width = selectedWidth;
-            this.canvasProperties.height = selectedHeight;
-            this.canvasProperties.backgroundColor = selectedBgColor;
-            
-            this.elements.canvas.width = selectedWidth;
-            this.elements.canvas.height = selectedHeight;
-            
-            this.elements.canvasWrapper.style.width = `${selectedWidth}px`;
-            this.elements.canvasWrapper.style.height = `${selectedHeight}px`;
-            
-            // إظهار التطبيق وإخفاء الشاشة الرئيسية
-            this.elements.app.style.display = 'flex';
-            this.elements.homeScreen.classList.add('hidden-slide');
-            
-            // إغلاق أي لوحة شبح
-            this.closeBottomPanel();
-            
-            setTimeout(() => {
-                this.updateLayersList();
-                this.fitCanvasToViewport();
-                this.render();
-                this.saveHistory();
-            }, 100);
+            this.state.selectedLayer = null;
+
+            // إظهار التطبيق
+            this.showApp();
         });
 
-        // زر من صورة
-        this.elements.startImageBtn?.addEventListener('click', () => {
+        // ⭐ Start with Image - المصلح
+        this.el.startImage?.addEventListener('click', () => {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*';
+            
             input.onchange = (e) => {
                 const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            this.canvasProperties.width = img.width;
-                            this.canvasProperties.height = img.height;
-                            this.elements.canvas.width = img.width;
-                            this.elements.canvas.height = img.height;
+                if (!file) return;
 
-                            const layer = {
-                                id: `layer_bg_${Date.now()}`,
-                                type: 'image',
-                                name: 'خلفية الصورة',
-                                visible: true,
-                                locked: true,
-                                opacity: 1,
-                                image: img,
-                                x: 0, y: 0,
-                                width: img.width,
-                                height: img.height
-                            };
-                            this.state.layers = [layer];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // ⭐ استخدام أبعاد الصورة الأصلية
+                        this.canvas.width = img.width;
+                        this.canvas.height = img.height;
+                        this.canvas.bgColor = '#ffffff';
+                        this.canvas.bgImage = img;
 
-                            this.elements.app.style.display = 'flex';
-                            this.elements.homeScreen.classList.add('hidden-slide');
-                            
-                            this.closeBottomPanel();
-                            
-                            setTimeout(() => {
-                                this.updateLayersList();
-                                this.fitCanvasToViewport();
-                                this.render();
-                                this.saveHistory();
-                            }, 100);
-                        };
-                        img.src = event.target.result;
+                        this.el.canvas.width = img.width;
+                        this.el.canvas.height = img.height;
+
+                        // مسح الطبقات وإضافة الصورة كخلفية
+                        this.state.layers = [];
+                        this.state.selectedLayer = null;
+
+                        this.showApp();
                     };
-                    reader.readAsDataURL(file);
-                }
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
             };
+            
             input.click();
         });
     }
-    
-    // =====================================================
-    // 👆 Touch Gestures (Hammer.js - مُحسّن)
-    // =====================================================
-    
-    setupTouchGestures() {
-        const container = this.elements.canvasContainer;
-        if (!container || typeof Hammer === 'undefined') return;
-        
-        const hammer = new Hammer.Manager(container);
-        
-        // إعداد الإيماءات مع حساسية مناسبة
-        const pinch = new Hammer.Pinch();
-        const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
-        const tap = new Hammer.Tap({ taps: 1 });
-        
-        hammer.add([pinch, pan, tap]);
-        pinch.recognizeWith(pan);
-        
-        let isDragging = false;
-        let draggedLayer = null;
-        let initialX = 0;
-        let initialY = 0;
-        let initialFontSize = 48;
 
-        // دالة لإيجاد الطبقة تحت إصبع المستخدم
-        const getHitLayer = (center) => {
-            const rect = this.elements.canvas.getBoundingClientRect();
-            const x = (center.x - rect.left) * (this.elements.canvas.width / rect.width);
-            const y = (center.y - rect.top) * (this.elements.canvas.height / rect.height);
-            
-            const ctx = this.elements.ctx;
-            const layers = [...this.state.layers].reverse();
-            
-            for (const layer of layers) {
-                if (!layer.visible || layer.locked) continue;
-                
-                if (layer.type === 'text') {
-                    ctx.save();
-                    ctx.font = `${layer.properties.fontSize}px "${layer.properties.fontFamily}"`;
-                    const metrics = ctx.measureText(layer.properties.text || ' ');
-                    const width = metrics.width;
-                    const height = layer.properties.fontSize;
-                    ctx.restore();
-                    
-                    const hitPadding = 30;
-                    if (x >= layer.x - width/2 - hitPadding && x <= layer.x + width/2 + hitPadding &&
-                        y >= layer.y - height/2 - hitPadding && y <= layer.y + height/2 + hitPadding) {
-                        return layer;
-                    }
-                } else if (layer.type === 'image') {
-                    if (x >= layer.x && x <= layer.x + layer.width &&
-                        y >= layer.y && y <= layer.y + layer.height) {
-                        return layer;
-                    }
-                }
-            }
-            return null;
-        };
+    showApp() {
+        // إخفاء الشاشة الرئيسية
+        this.el.home?.classList.add('hidden');
         
-        // Tap: تحديد النص وفتح المحرر
-        hammer.on('tap', (e) => {
-            const hitLayer = getHitLayer(e.center);
-            
-            if (hitLayer && hitLayer.type === 'text') {
-                this.selectLayer(hitLayer.id);
-                this.openInShotEditor();
-            } else {
-                this.state.selectedElement = null;
-                this.closeInShotEditor();
-                this.closeBottomPanel();
-                this.render();
-            }
-        });
-
-        // Pinch: تكبير/تصغير النص
-        hammer.on('pinchstart', (e) => {
-            const hitLayer = getHitLayer(e.center);
-            if (hitLayer && hitLayer.type === 'text') {
-                isDragging = true;
-                draggedLayer = hitLayer;
-                this.selectLayer(hitLayer.id);
-                initialFontSize = hitLayer.properties.fontSize;
-            }
-        });
-
-        hammer.on('pinchmove', (e) => {
-            if (isDragging && draggedLayer && draggedLayer.type === 'text') {
-                let newSize = initialFontSize * e.scale;
-                newSize = Math.max(CONFIG.TEXT.MIN_SIZE, Math.min(CONFIG.TEXT.MAX_SIZE, newSize));
-                
-                draggedLayer.properties.fontSize = Math.round(newSize);
-                this.textProperties.fontSize = Math.round(newSize);
-                
-                if (this.elements.fontSizeSlider) {
-                    this.elements.fontSizeSlider.value = newSize;
-                    this.elements.fontSizeValue.textContent = `${Math.round(newSize)}px`;
-                }
-                this.render();
-            }
-        });
-
-        hammer.on('pinchend', () => {
-            if (isDragging) {
-                this.saveHistory();
-                isDragging = false;
-                draggedLayer = null;
-            }
-        });
+        // إظهار التطبيق
+        this.el.app?.classList.add('active');
         
-        // Pan: تحريك النص
-        hammer.on('panstart', (e) => {
-            this.closeBottomPanel();
-            
-            const hitLayer = getHitLayer(e.center);
-            if (hitLayer && !hitLayer.locked) {
-                isDragging = true;
-                draggedLayer = hitLayer;
-                this.selectLayer(hitLayer.id);
-                initialX = hitLayer.x;
-                initialY = hitLayer.y;
-            }
-        });
+        // إغلاق أي لوحة مفتوحة
+        this.closePanel();
         
-        hammer.on('panmove', (e) => {
-            if (isDragging && draggedLayer) {
-                draggedLayer.x = initialX + (e.deltaX / this.state.zoom);
-                draggedLayer.y = initialY + (e.deltaY / this.state.zoom);
-                this.render();
-            }
-        });
-        
-        hammer.on('panend', () => {
-            if (isDragging) {
-                this.saveHistory();
-                isDragging = false;
-                draggedLayer = null;
-            }
-        });
+        // ضبط الكانفاس بعد ظهور التطبيق
+        setTimeout(() => {
+            this.fitCanvasToViewport();
+            this.updateLayersList();
+            this.saveHistory();
+        }, 50);
     }
 
     // =====================================================
     // 🎨 Rendering
     // =====================================================
-    
+
     render() {
-        const ctx = this.elements.ctx;
-        const canvas = this.elements.canvas;
-        
+        const ctx = this.el.ctx;
+        const canvas = this.el.canvas;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // رسم الخلفية
-        this.drawBackground();
-        
-        // رسم الطبقات
-        this.drawLayers();
-    }
-    
-    drawBackground() {
-        const ctx = this.elements.ctx;
-        const canvas = this.elements.canvas;
-        
-        ctx.fillStyle = this.canvasProperties.backgroundColor;
+
+        // Background
+        ctx.fillStyle = this.canvas.bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        if (this.canvasProperties.backgroundImage) {
-            ctx.drawImage(
-                this.canvasProperties.backgroundImage,
-                0, 0, canvas.width, canvas.height
-            );
+
+        // Background image
+        if (this.canvas.bgImage) {
+            ctx.drawImage(this.canvas.bgImage, 0, 0, canvas.width, canvas.height);
         }
-    }
-    
-    drawLayers() {
+
+        // Layers
         this.state.layers.forEach(layer => {
             if (!layer.visible) return;
             
-            const ctx = this.elements.ctx;
             ctx.save();
             ctx.globalAlpha = layer.opacity || 1;
-            
-            switch (layer.type) {
-                case 'image':
-                    this.drawImageLayer(layer);
-                    break;
-                case 'shape':
-                    this.drawShapeLayer(layer);
-                    break;
-                case 'text':
-                    this.drawTextLayer(layer);
-                    break;
+
+            if (layer.type === 'text') {
+                this.renderTextLayer(ctx, layer);
+            } else if (layer.type === 'image') {
+                this.renderImageLayer(ctx, layer);
             }
-            
+
             ctx.restore();
         });
     }
-    
-    drawImageLayer(layer) {
-        const ctx = this.elements.ctx;
-        if (layer.image) {
-            ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
-        }
-    }
-    
-    drawShapeLayer(layer) {
-        const ctx = this.elements.ctx;
-        ctx.fillStyle = layer.fill || '#ffffff';
-        ctx.strokeStyle = layer.stroke || '#000000';
-        ctx.lineWidth = layer.strokeWidth || 1;
-        
-        switch (layer.shape) {
-            case 'rectangle':
-                ctx.fillRect(layer.x, layer.y, layer.width, layer.height);
-                if (layer.strokeWidth > 0) {
-                    ctx.strokeRect(layer.x, layer.y, layer.width, layer.height);
-                }
-                break;
-            case 'circle':
-                ctx.beginPath();
-                ctx.arc(
-                    layer.x + layer.width / 2,
-                    layer.y + layer.height / 2,
-                    Math.min(layer.width, layer.height) / 2,
-                    0, Math.PI * 2
-                );
-                ctx.fill();
-                if (layer.strokeWidth > 0) ctx.stroke();
-                break;
-        }
-    }
-    
-    drawTextLayer(layer) {
-        this.drawTextWithProperties(layer.properties, layer.x, layer.y, layer.id);
-    }
-    
-    drawTextWithProperties(props, x, y, layerId) {
-        const ctx = this.elements.ctx;
-        if (!props.text) return;
-        
-        ctx.save();
-        
-        // Font
-        const fontStyle = props.fontStyle === 'italic' ? 'italic ' : '';
-        const fontWeight = props.fontWeight === 'bold' ? 'bold ' : '';
-        ctx.font = `${fontStyle}${fontWeight}${props.fontSize}px "${props.fontFamily}"`;
-        ctx.textAlign = props.textAlign === 'justify' ? 'center' : props.textAlign;
-        ctx.textBaseline = 'middle';
-        ctx.globalAlpha = props.opacity || 1;
-        
-        const lines = props.text.split('\n');
-        const lineHeightPx = props.fontSize * (props.lineHeight || 1.5);
-        const totalHeight = lines.length * lineHeightPx;
-        const startY = y - totalHeight / 2 + lineHeightPx / 2;
-        
-        lines.forEach((line, index) => {
-            const lineY = startY + index * lineHeightPx;
-            
-            // Shadow
-            if (props.shadow && props.shadow.enabled) {
-                ctx.shadowColor = props.shadow.color;
-                ctx.shadowOffsetX = props.shadow.x;
-                ctx.shadowOffsetY = props.shadow.y;
-                ctx.shadowBlur = props.shadow.blur;
-            }
-            
-            // Stroke
-            if (props.stroke && props.stroke.enabled) {
-                ctx.strokeStyle = props.stroke.color;
-                ctx.lineWidth = props.stroke.width * 2;
-                ctx.lineJoin = 'round';
-                this.drawTextLine(ctx, line, x, lineY, props.letterSpacing || 0, true);
-            }
-            
-            // Clear shadow for fill
-            if (props.shadow && props.shadow.enabled) {
-                ctx.shadowColor = 'transparent';
-            }
-            
-            // Fill
-            ctx.fillStyle = props.color;
-            this.drawTextLine(ctx, line, x, lineY, props.letterSpacing || 0, false);
-            
-            // Text decoration
-            this.drawTextDecoration(ctx, line, x, lineY, props);
-        });
-        
-        // رسم مربع التحديد (InShot Style)
-        if (layerId && this.state.selectedElement === layerId) {
-            this.drawSelectionBox(ctx, props, x, y, lines, lineHeightPx, totalHeight);
-        }
 
-        ctx.restore();
+    renderTextLayer(ctx, layer) {
+        const p = layer.props;
+        if (!p.text) return;
+
+        // Font
+        const fontStyle = p.fontStyle === 'italic' ? 'italic ' : '';
+        const fontWeight = p.fontWeight === 'bold' ? 'bold ' : '';
+        ctx.font = `${fontStyle}${fontWeight}${p.fontSize}px "${p.fontFamily}"`;
+        ctx.textAlign = p.textAlign;
+        ctx.textBaseline = 'middle';
+        ctx.globalAlpha = p.opacity || 1;
+
+        const lines = p.text.split('\n');
+        const lineHeight = p.fontSize * (p.lineHeight || 1.5);
+        const totalHeight = lines.length * lineHeight;
+        const startY = layer.y - totalHeight / 2 + lineHeight / 2;
+
+        lines.forEach((line, i) => {
+            const y = startY + i * lineHeight;
+            let x = layer.x;
+
+            // Shadow
+            if (p.shadow?.enabled) {
+                ctx.shadowColor = p.shadow.color;
+                ctx.shadowOffsetX = p.shadow.x;
+                ctx.shadowOffsetY = p.shadow.y;
+                ctx.shadowBlur = p.shadow.blur;
+            }
+
+            // Stroke
+            if (p.stroke?.enabled) {
+                ctx.strokeStyle = p.stroke.color;
+                ctx.lineWidth = p.stroke.width * 2;
+                ctx.lineJoin = 'round';
+                this.drawTextLine(ctx, line, x, y, p.letterSpacing, true);
+            }
+
+            ctx.shadowColor = 'transparent';
+
+            // Fill
+            ctx.fillStyle = p.color;
+            this.drawTextLine(ctx, line, x, y, p.letterSpacing, false);
+        });
+
+        // Selection box
+        if (layer.id === this.state.selectedLayer) {
+            this.drawSelectionBox(ctx, layer, lines, lineHeight, totalHeight);
+        }
     }
-    
-    drawTextLine(ctx, text, x, y, letterSpacing, isStroke) {
-        if (letterSpacing === 0) {
+
+    drawTextLine(ctx, text, x, y, spacing, isStroke) {
+        if (!spacing || spacing === 0) {
             isStroke ? ctx.strokeText(text, x, y) : ctx.fillText(text, x, y);
             return;
         }
-        
+
         const chars = [...text];
-        let totalWidth = 0;
-        const charWidths = chars.map(char => {
-            const width = ctx.measureText(char).width;
-            totalWidth += width + letterSpacing;
-            return width;
+        let totalW = 0;
+        const widths = chars.map(c => {
+            const w = ctx.measureText(c).width;
+            totalW += w + spacing;
+            return w;
         });
-        totalWidth -= letterSpacing;
-        
-        let currentX = x - totalWidth / 2;
-        
-        chars.forEach((char, i) => {
-            const drawX = currentX + charWidths[i] / 2;
-            isStroke ? ctx.strokeText(char, drawX, y) : ctx.fillText(char, drawX, y);
-            currentX += charWidths[i] + letterSpacing;
+        totalW -= spacing;
+
+        let cx = x - totalW / 2;
+        chars.forEach((c, i) => {
+            const drawX = cx + widths[i] / 2;
+            isStroke ? ctx.strokeText(c, drawX, y) : ctx.fillText(c, drawX, y);
+            cx += widths[i] + spacing;
         });
     }
-    
-    drawTextDecoration(ctx, line, x, lineY, props) {
-        if (!props.textDecoration || props.textDecoration === 'none') return;
-        
-        const textWidth = ctx.measureText(line).width;
-        ctx.strokeStyle = props.color;
-        ctx.lineWidth = props.fontSize * 0.05;
-        
-        if (props.textDecoration === 'underline') {
-            const underlineY = lineY + props.fontSize * 0.2;
-            ctx.beginPath();
-            ctx.moveTo(x - textWidth / 2, underlineY);
-            ctx.lineTo(x + textWidth / 2, underlineY);
-            ctx.stroke();
-        }
-        
-        if (props.textDecoration === 'line-through') {
-            ctx.beginPath();
-            ctx.moveTo(x - textWidth / 2, lineY);
-            ctx.lineTo(x + textWidth / 2, lineY);
-            ctx.stroke();
-        }
-    }
-    
-    drawSelectionBox(ctx, props, x, y, lines, lineHeightPx, totalHeight) {
-        // حساب عرض أطول سطر
-        let maxLineWidth = 0;
+
+    drawSelectionBox(ctx, layer, lines, lineHeight, totalHeight) {
+        let maxW = 0;
         lines.forEach(line => {
             const w = ctx.measureText(line).width;
-            if (w > maxLineWidth) maxLineWidth = w;
+            if (w > maxW) maxW = w;
         });
-        
-        const padding = 25;
-        const boxWidth = maxLineWidth + padding * 2;
-        const boxHeight = totalHeight + padding * 2;
-        const boxX = x - boxWidth / 2;
-        const boxY = y - boxHeight / 2;
 
-        // إطار أبيض
+        const pad = 20;
+        const boxW = maxW + pad * 2;
+        const boxH = totalHeight + pad * 2;
+        const boxX = layer.x - boxW / 2;
+        const boxY = layer.y - boxH / 2;
+
+        // White border
         ctx.strokeStyle = 'white';
         ctx.lineWidth = 2;
         ctx.shadowColor = 'rgba(0,0,0,0.5)';
         ctx.shadowBlur = 4;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 2;
         ctx.setLineDash([]);
-        ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
-        
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
         ctx.shadowColor = 'transparent';
 
-        // زر الحذف (أحمر - أعلى اليسار)
-        const btnRadius = 14;
-        ctx.fillStyle = '#ff4d4f';
+        // Delete button (red circle - top left)
+        const btnR = 12;
+        ctx.fillStyle = '#ef4444';
         ctx.beginPath();
-        ctx.arc(boxX, boxY, btnRadius, 0, Math.PI * 2);
+        ctx.arc(boxX, boxY, btnR, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 16px Arial';
+        ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('×', boxX, boxY);
 
-        // زر التكبير (أبيض - أسفل اليمين)
+        // Resize button (white circle - bottom right)
         ctx.fillStyle = 'white';
         ctx.beginPath();
-        ctx.arc(boxX + boxWidth, boxY + boxHeight, btnRadius, 0, Math.PI * 2);
+        ctx.arc(boxX + boxW, boxY + boxH, btnR, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1;
         ctx.stroke();
-        
         ctx.fillStyle = '#333';
-        ctx.font = 'bold 14px Arial';
-        ctx.fillText('⤢', boxX + boxWidth, boxY + boxHeight);
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('⤢', boxX + boxW, boxY + boxH);
     }
-    
-    // =====================================================
-    // 🔤 OpenType Features
-    // =====================================================
-    
-    buildOpenTypeFontFeatureSettings() {
-        const features = [];
-        
-        this.state.activeOpenTypeFeatures.forEach(f => features.push(`"${f}" 1`));
-        this.state.activeStylisticSets.forEach(ss => features.push(`"${ss}" 1`));
-        this.state.activeCharacterVariants.forEach(cv => features.push(`"${cv}" 1`));
-        
-        return features.join(', ') || 'normal';
-    }
-    
-    toggleOpenTypeFeature(featureTag) {
-        const el = document.querySelector(`.opentype-feature[data-feature="${featureTag}"]`);
-        
-        if (this.state.activeOpenTypeFeatures.has(featureTag)) {
-            this.state.activeOpenTypeFeatures.delete(featureTag);
-            el?.classList.remove('active');
-        } else {
-            this.state.activeOpenTypeFeatures.add(featureTag);
-            el?.classList.add('active');
+
+    renderImageLayer(ctx, layer) {
+        if (layer.image) {
+            ctx.drawImage(layer.image, layer.x, layer.y, layer.width, layer.height);
         }
+    }
+
+    // =====================================================
+    // 📝 Text Layers
+    // =====================================================
+
+    addTextLayer() {
+        const layer = {
+            id: 'layer_' + Date.now(),
+            type: 'text',
+            name: 'نص ' + (this.state.layers.filter(l => l.type === 'text').length + 1),
+            visible: true,
+            locked: false,
+            opacity: 1,
+            x: this.canvas.width / 2,
+            y: this.canvas.height / 2,
+            props: {
+                text: 'نص جديد',
+                fontFamily: this.textProps.fontFamily,
+                fontSize: this.textProps.fontSize,
+                fontWeight: 'normal',
+                fontStyle: 'normal',
+                textAlign: 'center',
+                color: '#000000',
+                opacity: 1,
+                letterSpacing: 0,
+                lineHeight: 1.5,
+                shadow: { enabled: false, x: 2, y: 2, blur: 4, color: '#000000' },
+                stroke: { enabled: false, width: 1, color: '#000000' }
+            }
+        };
+
+        this.state.layers.push(layer);
+        this.state.selectedLayer = layer.id;
+        this.textProps = { ...layer.props };
+
+        this.updateLayersList();
+        this.render();
+        this.saveHistory();
+
+        // Open InShot editor
+        setTimeout(() => this.openInShotEditor(), 50);
         
-        this.updateOpenTypeFeaturesCount();
-        this.applyOpenTypeFeatures();
+        this.toast('تمت الإضافة', 'success');
+    }
+
+    getSelectedTextLayer() {
+        return this.state.layers.find(l => l.id === this.state.selectedLayer && l.type === 'text');
+    }
+
+    selectLayer(id) {
+        this.state.selectedLayer = id;
+        
+        const layer = this.state.layers.find(l => l.id === id);
+        if (layer?.type === 'text') {
+            this.textProps = { ...layer.props };
+            this.updateUIFromProps();
+        }
+
+        this.updateLayersList();
         this.render();
     }
-    
-    toggleStylisticSet(ssTag) {
-        const el = document.querySelector(`.stylistic-set[data-ss="${ssTag}"]`);
+
+    updateUIFromProps() {
+        const p = this.textProps;
         
-        if (this.state.activeStylisticSets.has(ssTag)) {
-            this.state.activeStylisticSets.delete(ssTag);
-            el?.classList.remove('active');
-        } else {
-            this.state.activeStylisticSets.add(ssTag);
-            el?.classList.add('active');
+        if (this.el.fontSizeSlider) {
+            this.el.fontSizeSlider.value = p.fontSize;
+            this.el.fontSizeValue.textContent = p.fontSize + 'px';
         }
         
-        this.updateOpenTypeFeaturesCount();
-        this.applyOpenTypeFeatures();
-        this.render();
-    }
-    
-    toggleCharacterVariant(cvTag) {
-        const el = document.querySelector(`.stylistic-set[data-cv="${cvTag}"]`);
-        
-        if (this.state.activeCharacterVariants.has(cvTag)) {
-            this.state.activeCharacterVariants.delete(cvTag);
-            el?.classList.remove('active');
-        } else {
-            this.state.activeCharacterVariants.add(cvTag);
-            el?.classList.add('active');
+        if (this.el.letterSpacingSlider) {
+            this.el.letterSpacingSlider.value = p.letterSpacing || 0;
+            this.el.letterSpacingValue.textContent = (p.letterSpacing || 0) + 'px';
         }
         
-        this.updateOpenTypeFeaturesCount();
-        this.applyOpenTypeFeatures();
-        this.render();
+        if (this.el.lineHeightSlider) {
+            this.el.lineHeightSlider.value = (p.lineHeight || 1.5) * 100;
+            this.el.lineHeightValue.textContent = (p.lineHeight || 1.5).toFixed(2);
+        }
+
+        if (this.el.textColorPicker) {
+            this.el.textColorPicker.value = p.color;
+            this.el.textColorHex.value = p.color.toUpperCase();
+            this.updateColorPreview('text', p.color);
+        }
+
+        // Format buttons
+        this.el.boldBtn?.classList.toggle('active', p.fontWeight === 'bold');
+        this.el.italicBtn?.classList.toggle('active', p.fontStyle === 'italic');
+        this.el.alignRight?.classList.toggle('active', p.textAlign === 'right');
+        this.el.alignCenter?.classList.toggle('active', p.textAlign === 'center');
+        this.el.alignLeft?.classList.toggle('active', p.textAlign === 'left');
     }
-    
-    applyOpenTypeFeatures() {
-        const featureSettings = this.buildOpenTypeFontFeatureSettings();
-        this.textProperties.openTypeFeatures = featureSettings;
-        
-        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-        if (activeLayer && activeLayer.type === 'text') {
-            activeLayer.properties.openTypeFeatures = featureSettings;
+
+    updateSelectedLayer() {
+        const layer = this.getSelectedTextLayer();
+        if (layer) {
+            layer.props = { ...this.textProps };
+            this.render();
         }
     }
-    
-    updateOpenTypeFeaturesCount() {
-        const total = this.state.activeOpenTypeFeatures.size + 
-                      this.state.activeStylisticSets.size + 
-                      this.state.activeCharacterVariants.size;
+
+    deleteSelectedLayer() {
+        if (!this.state.selectedLayer) return;
         
-        if (this.elements.openTypeFeaturesCount) {
-            this.elements.openTypeFeaturesCount.textContent = total;
+        const idx = this.state.layers.findIndex(l => l.id === this.state.selectedLayer);
+        if (idx > -1) {
+            this.state.layers.splice(idx, 1);
+            this.state.selectedLayer = null;
+            this.updateLayersList();
+            this.saveHistory();
+            this.render();
+            this.toast('تم الحذف', 'success');
         }
     }
-    
-    generateStylisticSetsUI() {
-        // SS01-SS20
-        const ssGrid = this.elements.stylisticSetsGrid;
-        if (ssGrid) {
-            ssGrid.innerHTML = '';
-            for (let i = 1; i <= 20; i++) {
-                const ssTag = `ss${i.toString().padStart(2, '0')}`;
-                const el = document.createElement('div');
-                el.className = 'stylistic-set';
-                el.dataset.ss = ssTag;
-                el.textContent = `SS${i.toString().padStart(2, '0')}`;
-                el.addEventListener('click', () => this.toggleStylisticSet(ssTag));
-                ssGrid.appendChild(el);
-            }
-        }
-        
-        // CV01-CV20
-        const cvGrid = this.elements.characterVariantsGrid;
-        if (cvGrid) {
-            cvGrid.innerHTML = '';
-            for (let i = 1; i <= 20; i++) {
-                const cvTag = `cv${i.toString().padStart(2, '0')}`;
-                const el = document.createElement('div');
-                el.className = 'stylistic-set';
-                el.dataset.cv = cvTag;
-                el.textContent = `CV${i.toString().padStart(2, '0')}`;
-                el.addEventListener('click', () => this.toggleCharacterVariant(cvTag));
-                cvGrid.appendChild(el);
-            }
-        }
-    }
-    
-    async detectFontOpenTypeFeatures(fontData) {
-        try {
-            if (typeof opentype === 'undefined') return new Set();
+
+    updateLayersList() {
+        const list = this.el.layersList;
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        [...this.state.layers].reverse().forEach(layer => {
+            const el = document.createElement('div');
+            el.className = 'layer-item' + (layer.id === this.state.selectedLayer ? ' active' : '');
             
-            const font = await opentype.parse(fontData);
-            const features = new Set();
-            
-            if (font.tables.gsub?.features) {
-                font.tables.gsub.features.forEach(f => f.tag && features.add(f.tag));
-            }
-            
-            if (font.tables.gpos?.features) {
-                font.tables.gpos.features.forEach(f => f.tag && features.add(f.tag));
-            }
-            
-            return features;
-        } catch (error) {
-            console.warn('Could not detect OpenType features:', error);
-            return new Set();
-        }
-    }
-    
-    updateFeatureAvailability(availableFeatures) {
-        document.querySelectorAll('.opentype-feature').forEach(el => {
-            const feature = el.dataset.feature;
-            el.classList.toggle('unavailable', !availableFeatures.has(feature));
-        });
-        
-        document.querySelectorAll('.stylistic-set[data-ss]').forEach(el => {
-            el.classList.toggle('unavailable', !availableFeatures.has(el.dataset.ss));
-        });
-        
-        document.querySelectorAll('.stylistic-set[data-cv]').forEach(el => {
-            el.classList.toggle('unavailable', !availableFeatures.has(el.dataset.cv));
+            const icon = layer.type === 'text' ? 'fa-font' : 'fa-image';
+            const typeName = layer.type === 'text' ? 'نص' : 'صورة';
+
+            el.innerHTML = `
+                <div class="layer-thumb"><i class="fas ${icon}"></i></div>
+                <div class="layer-info">
+                    <div class="layer-name">${layer.name}</div>
+                    <div class="layer-type">${typeName}</div>
+                </div>
+                <div class="layer-actions">
+                    <button class="layer-action-btn ${layer.visible ? 'active' : ''}" data-action="visible">
+                        <i class="fas ${layer.visible ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                    </button>
+                    <button class="layer-action-btn ${layer.locked ? 'active' : ''}" data-action="lock">
+                        <i class="fas ${layer.locked ? 'fa-lock' : 'fa-unlock'}"></i>
+                    </button>
+                </div>
+            `;
+
+            el.addEventListener('click', (e) => {
+                if (!e.target.closest('.layer-action-btn')) {
+                    this.selectLayer(layer.id);
+                }
+            });
+
+            el.querySelectorAll('.layer-action-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const action = btn.dataset.action;
+                    if (action === 'visible') layer.visible = !layer.visible;
+                    if (action === 'lock') layer.locked = !layer.locked;
+                    this.updateLayersList();
+                    this.render();
+                });
+            });
+
+            list.appendChild(el);
         });
     }
-    
+
     // =====================================================
-    // 🔤 Font Management
+    // 🎬 InShot Editor
     // =====================================================
-    
-    async handleFontFiles(files) {
-        const validExtensions = ['.ttf', '.otf', '.woff', '.woff2'];
-        let addedCount = 0;
-        
-        for (const file of files) {
-            const ext = '.' + file.name.split('.').pop().toLowerCase();
-            
-            if (!validExtensions.includes(ext)) {
-                this.showToast('صيغة غير مدعومة', 'warning', `الملف ${file.name} غير مدعوم`);
-                continue;
+
+    setupInShotEditor() {
+        this.el.inshotInput?.addEventListener('input', (e) => {
+            this.textProps.text = e.target.value;
+            this.updateSelectedLayer();
+        });
+
+        this.el.inshotClear?.addEventListener('click', () => {
+            if (this.el.inshotInput) {
+                this.el.inshotInput.value = '';
+                this.el.inshotInput.focus();
+                this.textProps.text = '';
+                this.updateSelectedLayer();
             }
-            
-            try {
-                const fontData = await this.readFileAsArrayBuffer(file);
-                const fontName = file.name.replace(/\.[^.]+$/, '');
-                const fontFamily = `CustomFont_${Date.now()}_${fontName}`;
+        });
+
+        this.el.inshotDone?.addEventListener('click', () => this.closeInShotEditor());
+        this.el.inshotClose?.addEventListener('click', () => this.closeInShotEditor());
+        this.el.inshotOverlay?.addEventListener('click', () => this.closeInShotEditor());
+
+        this.el.inshotTools?.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.el.inshotTools.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
                 
-                const fontFace = new FontFace(fontFamily, fontData);
+                const panel = btn.dataset.panel;
+                if (panel === 'keyboard') {
+                    this.closePanel();
+                    this.el.inshotInput?.focus();
+                } else {
+                    this.openPanel(panel);
+                }
+            });
+        });
+    }
+
+    openInShotEditor() {
+        const layer = this.getSelectedTextLayer();
+        if (!layer) return;
+
+        if (this.el.inshotInput) {
+            this.el.inshotInput.value = layer.props.text || '';
+        }
+
+        this.el.inshotToolbar?.classList.add('active');
+        this.el.inshotOverlay?.classList.add('active');
+        
+        if (this.el.bottomNav) this.el.bottomNav.style.display = 'none';
+        if (this.el.canvasTools) this.el.canvasTools.style.display = 'none';
+
+        setTimeout(() => this.el.inshotInput?.focus(), 100);
+    }
+
+    closeInShotEditor() {
+        this.el.inshotToolbar?.classList.remove('active');
+        this.el.inshotOverlay?.classList.remove('active');
+        
+        if (this.el.bottomNav) this.el.bottomNav.style.display = 'flex';
+        if (this.el.canvasTools) this.el.canvasTools.style.display = 'flex';
+
+        this.closePanel();
+        this.saveHistory();
+    }
+
+    // =====================================================
+    // 📋 Panels
+    // =====================================================
+
+    openPanel(panelName) {
+        this.el.panels?.forEach(p => {
+            p.classList.toggle('active', p.id === 'panel-' + panelName);
+        });
+
+        this.el.navItems?.forEach(n => {
+            n.classList.toggle('active', n.dataset.panel === panelName);
+        });
+
+        this.el.sidebar?.classList.add('active');
+    }
+
+    closePanel() {
+        this.el.sidebar?.classList.remove('active');
+        this.el.navItems?.forEach(n => n.classList.remove('active'));
+    }
+
+    // =====================================================
+    // 🎨 Format Buttons
+    // =====================================================
+
+    setupFormatButtons() {
+        this.el.boldBtn?.addEventListener('click', () => {
+            this.textProps.fontWeight = this.textProps.fontWeight === 'bold' ? 'normal' : 'bold';
+            this.el.boldBtn.classList.toggle('active');
+            this.updateSelectedLayer();
+        });
+
+        this.el.italicBtn?.addEventListener('click', () => {
+            this.textProps.fontStyle = this.textProps.fontStyle === 'italic' ? 'normal' : 'italic';
+            this.el.italicBtn.classList.toggle('active');
+            this.updateSelectedLayer();
+        });
+
+        this.el.underlineBtn?.addEventListener('click', () => {
+            this.el.underlineBtn.classList.toggle('active');
+            // Note: Canvas doesn't support text-decoration directly
+        });
+
+        const setAlign = (align) => {
+            this.textProps.textAlign = align;
+            this.el.alignRight?.classList.toggle('active', align === 'right');
+            this.el.alignCenter?.classList.toggle('active', align === 'center');
+            this.el.alignLeft?.classList.toggle('active', align === 'left');
+            this.updateSelectedLayer();
+        };
+
+        this.el.alignRight?.addEventListener('click', () => setAlign('right'));
+        this.el.alignCenter?.addEventListener('click', () => setAlign('center'));
+        this.el.alignLeft?.addEventListener('click', () => setAlign('left'));
+    }
+
+    // =====================================================
+    // 📏 Sliders
+    // =====================================================
+
+    setupSliders() {
+        // Font size
+        this.el.fontSizeSlider?.addEventListener('input', (e) => {
+            const v = parseInt(e.target.value);
+            this.textProps.fontSize = v;
+            this.el.fontSizeValue.textContent = v + 'px';
+            this.updateSelectedLayer();
+        });
+
+        // Letter spacing
+        this.el.letterSpacingSlider?.addEventListener('input', (e) => {
+            const v = parseInt(e.target.value);
+            this.textProps.letterSpacing = v;
+            this.el.letterSpacingValue.textContent = v + 'px';
+            this.updateSelectedLayer();
+        });
+
+        // Line height
+        this.el.lineHeightSlider?.addEventListener('input', (e) => {
+            const v = parseInt(e.target.value) / 100;
+            this.textProps.lineHeight = v;
+            this.el.lineHeightValue.textContent = v.toFixed(2);
+            this.updateSelectedLayer();
+        });
+
+        // Opacity
+        this.el.opacitySlider?.addEventListener('input', (e) => {
+            const v = parseInt(e.target.value);
+            this.textProps.opacity = v / 100;
+            this.el.opacityValue.textContent = v + '%';
+            this.updateSelectedLayer();
+        });
+
+        // Shadow
+        this.el.shadowToggle?.addEventListener('change', (e) => {
+            this.textProps.shadow.enabled = e.target.checked;
+            this.el.shadowControls?.classList.toggle('hidden', !e.target.checked);
+            this.updateSelectedLayer();
+        });
+
+        this.el.shadowX?.addEventListener('input', (e) => {
+            this.textProps.shadow.x = parseInt(e.target.value);
+            document.getElementById('shadow-x-val').textContent = e.target.value + 'px';
+            this.updateSelectedLayer();
+        });
+
+        this.el.shadowY?.addEventListener('input', (e) => {
+            this.textProps.shadow.y = parseInt(e.target.value);
+            document.getElementById('shadow-y-val').textContent = e.target.value + 'px';
+            this.updateSelectedLayer();
+        });
+
+        this.el.shadowBlur?.addEventListener('input', (e) => {
+            this.textProps.shadow.blur = parseInt(e.target.value);
+            document.getElementById('shadow-blur-val').textContent = e.target.value + 'px';
+            this.updateSelectedLayer();
+        });
+
+        this.el.shadowColor?.addEventListener('input', (e) => {
+            this.textProps.shadow.color = e.target.value;
+            this.updateSelectedLayer();
+        });
+    }
+
+    // =====================================================
+    // 🎨 Colors
+    // =====================================================
+
+    setupColors() {
+        // Text color
+        this.el.textColorPicker?.addEventListener('input', (e) => {
+            this.textProps.color = e.target.value;
+            this.el.textColorHex.value = e.target.value.toUpperCase();
+            this.updateColorPreview('text', e.target.value);
+            this.updateSelectedLayer();
+        });
+
+        this.el.textColorHex?.addEventListener('change', (e) => {
+            let v = e.target.value;
+            if (!v.startsWith('#')) v = '#' + v;
+            if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
+                this.textProps.color = v;
+                this.el.textColorPicker.value = v;
+                this.updateColorPreview('text', v);
+                this.updateSelectedLayer();
+            }
+        });
+
+        // Preset colors
+        document.querySelectorAll('#text-preset-colors .preset-color').forEach(c => {
+            c.addEventListener('click', () => {
+                const color = c.dataset.color;
+                this.textProps.color = color;
+                this.el.textColorPicker.value = color;
+                this.el.textColorHex.value = color.toUpperCase();
+                this.updateColorPreview('text', color);
+                this.updateSelectedLayer();
+            });
+        });
+
+        // Background color
+        this.el.bgColorPicker?.addEventListener('input', (e) => {
+            this.canvas.bgColor = e.target.value;
+            this.el.bgColorHex.value = e.target.value.toUpperCase();
+            this.updateColorPreview('bg', e.target.value);
+            this.render();
+        });
+
+        this.el.bgColorHex?.addEventListener('change', (e) => {
+            let v = e.target.value;
+            if (!v.startsWith('#')) v = '#' + v;
+            if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
+                this.canvas.bgColor = v;
+                this.el.bgColorPicker.value = v;
+                this.updateColorPreview('bg', v);
+                this.render();
+            }
+        });
+    }
+
+    updateColorPreview(type, color) {
+        const preview = type === 'text' ? this.el.textColorPreview : this.el.bgColorPreview;
+        const inner = preview?.querySelector('.color-preview-inner');
+        if (inner) inner.style.background = color;
+    }
+
+    // =====================================================
+    // 🔤 Fonts (المصلح - يقبل جميع الخطوط)
+    // =====================================================
+
+    setupFonts() {
+        this.el.fontSearch?.addEventListener('input', (e) => {
+            this.filterFonts(e.target.value);
+        });
+
+        this.el.addFontsArea?.addEventListener('click', () => {
+            this.el.fontFileInput?.click();
+        });
+
+        // ⭐ المصلح: فلترة الخطوط في JavaScript بدلاً من HTML
+        this.el.fontFileInput?.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            const validExts = ['.ttf', '.otf', '.woff', '.woff2'];
+            
+            const fontFiles = files.filter(f => {
+                const ext = '.' + f.name.split('.').pop().toLowerCase();
+                return validExts.includes(ext);
+            });
+
+            if (fontFiles.length > 0) {
+                this.handleFontFiles(fontFiles);
+            } else if (files.length > 0) {
+                this.toast('صيغة غير مدعومة', 'warning', 'يرجى اختيار ملفات TTF, OTF, WOFF');
+            }
+            
+            // Reset input
+            e.target.value = '';
+        });
+
+        // Drag & drop
+        this.el.addFontsArea?.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            this.el.addFontsArea.classList.add('dragging');
+        });
+
+        this.el.addFontsArea?.addEventListener('dragleave', () => {
+            this.el.addFontsArea.classList.remove('dragging');
+        });
+
+        this.el.addFontsArea?.addEventListener('drop', (e) => {
+            e.preventDefault();
+            this.el.addFontsArea.classList.remove('dragging');
+            
+            const files = Array.from(e.dataTransfer.files);
+            const validExts = ['.ttf', '.otf', '.woff', '.woff2'];
+            
+            const fontFiles = files.filter(f => {
+                const ext = '.' + f.name.split('.').pop().toLowerCase();
+                return validExts.includes(ext);
+            });
+
+            if (fontFiles.length > 0) {
+                this.handleFontFiles(fontFiles);
+            }
+        });
+    }
+
+    async handleFontFiles(files) {
+        let count = 0;
+
+        for (const file of files) {
+            try {
+                const buffer = await this.readAsArrayBuffer(file);
+                const name = file.name.replace(/\.[^.]+$/, '');
+                const family = 'CustomFont_' + Date.now() + '_' + name;
+
+                const fontFace = new FontFace(family, buffer);
                 await fontFace.load();
                 document.fonts.add(fontFace);
-                
-                const features = await this.detectFontOpenTypeFeatures(fontData);
-                
-                this.state.loadedFonts.set(fontFamily, {
-                    name: fontName,
-                    family: fontFamily,
+
+                this.fonts.set(family, {
+                    name,
+                    family,
                     file: file.name,
-                    features: features,
-                    data: fontData
+                    data: buffer
                 });
-                
-                addedCount++;
-                
-                if (this.state.loadedFonts.size === 1) {
-                    this.selectFont(fontFamily);
+
+                count++;
+
+                if (count === 1) {
+                    this.selectFont(family);
                 }
-            } catch (error) {
-                console.error(`Error loading font ${file.name}:`, error);
-                this.showToast('خطأ في تحميل الخط', 'error', error.message);
+            } catch (err) {
+                console.error('Font load error:', err);
+                this.toast('خطأ في الخط', 'error', file.name);
             }
         }
-        
-        if (addedCount > 0) {
+
+        if (count > 0) {
             this.updateFontList();
-            this.saveFontsToStorage();
-            this.showToast('تم إضافة الخطوط', 'success', `تمت إضافة ${addedCount} خط بنجاح`);
+            this.saveFonts();
+            this.toast('تمت الإضافة', 'success', `${count} خط`);
         }
     }
-    
-    readFileAsArrayBuffer(file) {
+
+    readAsArrayBuffer(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
@@ -1431,177 +1151,134 @@ class FontStudioApp {
             reader.readAsArrayBuffer(file);
         });
     }
-    
+
     updateFontList() {
-        const fontList = this.elements.fontList;
-        if (!fontList) return;
-        
-        fontList.innerHTML = '';
-        
-        const systemFonts = ['Cairo', 'Tajawal', 'Arial', 'Tahoma', 'Times New Roman'];
-        
-        systemFonts.forEach(fontName => {
-            const item = this.createFontListItem(fontName, fontName, true);
-            fontList.appendChild(item);
+        const list = this.el.fontList;
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        // System fonts
+        const systemFonts = ['Cairo', 'Tajawal', 'Arial', 'Tahoma'];
+        systemFonts.forEach(name => {
+            list.appendChild(this.createFontItem(name, name, true));
         });
-        
-        this.state.loadedFonts.forEach((fontInfo, fontFamily) => {
-            const item = this.createFontListItem(fontInfo.name, fontFamily, false);
-            fontList.appendChild(item);
+
+        // Custom fonts
+        this.fonts.forEach((info, family) => {
+            list.appendChild(this.createFontItem(info.name, family, false));
         });
-        
-        if (this.elements.fontsCount) {
-            this.elements.fontsCount.textContent = systemFonts.length + this.state.loadedFonts.size;
-        }
     }
-    
-    createFontListItem(displayName, fontFamily, isSystem) {
-        const item = document.createElement('div');
-        item.className = 'font-item';
-        item.dataset.family = fontFamily;
-        
-        if (fontFamily === this.textProperties.fontFamily) {
-            item.classList.add('active');
-        }
-        
-        item.innerHTML = `
-            <div style="flex: 1;">
-                <div class="font-item-preview" style="font-family: '${fontFamily}'">أبجد هوز حطي</div>
+
+    createFontItem(displayName, family, isSystem) {
+        const el = document.createElement('div');
+        el.className = 'font-item' + (family === this.textProps.fontFamily ? ' active' : '');
+        el.dataset.family = family;
+
+        el.innerHTML = `
+            <div style="flex:1">
+                <div class="font-item-preview" style="font-family:'${family}'">أبجد هوز</div>
                 <div class="font-item-name">${displayName}</div>
             </div>
-            ${!isSystem ? `
-                <button class="section-btn delete-font" title="حذف" style="color: var(--danger-500);">
-                    <i class="fas fa-trash"></i>
-                </button>
-            ` : ''}
+            ${!isSystem ? '<button class="section-btn" style="color:var(--danger)"><i class="fas fa-trash"></i></button>' : ''}
         `;
-        
-        item.addEventListener('click', (e) => {
-            if (!e.target.closest('.delete-font')) {
-                this.selectFont(fontFamily);
+
+        el.addEventListener('click', (e) => {
+            if (!e.target.closest('.section-btn')) {
+                this.selectFont(family);
             }
         });
-        
-        const deleteBtn = item.querySelector('.delete-font');
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', (e) => {
+
+        const delBtn = el.querySelector('.section-btn');
+        if (delBtn) {
+            delBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.deleteFont(fontFamily);
+                this.fonts.delete(family);
+                this.updateFontList();
+                this.saveFonts();
+                if (this.textProps.fontFamily === family) {
+                    this.selectFont('Cairo');
+                }
             });
         }
-        
-        return item;
+
+        return el;
     }
-    
-    selectFont(fontFamily) {
-        this.textProperties.fontFamily = fontFamily;
-        
-        document.querySelectorAll('.font-item').forEach(item => {
-            item.classList.toggle('active', item.dataset.family === fontFamily);
+
+    selectFont(family) {
+        this.textProps.fontFamily = family;
+
+        document.querySelectorAll('.font-item').forEach(el => {
+            el.classList.toggle('active', el.dataset.family === family);
         });
-        
-        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-        if (activeLayer && activeLayer.type === 'text') {
-            activeLayer.properties.fontFamily = fontFamily;
-        }
-        
-        const fontInfo = this.state.loadedFonts.get(fontFamily);
-        if (fontInfo && fontInfo.features) {
-            this.updateFeatureAvailability(fontInfo.features);
-        } else {
-            this.updateFeatureAvailability(new Set(Object.keys(CONFIG.OPENTYPE_FEATURES)));
-        }
-        
-        this.state.currentFont = fontFamily;
-        this.render();
+
+        this.updateSelectedLayer();
     }
-    
+
     filterFonts(query) {
-        const items = document.querySelectorAll('.font-item');
-        const lowerQuery = query.toLowerCase();
-        
-        items.forEach(item => {
-            const name = item.querySelector('.font-item-name')?.textContent.toLowerCase() || '';
-            item.style.display = name.includes(lowerQuery) ? '' : 'none';
+        const q = query.toLowerCase();
+        document.querySelectorAll('.font-item').forEach(el => {
+            const name = el.querySelector('.font-item-name')?.textContent.toLowerCase() || '';
+            el.style.display = name.includes(q) ? '' : 'none';
         });
     }
-    
-    deleteFont(fontFamily) {
-        if (confirm('هل تريد حذف هذا الخط؟')) {
-            this.state.loadedFonts.delete(fontFamily);
-            this.updateFontList();
-            this.saveFontsToStorage();
-            
-            if (this.textProperties.fontFamily === fontFamily) {
-                this.selectFont('Cairo');
-            }
-            
-            this.showToast('تم حذف الخط', 'success');
-        }
-    }
-    
-    async saveFontsToStorage() {
+
+    async saveFonts() {
         try {
-            const fontsData = [];
-            
-            this.state.loadedFonts.forEach((fontInfo) => {
-                const base64 = this.arrayBufferToBase64(fontInfo.data);
-                fontsData.push({
-                    name: fontInfo.name,
-                    family: fontInfo.family,
-                    file: fontInfo.file,
-                    features: Array.from(fontInfo.features),
-                    dataBase64: base64
+            const data = [];
+            this.fonts.forEach(info => {
+                data.push({
+                    name: info.name,
+                    family: info.family,
+                    file: info.file,
+                    base64: this.bufferToBase64(info.data)
                 });
             });
-            
-            await localforage.setItem(CONFIG.STORAGE.FONTS, fontsData);
-        } catch (error) {
-            console.error('Error saving fonts:', error);
+            await localforage.setItem(CONFIG.STORAGE.FONTS, data);
+        } catch (e) {
+            console.error('Save fonts error:', e);
         }
     }
-    
-    async loadFontsFromStorage() {
+
+    async loadSavedFonts() {
         try {
-            const fontsData = await localforage.getItem(CONFIG.STORAGE.FONTS);
-            
-            if (fontsData && Array.isArray(fontsData)) {
-                for (const fontData of fontsData) {
-                    try {
-                        const arrayBuffer = this.base64ToArrayBuffer(fontData.dataBase64);
-                        const fontFace = new FontFace(fontData.family, arrayBuffer);
-                        await fontFace.load();
-                        document.fonts.add(fontFace);
-                        
-                        this.state.loadedFonts.set(fontData.family, {
-                            name: fontData.name,
-                            family: fontData.family,
-                            file: fontData.file,
-                            features: new Set(fontData.features),
-                            data: arrayBuffer
-                        });
-                    } catch (error) {
-                        console.warn(`Failed to load font ${fontData.name}:`, error);
-                    }
+            const data = await localforage.getItem(CONFIG.STORAGE.FONTS);
+            if (!data) return;
+
+            for (const item of data) {
+                try {
+                    const buffer = this.base64ToBuffer(item.base64);
+                    const fontFace = new FontFace(item.family, buffer);
+                    await fontFace.load();
+                    document.fonts.add(fontFace);
+
+                    this.fonts.set(item.family, {
+                        name: item.name,
+                        family: item.family,
+                        file: item.file,
+                        data: buffer
+                    });
+                } catch (e) {
+                    console.warn('Load font error:', item.name, e);
                 }
-                
-                this.updateFontList();
             }
-        } catch (error) {
-            console.error('Error loading fonts from storage:', error);
+
+            this.updateFontList();
+        } catch (e) {
+            console.error('Load fonts error:', e);
         }
     }
-    
-    arrayBufferToBase64(buffer) {
-        let binary = '';
+
+    bufferToBase64(buffer) {
         const bytes = new Uint8Array(buffer);
-        for (let i = 0; i < bytes.byteLength; i++) {
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
         return btoa(binary);
     }
-    
-    base64ToArrayBuffer(base64) {
+
+    base64ToBuffer(base64) {
         const binary = atob(base64);
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) {
@@ -1609,502 +1286,324 @@ class FontStudioApp {
         }
         return bytes.buffer;
     }
-    
-    // =====================================================
-    // 🎨 Text Formatting
-    // =====================================================
-    
-    toggleBold() {
-        const newWeight = this.textProperties.fontWeight === 'bold' ? 'normal' : 'bold';
-        this.textProperties.fontWeight = newWeight;
-        this.elements.boldBtn?.classList.toggle('active', newWeight === 'bold');
-        
-        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-        if (activeLayer && activeLayer.type === 'text') {
-            activeLayer.properties.fontWeight = newWeight;
-        }
-        this.render();
-    }
-    
-    toggleItalic() {
-        const newStyle = this.textProperties.fontStyle === 'italic' ? 'normal' : 'italic';
-        this.textProperties.fontStyle = newStyle;
-        this.elements.italicBtn?.classList.toggle('active', newStyle === 'italic');
-        
-        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-        if (activeLayer && activeLayer.type === 'text') {
-            activeLayer.properties.fontStyle = newStyle;
-        }
-        this.render();
-    }
-    
-    toggleUnderline() {
-        const newDec = this.textProperties.textDecoration === 'underline' ? 'none' : 'underline';
-        this.textProperties.textDecoration = newDec;
-        this.elements.underlineBtn?.classList.toggle('active', newDec === 'underline');
-        this.elements.strikethroughBtn?.classList.remove('active');
-        
-        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-        if (activeLayer && activeLayer.type === 'text') {
-            activeLayer.properties.textDecoration = newDec;
-        }
-        this.render();
-    }
-    
-    toggleStrikethrough() {
-        const newDec = this.textProperties.textDecoration === 'line-through' ? 'none' : 'line-through';
-        this.textProperties.textDecoration = newDec;
-        this.elements.strikethroughBtn?.classList.toggle('active', newDec === 'line-through');
-        this.elements.underlineBtn?.classList.remove('active');
-        
-        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-        if (activeLayer && activeLayer.type === 'text') {
-            activeLayer.properties.textDecoration = newDec;
-        }
-        this.render();
-    }
-    
-    setTextAlign(align) {
-        this.textProperties.textAlign = align;
-        
-        this.elements.alignRightBtn?.classList.toggle('active', align === 'right');
-        this.elements.alignCenterBtn?.classList.toggle('active', align === 'center');
-        this.elements.alignLeftBtn?.classList.toggle('active', align === 'left');
-        this.elements.alignJustifyBtn?.classList.toggle('active', align === 'justify');
-        
-        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-        if (activeLayer && activeLayer.type === 'text') {
-            activeLayer.properties.textAlign = align;
-        }
-        this.render();
-    }
-    
-    // =====================================================
-    // 🎨 UI Helpers
-    // =====================================================
-    
-    updateColorPreview(type, color) {
-        const previewId = type === 'text' ? 'text-color-preview' : 'bg-color-preview';
-        const preview = document.getElementById(previewId);
-        const inner = preview?.querySelector('.color-preview-inner');
-        if (inner) inner.style.background = color;
-    }
-    
-    validateHexColor(value) {
-        const hex = value.startsWith('#') ? value : `#${value}`;
-        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
-        if (/^#[0-9A-Fa-f]{3}$/.test(hex)) {
-            return `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
-        }
-        return null;
-    }
-    
-    switchTab(tabName) {
-        // منع فتح لوحة النص القديمة
-        if (tabName === 'text') {
-            // بدلاً من ذلك، نفتح محرر InShot إذا كان هناك نص محدد
-            const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-            if (activeLayer && activeLayer.type === 'text') {
-                this.openInShotEditor();
-            }
-            return;
-        }
 
-        this.elements.sidebarPanels?.forEach(panel => {
-            panel.classList.toggle('active', panel.id === `panel-${tabName}`);
-        });
-        
-        this.elements.bottomNavItems?.forEach(item => {
-            item.classList.toggle('active', item.dataset.panel === tabName);
-        });
-        
-        this.elements.sidebar?.classList.add('active');
-    }
+    // =====================================================
+    // ✨ OpenType
+    // =====================================================
 
-    closeBottomPanel() {
-        this.elements.sidebar?.classList.remove('active');
-        
-        this.elements.bottomNavItems?.forEach(item => {
-            item.classList.remove('active');
-        });
-    }
-
-    openInShotEditor() {
-        if (!this.elements.inshotToolbar) return;
-        
-        this.elements.inshotToolbar.classList.remove('hidden');
-        this.elements.inshotOverlay?.classList.remove('hidden');
-        
-        if (this.elements.bottomNav) this.elements.bottomNav.style.display = 'none';
-        if (this.elements.canvasTools) this.elements.canvasTools.style.display = 'none';
-        
-        this.closeBottomPanel();
-        
-        const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
-        if (activeLayer && activeLayer.type === 'text') {
-            this.elements.inshotInput.value = activeLayer.properties.text || '';
-        }
-        
-        setTimeout(() => this.elements.inshotInput.focus(), 100);
-    }
-
-    closeInShotEditor() {
-        if (!this.elements.inshotToolbar) return;
-        
-        this.elements.inshotToolbar.classList.add('hidden');
-        this.elements.inshotOverlay?.classList.add('hidden');
-        
-        if (this.elements.bottomNav) this.elements.bottomNav.style.display = 'flex';
-        if (this.elements.canvasTools) this.elements.canvasTools.style.display = 'flex';
-        
-        this.closeBottomPanel();
-        this.saveHistory();
-        this.render();
-    }
-    
-    setTool(tool) {
-        this.state.currentTool = tool;
-        
-        this.elements.selectTool?.classList.toggle('active', tool === 'select');
-        this.elements.textTool?.classList.toggle('active', tool === 'text');
-        this.elements.imageTool?.classList.toggle('active', tool === 'image');
-        this.elements.shapeTool?.classList.toggle('active', tool === 'shape');
-        
-        const cursors = { 'select': 'default', 'text': 'text', 'image': 'crosshair', 'shape': 'crosshair' };
-        if (this.elements.canvasContainer) {
-            this.elements.canvasContainer.style.cursor = cursors[tool] || 'default';
-        }
-    }
-    
-    // =====================================================
-    // 🔍 Zoom Controls
-    // =====================================================
-    
-    zoomIn() {
-        this.state.zoom = Math.min(this.state.zoom + CONFIG.CANVAS.ZOOM_STEP, CONFIG.CANVAS.MAX_ZOOM);
-        this.updateCanvasTransform();
-    }
-    
-    zoomOut() {
-        this.state.zoom = Math.max(this.state.zoom - CONFIG.CANVAS.ZOOM_STEP, CONFIG.CANVAS.MIN_ZOOM);
-        this.updateCanvasTransform();
-    }
-    
-    // =====================================================
-    // 📚 Layer Management
-    // =====================================================
-    
-    addTextLayer() {
-        const defaultText = 'نص جديد';
-        const initialProps = {
-            ...this.textProperties,
-            text: defaultText,
-            color: '#000000'
-        };
-        
-        const layer = {
-            id: `layer_${Date.now()}`,
-            type: 'text',
-            name: `نص ${this.state.layers.filter(l => l.type === 'text').length + 1}`,
-            visible: true,
-            locked: false,
-            opacity: 1,
-            x: this.canvasProperties.width / 2,
-            y: this.canvasProperties.height / 2,
-            properties: initialProps
-        };
-        
-        this.state.layers.push(layer);
-        this.updateLayersList();
-        this.selectLayer(layer.id);
-        this.saveHistory();
-        this.render();
-        
-        setTimeout(() => this.openInShotEditor(), 50);
-        
-        this.showToast('تمت الإضافة', 'success', 'تم إضافة طبقة نص جديدة');
-    }
-    
-    updateLayersList() {
-        const list = this.elements.layersList;
-        if (!list) return;
-        
-        list.innerHTML = '';
-        
-        [...this.state.layers].reverse().forEach(layer => {
-            const item = document.createElement('div');
-            item.className = `layer-item ${layer.id === this.state.selectedElement ? 'active' : ''}`;
-            item.dataset.id = layer.id;
-            
-            const icon = layer.type === 'text' ? 'fa-font' : 
-                         layer.type === 'image' ? 'fa-image' : 'fa-shapes';
-            
-            const typeName = layer.type === 'text' ? 'نص' : 
-                             layer.type === 'image' ? 'صورة' : 'شكل';
-            
-            item.innerHTML = `
-                <div class="layer-thumb"><i class="fas ${icon}"></i></div>
-                <div class="layer-info">
-                    <div class="layer-name">${layer.name}</div>
-                    <div class="layer-type">${typeName}</div>
-                </div>
-                <div class="layer-actions">
-                    <button class="layer-action-btn ${layer.visible ? 'active' : ''}" data-action="visibility" title="الرؤية">
-                        <i class="fas ${layer.visible ? 'fa-eye' : 'fa-eye-slash'}"></i>
-                    </button>
-                    <button class="layer-action-btn ${layer.locked ? 'active' : ''}" data-action="lock" title="القفل">
-                        <i class="fas ${layer.locked ? 'fa-lock' : 'fa-unlock'}"></i>
-                    </button>
-                </div>
-            `;
-            
-            item.addEventListener('click', (e) => {
-                if (!e.target.closest('.layer-action-btn')) {
-                    this.selectLayer(layer.id);
+    setupOpenType() {
+        this.el.otFeatures?.addEventListener('click', (e) => {
+            const f = e.target.closest('.opentype-feature');
+            if (f && !f.classList.contains('unavailable')) {
+                f.classList.toggle('active');
+                const tag = f.dataset.feature;
+                if (this.state.activeFeatures.has(tag)) {
+                    this.state.activeFeatures.delete(tag);
+                } else {
+                    this.state.activeFeatures.add(tag);
                 }
-            });
-            
-            item.querySelectorAll('.layer-action-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const action = btn.dataset.action;
-                    if (action === 'visibility') {
-                        layer.visible = !layer.visible;
-                    } else if (action === 'lock') {
-                        layer.locked = !layer.locked;
-                    }
-                    this.updateLayersList();
-                    this.render();
-                });
-            });
-            
-            list.appendChild(item);
+                this.updateOTCount();
+            }
         });
     }
-    
-    selectLayer(layerId) {
-        this.state.selectedElement = layerId;
-        
-        const activeLayer = this.state.layers.find(l => l.id === layerId);
-        if (activeLayer && activeLayer.type === 'text') {
-            this.textProperties = { ...activeLayer.properties };
+
+    generateStylisticSets() {
+        const grid = this.el.ssGrid;
+        if (!grid) return;
+
+        grid.innerHTML = '';
+        for (let i = 1; i <= 20; i++) {
+            const tag = 'ss' + String(i).padStart(2, '0');
+            const el = document.createElement('div');
+            el.className = 'stylistic-set';
+            el.dataset.ss = tag;
+            el.textContent = 'SS' + String(i).padStart(2, '0');
             
-            // تحديث واجهة المستخدم
-            if (this.elements.fontSizeSlider) {
-                this.elements.fontSizeSlider.value = this.textProperties.fontSize;
-                this.elements.fontSizeValue.textContent = `${this.textProperties.fontSize}px`;
-            }
+            el.addEventListener('click', () => {
+                el.classList.toggle('active');
+                if (this.state.activeSS.has(tag)) {
+                    this.state.activeSS.delete(tag);
+                } else {
+                    this.state.activeSS.add(tag);
+                }
+                this.updateOTCount();
+            });
             
-            if (this.elements.textColorPicker) {
-                this.elements.textColorPicker.value = this.textProperties.color;
-                this.updateColorPreview('text', this.textProperties.color);
-            }
-            
-            if (this.elements.letterSpacingSlider) {
-                this.elements.letterSpacingSlider.value = this.textProperties.letterSpacing || 0;
-                this.elements.letterSpacingValue.textContent = `${this.textProperties.letterSpacing || 0}px`;
-            }
-        }
-        
-        this.updateLayersList();
-        this.render();
-    }
-    
-    deleteSelectedLayer() {
-        if (!this.state.selectedElement) return;
-        
-        const index = this.state.layers.findIndex(l => l.id === this.state.selectedElement);
-        if (index > -1) {
-            this.state.layers.splice(index, 1);
-            this.state.selectedElement = null;
-            this.updateLayersList();
-            this.saveHistory();
-            this.render();
-            this.showToast('تم الحذف', 'success', 'تم حذف الطبقة');
+            grid.appendChild(el);
         }
     }
-    
+
+    updateOTCount() {
+        const count = this.state.activeFeatures.size + this.state.activeSS.size;
+        if (this.el.otCount) this.el.otCount.textContent = count;
+    }
+
     // =====================================================
-    // 📜 History (Undo/Redo)
+    // 👆 Touch Gestures
     // =====================================================
-    
+
+    setupTouch() {
+        if (typeof Hammer === 'undefined') return;
+
+        const hammer = new Hammer.Manager(this.el.canvasContainer);
+
+        const tap = new Hammer.Tap({ taps: 1 });
+        const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
+        const pinch = new Hammer.Pinch();
+
+        hammer.add([pinch, pan, tap]);
+        pinch.recognizeWith(pan);
+
+        let dragging = false;
+        let dragLayer = null;
+        let startX = 0, startY = 0;
+        let startFontSize = 48;
+
+        const hitTest = (center) => {
+            const rect = this.el.canvas.getBoundingClientRect();
+            const x = (center.x - rect.left) * (this.el.canvas.width / rect.width);
+            const y = (center.y - rect.top) * (this.el.canvas.height / rect.height);
+
+            const ctx = this.el.ctx;
+
+            for (let i = this.state.layers.length - 1; i >= 0; i--) {
+                const layer = this.state.layers[i];
+                if (!layer.visible || layer.locked) continue;
+
+                if (layer.type === 'text') {
+                    ctx.font = `${layer.props.fontSize}px "${layer.props.fontFamily}"`;
+                    const w = ctx.measureText(layer.props.text || ' ').width;
+                    const h = layer.props.fontSize;
+                    const pad = 30;
+
+                    if (x >= layer.x - w/2 - pad && x <= layer.x + w/2 + pad &&
+                        y >= layer.y - h/2 - pad && y <= layer.y + h/2 + pad) {
+                        return layer;
+                    }
+                }
+            }
+            return null;
+        };
+
+        // Tap
+        hammer.on('tap', (e) => {
+            const layer = hitTest(e.center);
+            if (layer) {
+                this.selectLayer(layer.id);
+                this.openInShotEditor();
+            } else {
+                this.state.selectedLayer = null;
+                this.closeInShotEditor();
+                this.closePanel();
+                this.render();
+            }
+        });
+
+        // Pan
+        hammer.on('panstart', (e) => {
+            this.closePanel();
+            const layer = hitTest(e.center);
+            if (layer && !layer.locked) {
+                dragging = true;
+                dragLayer = layer;
+                this.selectLayer(layer.id);
+                startX = layer.x;
+                startY = layer.y;
+            }
+        });
+
+        hammer.on('panmove', (e) => {
+            if (dragging && dragLayer) {
+                dragLayer.x = startX + e.deltaX / this.state.zoom;
+                dragLayer.y = startY + e.deltaY / this.state.zoom;
+                this.render();
+            }
+        });
+
+        hammer.on('panend', () => {
+            if (dragging) {
+                this.saveHistory();
+                dragging = false;
+                dragLayer = null;
+            }
+        });
+
+        // Pinch
+        hammer.on('pinchstart', (e) => {
+            const layer = hitTest(e.center);
+            if (layer?.type === 'text') {
+                dragging = true;
+                dragLayer = layer;
+                this.selectLayer(layer.id);
+                startFontSize = layer.props.fontSize;
+            }
+        });
+
+        hammer.on('pinchmove', (e) => {
+            if (dragging && dragLayer?.type === 'text') {
+                let newSize = startFontSize * e.scale;
+                newSize = Math.max(CONFIG.TEXT.MIN_SIZE, Math.min(CONFIG.TEXT.MAX_SIZE, newSize));
+                dragLayer.props.fontSize = Math.round(newSize);
+                this.textProps.fontSize = Math.round(newSize);
+
+                if (this.el.fontSizeSlider) {
+                    this.el.fontSizeSlider.value = newSize;
+                    this.el.fontSizeValue.textContent = Math.round(newSize) + 'px';
+                }
+                this.render();
+            }
+        });
+
+        hammer.on('pinchend', () => {
+            if (dragging) {
+                this.saveHistory();
+                dragging = false;
+                dragLayer = null;
+            }
+        });
+    }
+
+    // =====================================================
+    // 🔍 Zoom
+    // =====================================================
+
+    zoom(dir) {
+        const step = CONFIG.CANVAS.ZOOM_STEP;
+        if (dir > 0) {
+            this.state.zoom = Math.min(this.state.zoom + step, CONFIG.CANVAS.MAX_ZOOM);
+        } else {
+            this.state.zoom = Math.max(this.state.zoom - step, CONFIG.CANVAS.MIN_ZOOM);
+        }
+
+        this.el.canvasWrapper.style.transform = `scale(${this.state.zoom})`;
+        this.el.zoomValue.textContent = Math.round(this.state.zoom * 100) + '%';
+    }
+
+    // =====================================================
+    // 📜 History
+    // =====================================================
+
     saveHistory() {
         this.state.history = this.state.history.slice(0, this.state.historyIndex + 1);
-        
-        const snapshot = {
+
+        this.state.history.push({
             layers: JSON.parse(JSON.stringify(this.state.layers)),
-            textProperties: JSON.parse(JSON.stringify(this.textProperties)),
-            canvasProperties: JSON.parse(JSON.stringify(this.canvasProperties))
-        };
-        
-        this.state.history.push(snapshot);
+            canvas: { ...this.canvas }
+        });
+
         this.state.historyIndex = this.state.history.length - 1;
-        
-        if (this.state.history.length > 50) {
+
+        if (this.state.history.length > 30) {
             this.state.history.shift();
             this.state.historyIndex--;
         }
-        
-        this.updateHistoryButtons();
+
+        this.updateHistoryBtns();
     }
-    
+
     undo() {
         if (this.state.historyIndex > 0) {
             this.state.historyIndex--;
-            this.restoreSnapshot(this.state.history[this.state.historyIndex]);
-            this.updateHistoryButtons();
-            this.render();
+            this.restoreHistory();
         }
     }
-    
+
     redo() {
         if (this.state.historyIndex < this.state.history.length - 1) {
             this.state.historyIndex++;
-            this.restoreSnapshot(this.state.history[this.state.historyIndex]);
-            this.updateHistoryButtons();
-            this.render();
+            this.restoreHistory();
         }
     }
-    
-    restoreSnapshot(snapshot) {
-        this.state.layers = JSON.parse(JSON.stringify(snapshot.layers));
-        this.textProperties = JSON.parse(JSON.stringify(snapshot.textProperties));
-        this.canvasProperties = JSON.parse(JSON.stringify(snapshot.canvasProperties));
+
+    restoreHistory() {
+        const snap = this.state.history[this.state.historyIndex];
+        this.state.layers = JSON.parse(JSON.stringify(snap.layers));
+        this.canvas = { ...snap.canvas };
         this.updateLayersList();
-    }
-    
-    updateHistoryButtons() {
-        if (this.elements.undoBtn) {
-            this.elements.undoBtn.disabled = this.state.historyIndex <= 0;
-        }
-        if (this.elements.redoBtn) {
-            this.elements.redoBtn.disabled = this.state.historyIndex >= this.state.history.length - 1;
-        }
-    }
-    
-    // =====================================================
-    // 💾 Save & Export
-    // =====================================================
-    
-    async saveProject() {
-        try {
-            const project = {
-                name: this.elements.projectNameInput?.value || 'تصميم جديد',
-                version: CONFIG.VERSION,
-                timestamp: Date.now(),
-                canvas: this.canvasProperties,
-                text: this.textProperties,
-                layers: this.state.layers,
-                openTypeFeatures: Array.from(this.state.activeOpenTypeFeatures),
-                stylisticSets: Array.from(this.state.activeStylisticSets),
-                characterVariants: Array.from(this.state.activeCharacterVariants)
-            };
-            
-            await localforage.setItem(CONFIG.STORAGE.CURRENT_PROJECT, project);
-            this.showToast('تم الحفظ', 'success', 'تم حفظ المشروع بنجاح');
-        } catch (error) {
-            console.error('Error saving project:', error);
-            this.showToast('خطأ في الحفظ', 'error', error.message);
-        }
-    }
-    
-    async loadProject() {
-        try {
-            const project = await localforage.getItem(CONFIG.STORAGE.CURRENT_PROJECT);
-            
-            if (project) {
-                if (this.elements.projectNameInput) {
-                    this.elements.projectNameInput.value = project.name || 'تصميم جديد';
-                }
-                
-                this.canvasProperties = { ...this.canvasProperties, ...project.canvas };
-                this.textProperties = { ...this.textProperties, ...project.text };
-                this.state.layers = project.layers || [];
-                
-                if (project.openTypeFeatures) {
-                    this.state.activeOpenTypeFeatures = new Set(project.openTypeFeatures);
-                }
-                
-                if (project.stylisticSets) {
-                    this.state.activeStylisticSets = new Set(project.stylisticSets);
-                }
-                
-                if (project.characterVariants) {
-                    this.state.activeCharacterVariants = new Set(project.characterVariants);
-                }
-                
-                this.updateLayersList();
-                this.updateOpenTypeFeaturesCount();
-            }
-        } catch (error) {
-            console.error('Error loading project:', error);
-        }
-    }
-    
-    openExportModal() {
-        this.elements.exportModal?.classList.add('active');
-        
-        const exportWidth = document.getElementById('export-width');
-        const exportHeight = document.getElementById('export-height');
-        
-        if (exportWidth) exportWidth.textContent = this.canvasProperties.width;
-        if (exportHeight) exportHeight.textContent = this.canvasProperties.height;
-    }
-    
-    closeExportModal() {
-        this.elements.exportModal?.classList.remove('active');
-    }
-    
-    exportImage() {
-        const formatEl = document.querySelector('.export-format.active');
-        const format = formatEl?.dataset.format || 'png';
-        const quality = parseInt(this.elements.exportQualitySlider?.value || 90) / 100;
-        
-        // إلغاء تحديد أي عنصر قبل التصدير
-        const previousSelection = this.state.selectedElement;
-        this.state.selectedElement = null;
+        this.updateHistoryBtns();
         this.render();
-        
-        const canvas = this.elements.canvas;
-        let mimeType = 'image/png';
-        let extension = 'png';
-        
-        switch (format) {
-            case 'jpg':
-                mimeType = 'image/jpeg';
-                extension = 'jpg';
-                break;
-            case 'webp':
-                mimeType = 'image/webp';
-                extension = 'webp';
-                break;
-        }
-        
-        canvas.toBlob((blob) => {
-            const fileName = `${this.elements.projectNameInput?.value || 'design'}.${extension}`;
+    }
+
+    updateHistoryBtns() {
+        if (this.el.undoBtn) this.el.undoBtn.disabled = this.state.historyIndex <= 0;
+        if (this.el.redoBtn) this.el.redoBtn.disabled = this.state.historyIndex >= this.state.history.length - 1;
+    }
+
+    // =====================================================
+    // 📤 Export
+    // =====================================================
+
+    setupExport() {
+        this.el.modalClose?.addEventListener('click', () => this.closeExportModal());
+        this.el.exportCancel?.addEventListener('click', () => this.closeExportModal());
+        this.el.exportConfirm?.addEventListener('click', () => this.doExport());
+
+        this.el.exportFormats?.forEach(f => {
+            f.addEventListener('click', () => {
+                this.el.exportFormats.forEach(x => x.classList.remove('active'));
+                f.classList.add('active');
+            });
+        });
+
+        this.el.qualityPresets?.forEach(p => {
+            p.addEventListener('click', () => {
+                this.el.qualityPresets.forEach(x => x.classList.remove('active'));
+                p.classList.add('active');
+                if (this.el.qualitySlider) this.el.qualitySlider.value = p.dataset.q;
+            });
+        });
+    }
+
+    openExportModal() {
+        if (this.el.expW) this.el.expW.textContent = this.canvas.width;
+        if (this.el.expH) this.el.expH.textContent = this.canvas.height;
+        this.el.exportModal?.classList.add('active');
+    }
+
+    closeExportModal() {
+        this.el.exportModal?.classList.remove('active');
+    }
+
+    doExport() {
+        // Deselect before export
+        const prevSel = this.state.selectedLayer;
+        this.state.selectedLayer = null;
+        this.render();
+
+        const format = document.querySelector('.export-format.active')?.dataset.format || 'png';
+        const quality = parseInt(this.el.qualitySlider?.value || 90) / 100;
+
+        let mime = 'image/png';
+        let ext = 'png';
+        if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
+        if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
+
+        this.el.canvas.toBlob((blob) => {
+            const name = (this.el.projectName?.value || 'design') + '.' + ext;
             
             if (typeof saveAs !== 'undefined') {
-                saveAs(blob, fileName);
+                saveAs(blob, name);
             } else {
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = fileName;
+                link.download = name;
                 link.click();
                 URL.revokeObjectURL(link.href);
             }
-            
+
             this.closeExportModal();
-            this.showToast('تم التصدير', 'success', `تم حفظ الصورة بصيغة ${format.toUpperCase()}`);
-            
-            // استعادة التحديد
-            this.state.selectedElement = previousSelection;
+            this.toast('تم التصدير', 'success', name);
+
+            // Restore selection
+            this.state.selectedLayer = prevSel;
             this.render();
-        }, mimeType, quality);
+        }, mime, quality);
     }
-    
+
     // =====================================================
-    // ⌨️ Keyboard Shortcuts
+    // ⌨️ Keyboard
     // =====================================================
-    
+
     handleKeyboard(e) {
         if (e.ctrlKey || e.metaKey) {
             switch (e.key.toLowerCase()) {
@@ -2118,142 +1617,84 @@ class FontStudioApp {
                     break;
                 case 's':
                     e.preventDefault();
-                    this.saveProject();
+                    this.toast('تم الحفظ', 'success');
                     break;
                 case 'e':
                     e.preventDefault();
                     this.openExportModal();
                     break;
-                case 'b':
-                    e.preventDefault();
-                    this.toggleBold();
-                    break;
-                case 'i':
-                    e.preventDefault();
-                    this.toggleItalic();
-                    break;
-                case 'u':
-                    e.preventDefault();
-                    this.toggleUnderline();
-                    break;
-                case '=':
-                case '+':
-                    e.preventDefault();
-                    this.zoomIn();
-                    break;
-                case '-':
-                    e.preventDefault();
-                    this.zoomOut();
-                    break;
-                case '0':
-                    e.preventDefault();
-                    this.fitCanvasToViewport();
-                    break;
             }
         }
-        
+
         if (e.key === 'Delete' || e.key === 'Backspace') {
-            if (document.activeElement.tagName !== 'INPUT' && 
-                document.activeElement.tagName !== 'TEXTAREA') {
+            if (!['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
                 this.deleteSelectedLayer();
             }
         }
-        
+
         if (e.key === 'Escape') {
             this.closeExportModal();
             this.closeInShotEditor();
-            this.closeBottomPanel();
-            this.state.selectedElement = null;
+            this.closePanel();
+            this.state.selectedLayer = null;
             this.render();
         }
     }
-    
+
     // =====================================================
-    // 🔔 Toast Notifications
+    // 🔔 Toast
     // =====================================================
-    
-    showToast(title, type = 'info', message = '') {
-        const container = this.elements.toastContainer;
+
+    toast(title, type = 'info', msg = '') {
+        const container = this.el.toastContainer;
         if (!container) return;
-        
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        
+
         const icons = {
-            'success': 'fa-check-circle',
-            'error': 'fa-exclamation-circle',
-            'warning': 'fa-exclamation-triangle',
-            'info': 'fa-info-circle'
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
         };
-        
-        toast.innerHTML = `
+
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `
             <div class="toast-icon"><i class="fas ${icons[type] || icons.info}"></i></div>
             <div class="toast-content">
                 <div class="toast-title">${title}</div>
-                ${message ? `<div class="toast-message">${message}</div>` : ''}
+                ${msg ? `<div class="toast-message">${msg}</div>` : ''}
             </div>
             <button class="toast-close"><i class="fas fa-times"></i></button>
         `;
-        
-        container.appendChild(toast);
-        
-        requestAnimationFrame(() => toast.classList.add('show'));
-        
-        toast.querySelector('.toast-close').addEventListener('click', () => {
-            this.removeToast(toast);
+
+        container.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('show'));
+
+        el.querySelector('.toast-close').addEventListener('click', () => {
+            el.classList.remove('show');
+            setTimeout(() => el.remove(), 300);
         });
-        
-        setTimeout(() => this.removeToast(toast), 4000);
-    }
-    
-    removeToast(toast) {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }
-    
-    // =====================================================
-    // 🚀 Splash Screen & Data Loading
-    // =====================================================
-    
-    hideSplashScreen() {
+
         setTimeout(() => {
-            this.elements.splashScreen?.classList.add('hidden');
-        }, 300);
-    }
-    
-    async loadSavedData() {
-        await this.loadFontsFromStorage();
-        await this.loadProject();
-        
-        // إغلاق اللوحات عند بدء التشغيل
-        this.closeBottomPanel();
-        
-        this.saveHistory();
+            el.classList.remove('show');
+            setTimeout(() => el.remove(), 300);
+        }, 3000);
     }
 }
 
 // =====================================================
-// 🎬 Initialize Application
+// 🚀 Initialize
 // =====================================================
 
 document.addEventListener('DOMContentLoaded', () => {
     document.fonts.ready.then(() => {
-        window.fontStudio = new FontStudioApp();
+        window.app = new FontStudioApp();
     });
 });
 
 // Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('ServiceWorker registered:', reg.scope))
-            .catch(err => console.log('ServiceWorker registration failed:', err));
+        navigator.serviceWorker.register('sw.js').catch(() => {});
     });
 }
-
-// Install prompt
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-});
