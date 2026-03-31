@@ -770,6 +770,9 @@ class FontStudioApp {
 
         // 3. زر "مساحة فارغة" - الدخول للوحة التصميم
         this.elements.startEmptyBtn.addEventListener('click', () => {
+            // السحر هنا: مسح أي مشروع قديم معلق في الذاكرة عشان ما يرجعش يفرض مقاسه عليك!
+            localforage.removeItem(CONFIG.STORAGE.CURRENT_PROJECT);
+            
             this.state.layers = []; // تنظيف تام للطبقات القديمة
             this.state.selectedElement = null;
             
@@ -780,9 +783,10 @@ class FontStudioApp {
             this.elements.canvas.width = selectedWidth;
             this.elements.canvas.height = selectedHeight;
             
-            // ضبط أبعاد الغلاف الخارجي ليتطابق مع الاختيار
+            // ضبط أبعاد الغلاف الخارجي بقوة ليتطابق مع الاختيار بدون أي تشويه
             this.elements.canvasWrapper.style.width = `${selectedWidth}px`;
             this.elements.canvasWrapper.style.height = `${selectedHeight}px`;
+            this.elements.canvasWrapper.style.aspectRatio = `${selectedWidth} / ${selectedHeight}`;
             
             this.elements.appContainer.style.display = 'flex';
             this.elements.homeScreen.classList.add('hidden-slide');
