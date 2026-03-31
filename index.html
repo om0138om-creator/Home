@@ -2804,6 +2804,73 @@
         }
 
 
+        /* ==========================================
+           🎨 تصميم InShot Style Text Editor
+        ========================================== */
+        .selected-element {
+            border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3) !important;
+        }
+        .resize-handle.top-left {
+            width: 24px !important; height: 24px !important;
+            top: -12px !important; left: -12px !important;
+            background: #ff4d4f !important; border: 2px solid white !important;
+            border-radius: 50% !important; box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+            cursor: pointer;
+        }
+        .resize-handle.top-left::after {
+            content: '×'; color: white; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 16px; font-weight: bold;
+        }
+        .resize-handle.bottom-right {
+            width: 24px !important; height: 24px !important;
+            bottom: -12px !important; right: -12px !important;
+            background: white !important; border: 1px solid #ccc !important;
+            border-radius: 50% !important; box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+            cursor: nwse-resize;
+        }
+        .resize-handle.bottom-right::after {
+            content: '⤢'; color: #333; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 14px; font-weight: bold;
+        }
+        .resize-handle.top-right, .resize-handle.bottom-left, 
+        .resize-handle.top-center, .resize-handle.bottom-center, 
+        .resize-handle.left-center, .resize-handle.right-center, .rotate-handle {
+            display: none !important;
+        }
+        .inshot-editor-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900;
+        }
+        .inshot-text-toolbar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #1e1e1e; z-index: 1000; display: flex; flex-direction: column;
+            transform: translateY(0); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        .inshot-text-toolbar.hidden, .inshot-editor-overlay.hidden {
+            transform: translateY(100%); opacity: 0; pointer-events: none;
+        }
+        .inshot-input-row {
+            display: flex; align-items: center; background: #2a2a2a;
+            margin: 10px; border-radius: 8px; padding: 5px 10px;
+        }
+        .inshot-main-input {
+            flex: 1; height: 40px; background: transparent; border: none;
+            color: white; font-size: 1.1rem; text-align: right; outline: none; padding: 0 10px;
+        }
+        .inshot-icon-btn { color: #888; font-size: 1.2rem; padding: 5px; }
+        .inshot-tools-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; background: #1e1e1e; border-top: 1px solid #333;
+        }
+        .inshot-center-tools { display: flex; gap: 20px; }
+        .inshot-tool-btn { color: #888; font-size: 1.2rem; background: transparent; transition: color 0.2s; }
+        .inshot-tool-btn.active { color: white; }
+        .inshot-action-btn { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+        .done-btn { background: transparent; font-size: 1.4rem; }
+        .close-btn { background: transparent; font-size: 1.4rem; }
     </style>
 </head>
 <body data-theme="dark">
@@ -3483,6 +3550,42 @@
                 </div>
             </aside>
         </main>
+
+        <div class="inshot-editor-overlay hidden" id="inshot-editor-overlay"></div>
+        <div class="inshot-text-toolbar hidden" id="inshot-text-toolbar">
+            <div class="inshot-input-row">
+                <button class="inshot-icon-btn cancel-btn" id="inshot-clear-text">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+                <input type="text" class="inshot-main-input" id="inshot-main-input" placeholder="اكتب هنا..." dir="auto">
+            </div>
+            
+            <div class="inshot-tools-row">
+                <button class="inshot-action-btn done-btn" id="inshot-done-btn">
+                    <i class="fas fa-check"></i>
+                </button>
+                
+                <div class="inshot-center-tools">
+                    <button class="inshot-tool-btn active" data-target="keyboard">
+                        <i class="fas fa-keyboard"></i>
+                    </button>
+                    <button class="inshot-tool-btn" data-target="fonts">
+                        <span style="font-weight: bold; font-family: serif; font-size: 1.1rem;">Aa</span>
+                    </button>
+                    <button class="inshot-tool-btn" data-target="colors">
+                        <i class="fas fa-palette"></i>
+                    </button>
+                    <button class="inshot-tool-btn" data-target="format">
+                        <i class="fas fa-align-center"></i>
+                    </button>
+                </div>
+
+                <button class="inshot-action-btn close-btn" id="inshot-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+                
         
         <!-- شريط التنقل السفلي للموبايل -->
         <nav class="bottom-nav">
