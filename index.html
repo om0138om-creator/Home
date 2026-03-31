@@ -402,7 +402,7 @@
         }
         
         /*=====================================================
-          📱 Header - الهيدر (تم الإصلاح الجذري)
+          📱 Header - الهيدر (تم الإصلاح الجذري النهائي)
         =====================================================*/
         .app-header {
             flex: 0 0 55px !important;
@@ -412,9 +412,10 @@
             display: flex !important;
             align-items: center !important;
             justify-content: space-between !important;
-            padding: 0 15px !important;
+            padding: 0 10px !important;
             z-index: 9999 !important;
             border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+            overflow: hidden !important; /* يمنع خروج أي عنصر خارج الهيدر */
         }
         
         .header-left, .header-center, .header-right {
@@ -426,10 +427,11 @@
         .header-left {
             flex: 1 !important;
             justify-content: flex-start !important;
+            min-width: 0 !important; /* يسمح بالتصغير لتجنب طرد باقي العناصر */
         }
         
         .header-center {
-            flex: 1.2 !important; /* إعطاء مساحة أكبر لاسم المشروع في المنتصف */
+            flex: 1 !important; 
             justify-content: center !important;
             position: static !important;
             transform: none !important;
@@ -438,20 +440,21 @@
         .header-right {
             flex: 1 !important;
             justify-content: flex-end !important;
-            gap: 10px !important;
+            gap: 8px !important;
+            min-width: max-content !important; /* يجبر الأزرار على الظهور وعدم الاختفاء */
         }
         
         .app-name {
             display: block !important;
             font-family: 'Cinzel', serif !important;
-            font-size: 1.15rem !important; /* تصغير طفيف ليناسب الشاشات */
+            font-size: 1.15rem !important; /* مقاس مثالي للموبايل */
             font-weight: 800 !important;
-            color: #d4af37 !important;
-            -webkit-text-fill-color: initial !important;
+            color: #d4af37 !important; 
+            -webkit-text-fill-color: initial !important; 
             background: none !important;
             letter-spacing: 1px !important;
             white-space: nowrap !important; /* السحر: يمنع قص الكلمة */
-            direction: ltr !important; /* يجبر النص على الظهور كاملاً */
+            direction: ltr !important; /* يجبر الشعار الإنجليزي على الترتيب الصحيح */
         }
         
         .project-name {
@@ -502,6 +505,7 @@
         .header-btn:active {
             transform: scale(0.9) !important;
         }
+
         
         /*=====================================================
           🖼️ Main Content - المحتوى الرئيسي
@@ -527,37 +531,29 @@
             pointer-events: none !important;
         }
 
-        /* 2. جعل مساحة التصميم ثابتة كالطوب (لا تهتز أو ترتفع عندما يفتح الكيبورد) */
+        /* 2. مساحة التصميم (مرنة وتتوسط الشاشة بدقة وتترك مسافة للهيدر) */
         .canvas-container {
             position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100vw !important; /* الاعتماد على العرض ليظل المربع ثابت عند فتح الكيبورد */
-            max-height: calc(100vh - 120px) !important;
-            display: grid !important;
-            place-items: center !important;
+            inset: 0 !important; /* تملأ المساحة المتبقية تحت الهيدر بالكامل */
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             background: #1c1c1c !important; 
             overflow: hidden !important;
             touch-action: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
+            padding: 20px !important; /* مساحة أمان علوية وسفلية لكي لا يلتصق الكانفاس بالسقف */
             z-index: 5 !important;
         }
         
         .canvas-wrapper {
-            width: 100vw !important; 
-            height: 100vw !important; 
             max-width: 100% !important;
             max-height: 100% !important;
             background: white !important;
             border-radius: 0 !important; 
-            box-shadow: none !important; 
-            transform: none !important; 
+            box-shadow: 0 4px 30px rgba(0,0,0,0.6) !important; /* ظل لفصل الكانفاس عن الخلفية */
             position: relative !important;
-            grid-area: 1 / 1 !important;
-            aspect-ratio: 1 / 1 !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
+            transform-origin: center center !important;
         }
 
         #main-canvas, .selection-layer {
@@ -2697,25 +2693,25 @@
             z-index: 50 !important;
         }
 
-        /* 3. اللوحة المنبثقة تجلس "داخل" مساحة العمل بالأسفل */
+        /* 3. اللوحة المنبثقة (تم حل مشكلة الشبح للأبد) */
         .sidebar {
             position: absolute !important;
-            bottom: 55px !important; /* السحر: ترتفع لتجلس فوق أدوات إنشوت بالضبط بدون تداخل */
+            bottom: -400px !important; /* مخفية خارج الشاشة تماماً (بدون استخدام transform المزعج) */
             left: 0 !important;
             width: 100% !important;
-            height: 280px !important; /* ارتفاع أنيق ومنظم */
-            background: #1e1e1e !important; /* لون متناسق مع شريط إنشوت */
+            height: 280px !important; 
+            background: #1e1e1e !important; 
             border-radius: 16px 16px 0 0 !important;
             display: flex !important;
             flex-direction: column !important;
-            z-index: 950 !important; /* تقع تحت شريط إنشوت العائم */
-            transform: translateY(150%) !important; /* مخفية تماماً بالأسفل */
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            z-index: 950 !important; 
+            transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; /* حركة صعود سلسة */
             box-shadow: 0 -5px 25px rgba(0,0,0,0.5) !important;
+            transform: none !important; /* إلغاء الـ transform لمنع أي خلل */
         }
 
         .sidebar.active {
-            transform: translateY(0) !important; /* تظهر بسلاسة */
+            bottom: 55px !important; /* ترتفع لتجلس فوق أدوات إنشوت بالضبط */
         }
 
         .sidebar-content {
