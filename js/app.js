@@ -928,6 +928,9 @@ class FontStudioApp {
         
         // السحب والتحريك (Pan)
         hammer.on('panstart', (e) => {
+            // السحر: بمجرد أن تلمس الكانفاس بأصبعك، يتم إنزال أي لوحة مفتوحة فوراً!
+            this.closeBottomPanel();
+            
             isDraggingLayer = false;
             
             // إذا كانت أداة (السهم ↖) محددة، حاول التقاط وتحريك العنصر
@@ -950,16 +953,13 @@ class FontStudioApp {
         
         hammer.on('panmove', (e) => {
             if (isDraggingLayer && draggedLayer) {
-                // تحريك النص المباشر (مع مراعاة نسبة التكبير الحالية)
+                // تحريك النص المباشر فقط (مع مراعاة نسبة التكبير الحالية)
                 draggedLayer.x = initialLayerX + (e.deltaX / this.state.zoom);
                 draggedLayer.y = initialLayerY + (e.deltaY / this.state.zoom);
                 this.render();
-            } else {
-                // تحريك الكانفاس بأكمله
-                this.state.panX = initialPanX + e.deltaX / this.state.zoom;
-                this.state.panY = initialPanY + e.deltaY / this.state.zoom;
-                this.updateCanvasTransform();
             }
+            // السحر هنا: تم حذف كود تحريك الكانفاس بأكمله!
+            // الآن المستطيل الأبيض سيكون ثابتاً كالطوب ولن يهرب منك يميناً أو يساراً
         });
         
         // حفظ الخطوة بعد الإفلات للتراجع (Undo)
@@ -1806,6 +1806,10 @@ class FontStudioApp {
         this.elements.inshotToolbar.classList.add('hidden');
         document.querySelector('.bottom-nav').style.display = 'flex';
         this.closeBottomPanel();
+        
+        // إزالة التحديد الأبيض عند الانتهاء لتنظيف الشاشة تماماً (مثل إنشوت)
+        this.state.selectedElement = null;
+        this.render();
     }
     
     setTool(tool) {
