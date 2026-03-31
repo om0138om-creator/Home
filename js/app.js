@@ -405,10 +405,12 @@ class FontStudioApp {
             item.addEventListener('click', () => this.switchTab(item.dataset.panel));
         });
         
-        // Text input (الإصدار المعصوم من الأخطاء)
+        // Text input (الإصدار الاحترافي النهائي)
         this.elements.textInput.addEventListener('input', (e) => {
             if (this.state.layers.length === 0 || !this.state.selectedElement) {
-                this.textProperties.color = '#000000'; // إجبار اللون على الأسود
+                this.textProperties.color = '#000000'; 
+                if (this.elements.textColorPicker) this.elements.textColorPicker.value = '#000000';
+                this.updateColorPreview('text', '#000000');
                 this.addTextLayer();
             }
             
@@ -418,7 +420,8 @@ class FontStudioApp {
             const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
             if (activeLayer && activeLayer.type === 'text') {
                 activeLayer.properties.text = e.target.value;
-                activeLayer.properties.color = '#000000'; // رسم النص أسود فوراً لكي تراه
+                // السر هنا: يأخذ اللون الحالي الذي اخترته أنت، ولا يفرضه أسود دائماً
+                activeLayer.properties.color = this.textProperties.color; 
             }
             
             this.render();
@@ -1770,6 +1773,10 @@ class FontStudioApp {
     // =====================================================
     
     addTextLayer() {
+        // إضافة "نص جديد" كقيمة افتراضية لكي يظهر فوراً للمستخدم
+        const defaultText = 'نص جديد';
+        const initialProps = { ...this.textProperties, text: defaultText, color: '#000000' };
+        
         const layer = {
             id: `layer_${Date.now()}`,
             type: 'text',
@@ -1779,14 +1786,29 @@ class FontStudioApp {
             opacity: 1,
             x: this.canvasProperties.width / 2,
             y: this.canvasProperties.height / 2,
-            properties: { ...this.textProperties }
+            properties: initialProps
         };
         
         this.state.layers.push(layer);
+        
+        // تحديث الواجهة فوراً
+        if (this.elements.textInput) {
+            this.elements.textInput.value = defaultText;
+            this.elements.charCount.textContent = defaultText.length;
+        }
+        
         this.updateLayersList();
         this.selectLayer(layer.id);
         this.saveHistory();
         this.render();
+        
+        // السحر: تركيز تلقائي على مربع النص وتظليله لتفتح الكيبورد فوراً (InShot Style)
+        setTimeout(() => {
+            if (this.elements.textInput) {
+                this.elements.textInput.focus();
+                this.elements.textInput.select(); 
+            }
+        }, 50);
         
         this.showToast('تمت الإضافة', 'success', 'تم إضافة طبقة نص جديدة');
     }
@@ -1847,6 +1869,31 @@ class FontStudioApp {
     
     selectLayer(layerId) {
         this.state.selectedElement = layerId;
+        
+        // التزامن الذكي: تحديث الواجهة لتطابق الطبقة المحددة!
+        const activeLayer = this.state.layers.find(l => l.id === layerId);
+        if (activeLayer && activeLayer.type === 'text') {
+            this.textProperties = { ...activeLayer.properties };
+            
+            // تحديث مربع النص
+            if (this.elements.textInput) {
+                this.elements.textInput.value = this.textProperties.text || '';
+                this.elements.charCount.textContent = (this.textProperties.text || '').length;
+            }
+            
+            // تحديث الحجم
+            if (this.elements.fontSizeSlider) {
+                this.elements.fontSizeSlider.value = this.textProperties.fontSize;
+                this.elements.fontSizeValue.textContent = `${this.textProperties.fontSize}px`;
+            }
+            
+            // تحديث اللون
+            if (this.elements.textColorPicker) {
+                this.elements.textColorPicker.value = this.textProperties.color;
+                this.updateColorPreview('text', this.textProperties.color);
+            }
+        }
+        
         this.updateLayersList();
     }
     
