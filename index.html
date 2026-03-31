@@ -549,33 +549,48 @@
         /*=====================================================
           🎨 Canvas Area - منطقة العمل
         =====================================================*/
-        /* 1. إعدام لوحة التنسيق (الحجم والتباعد) نهائياً من الوجود بناءً على طلبك */
+        /* 1. إعدام اللوحة القديمة وإخفائها برمجياً بشكل كامل حتى لا تظهر أبداً */
         #panel-text {
             display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            position: absolute !important;
+            z-index: -999 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
 
-        /* 2. جعل مساحة التصميم مربعة مسطرة وثابتة كالطوب مثل إنشوت */
+        /* 2. جعل مساحة التصميم ثابتة كالطوب (لا تهتز أو ترتفع عندما يفتح الكيبورد) */
         .canvas-container {
-            flex: 1 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background: #1c1c1c !important; /* لون خلفية إنشوت الداكنة */
-            position: relative;
-            overflow: hidden;
-            touch-action: none;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100vw !important; /* الاعتماد على العرض ليظل المربع ثابت عند فتح الكيبورد */
+            max-height: calc(100vh - 120px) !important;
+            display: grid !important;
+            place-items: center !important;
+            background: #1c1c1c !important; 
+            overflow: hidden !important;
+            touch-action: none !important;
             padding: 0 !important;
+            margin: 0 !important;
+            z-index: 5 !important;
         }
         
         .canvas-wrapper {
-            width: 100vw !important; /* يأخذ عرض الشاشة بالكامل */
-            height: 100vw !important; /* الارتفاع يساوي العرض = مربع مثالي 100% */
+            width: 100vw !important; 
+            height: 100vw !important; 
+            max-width: 100% !important;
+            max-height: 100% !important;
             background: white !important;
             border-radius: 0 !important; 
-            box-shadow: none !important; /* بدون أي ظل كأنه جزء من الشاشة */
-            transform: none !important; /* ممنوع التحرك نهائياً */
-            position: relative;
-            margin: 0 auto;
+            box-shadow: none !important; 
+            transform: none !important; 
+            position: relative !important;
+            grid-area: 1 / 1 !important;
+            aspect-ratio: 1 / 1 !important;
+            margin: 0 !important;
         }
 
         #main-canvas, .selection-layer {
@@ -1152,9 +1167,18 @@
         
         .opentype-features-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--spacing-sm);
+            grid-template-columns: repeat(3, 1fr); /* 3 أعمدة بدلاً من 2 لتوفير المساحة */
+            gap: 6px;
+            max-height: 180px; /* تحديد ارتفاع للوحة مع إمكانية التمرير */
+            overflow-y: auto;
+            padding-right: 5px;
         }
+        .opentype-feature {
+            padding: 6px !important;
+            border-radius: 8px !important;
+        }
+        .feature-name { font-size: 0.65rem !important; }
+        .feature-tag { font-size: 0.55rem !important; }
         
         .opentype-feature {
             display: flex;
@@ -2416,7 +2440,12 @@
             }
             
             .app-name {
-                display: none;
+                display: block !important; /* السحر هنا: إظهار اللوجو */
+                font-size: 1.1rem !important;
+            }
+            
+            .header-btn {
+                color: white !important; /* تأكيد ظهور الأيقونات */
             }
             
             .header-center {
