@@ -444,12 +444,14 @@
         .app-name {
             display: block !important;
             font-family: 'Cinzel', serif !important;
-            font-size: 1.3rem !important;
+            font-size: 1.15rem !important; /* تصغير طفيف ليناسب الشاشات */
             font-weight: 800 !important;
-            color: #d4af37 !important; /* لون ذهبي صريح ومستقر */
-            -webkit-text-fill-color: initial !important; /* إلغاء الشفافية التي كانت تخفي اللوجو */
+            color: #d4af37 !important;
+            -webkit-text-fill-color: initial !important;
             background: none !important;
             letter-spacing: 1px !important;
+            white-space: nowrap !important; /* السحر: يمنع قص الكلمة */
+            direction: ltr !important; /* يجبر النص على الظهور كاملاً */
         }
         
         .project-name {
