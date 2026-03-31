@@ -554,11 +554,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--gray-900);
-            background-image: 
-                radial-gradient(circle at 25px 25px, var(--gray-800) 2px, transparent 0),
-                radial-gradient(circle at 75px 75px, var(--gray-800) 2px, transparent 0);
-            background-size: 100px 100px;
+            /* خلفية رمادية داكنة سادة ونظيفة تماماً مثل إنشوت */
+            background: #121212 !important; 
             position: relative;
             overflow: hidden;
             touch-action: none;
@@ -567,8 +564,9 @@
         .canvas-wrapper {
             position: relative;
             background: white;
-            box-shadow: var(--shadow-2xl);
-            border-radius: var(--radius-sm);
+            /* ظل أسود عميق لعزل الكانفاس بوضوح وإلغاء الزوايا الدائرية */
+            box-shadow: 0 0 30px rgba(0,0,0,0.8) !important;
+            border-radius: 0 !important; 
             overflow: hidden;
             transform-origin: center center;
             transition: transform 0.1s ease;
