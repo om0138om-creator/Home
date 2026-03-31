@@ -2666,18 +2666,18 @@
         /* 3. اللوحة المنبثقة تجلس "داخل" مساحة العمل بالأسفل */
         .sidebar {
             position: absolute !important;
-            bottom: 0 !important;
+            bottom: 55px !important; /* السحر: ترتفع لتجلس فوق أدوات إنشوت بالضبط بدون تداخل */
             left: 0 !important;
             width: 100% !important;
-            height: 320px !important; /* ارتفاع ثابت لمنع التخريب */
-            background: rgba(15, 23, 42, 0.98) !important;
-            border-radius: 24px 24px 0 0 !important;
+            height: 280px !important; /* ارتفاع أنيق ومنظم */
+            background: #1e1e1e !important; /* لون متناسق مع شريط إنشوت */
+            border-radius: 16px 16px 0 0 !important;
             display: flex !important;
             flex-direction: column !important;
-            z-index: 100 !important;
-            transform: translateY(100%) !important; /* مخفية بالأسفل */
-            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.6) !important;
+            z-index: 950 !important; /* تقع تحت شريط إنشوت العائم */
+            transform: translateY(150%) !important; /* مخفية تماماً بالأسفل */
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.5) !important;
         }
 
         .sidebar.active {
