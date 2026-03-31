@@ -402,138 +402,103 @@
         }
         
         /*=====================================================
-          📱 Header - الهيدر (InShot Style)
+          📱 Header - الهيدر (تم الإصلاح الجذري)
         =====================================================*/
         .app-header {
-            height: 50px !important; /* أنحف */
-            background: #0f172a !important; /* لون كحلي صافي */
-            border-bottom: none !important; /* إزالة الخط السفلي */
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 10px !important;
-            position: relative;
-            z-index: var(--z-sticky);
+            flex: 0 0 55px !important;
+            height: 55px !important;
+            width: 100% !important;
+            background: #0f172a !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 0 15px !important;
+            z-index: 9999 !important;
+            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        }
+        
+        .header-left, .header-center, .header-right {
+            display: flex !important;
+            align-items: center !important;
+            height: 100% !important;
         }
         
         .header-left {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
+            flex: 1 !important;
+            justify-content: flex-start !important;
         }
         
         .header-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
+            flex: 1.2 !important; /* إعطاء مساحة أكبر لاسم المشروع في المنتصف */
+            justify-content: center !important;
+            position: static !important;
+            transform: none !important;
         }
         
         .header-right {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-        
-        .app-logo {
-            width: 36px;
-            height: 36px;
-            background: var(--gradient-primary);
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            box-shadow: var(--shadow-md);
+            flex: 1 !important;
+            justify-content: flex-end !important;
+            gap: 10px !important;
         }
         
         .app-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            display: block !important;
+            font-family: 'Cinzel', serif !important;
+            font-size: 1.3rem !important;
+            font-weight: 800 !important;
+            color: #d4af37 !important; /* لون ذهبي صريح ومستقر */
+            -webkit-text-fill-color: initial !important; /* إلغاء الشفافية التي كانت تخفي اللوجو */
+            background: none !important;
+            letter-spacing: 1px !important;
         }
         
-        .header-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            transition: all var(--transition-fast);
-            position: relative;
-        }
-        
-        .header-btn:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-        
-        .header-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .header-btn.active {
-            background: var(--primary-500);
-            color: white;
-        }
-        
-        .header-btn i {
-            font-size: 1.1rem;
-        }
-        
-        .header-btn .badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 18px;
-            height: 18px;
-            background: var(--danger-500);
-            color: white;
-            font-size: 0.65rem;
-            font-weight: 700;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* اسم المشروع */
         .project-name {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            padding: var(--spacing-xs) var(--spacing-md);
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-lg);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-        
-        .project-name:hover {
-            background: var(--primary-100);
+            background: rgba(255,255,255,0.08) !important;
+            padding: 4px 12px !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            max-width: 110px !important; /* تحجيم المربع حتى لا يطرد الأزرار الجانبية */
         }
         
         .project-name input {
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 0.9rem;
-            width: 120px;
-            text-align: center;
+            width: 100% !important;
+            background: transparent !important;
+            color: white !important;
+            font-size: 0.85rem !important;
+            text-align: center !important;
+            border: none !important;
+            padding: 0 !important;
+            outline: none !important;
         }
         
         .project-name i {
             color: var(--text-muted);
             font-size: 0.8rem;
+        }
+        
+        .header-btn {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 36px !important;
+            height: 36px !important;
+            background: rgba(255,255,255,0.08) !important;
+            border-radius: 50% !important;
+            color: white !important;
+            font-size: 1rem !important;
+            border: none !important;
+            transition: all 0.2s !important;
+        }
+        
+        .header-btn#export-btn {
+            background: rgba(212, 175, 55, 0.15) !important;
+            color: #d4af37 !important;
+        }
+        
+        .header-btn:active {
+            transform: scale(0.9) !important;
         }
         
         /*=====================================================
@@ -1165,31 +1130,54 @@
             border-radius: var(--radius-full);
         }
         
+        /* سحر تنسيق لوحة OpenType الجديد (تصميم الكبسولات الأنيق) */
         .opentype-features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3 أعمدة بدلاً من 2 لتوفير المساحة */
-            gap: 6px;
-            max-height: 180px; /* تحديد ارتفاع للوحة مع إمكانية التمرير */
-            overflow-y: auto;
-            padding-right: 5px;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            max-height: 200px !important;
+            overflow-y: auto !important;
+            padding: 5px !important;
+            justify-content: center !important;
         }
         .opentype-feature {
-            padding: 6px !important;
-            border-radius: 8px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 6px 12px !important;
+            background: var(--bg-secondary) !important;
+            border-radius: 20px !important; /* شكل كبسولة */
+            cursor: pointer !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            transition: all 0.2s !important;
+            width: auto !important;
         }
-        .feature-name { font-size: 0.65rem !important; }
-        .feature-tag { font-size: 0.55rem !important; }
-        
-        .opentype-feature {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            background: var(--bg-secondary);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            border: 1px solid transparent;
+        .opentype-feature.active {
+            background: var(--primary-500) !important;
+            border-color: var(--primary-500) !important;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4) !important;
+        }
+        .feature-checkbox { display: none !important; } /* إخفاء المربع القديم المزعج */
+        .feature-info {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+        .feature-name { 
+            font-size: 0.8rem !important; 
+            color: var(--text-primary) !important;
+            font-weight: 600 !important;
+        }
+        .opentype-feature.active .feature-name,
+        .opentype-feature.active .feature-tag {
+            color: white !important;
+        }
+        .feature-tag { 
+            font-size: 0.65rem !important; 
+            background: rgba(0,0,0,0.3) !important;
+            padding: 2px 6px !important;
+            border-radius: 10px !important;
+            color: var(--text-muted) !important;
         }
         
         .opentype-feature:hover {
@@ -1252,27 +1240,30 @@
             font-family: var(--font-mono);
         }
         
-        /* Stylistic Sets */
+        /* Stylistic Sets (تحويل المربعات القبيحة إلى كبسولات أنيقة) */
         .stylistic-sets-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: var(--spacing-xs);
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
             margin-top: var(--spacing-sm);
+            justify-content: center !important;
         }
         
         .stylistic-set {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all var(--transition-fast);
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 6px 16px !important;
+            background: var(--bg-secondary) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 20px !important; /* شكل الكبسولة */
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            color: var(--text-secondary) !important;
+            cursor: pointer !important;
+            transition: all var(--transition-fast) !important;
+            width: auto !important;
+            aspect-ratio: auto !important; /* إلغاء المربع */
         }
         
         .stylistic-set:hover {
@@ -2745,13 +2736,13 @@
             flex-shrink: 0 !important;
         }
 
-        /* 4. الشريط السفلي صلب ومستحيل يختفي */
+        /* 4. الشريط السفلي صلب (مع السماح بإخفائه عند فتح الكيبورد) */
         .bottom-nav {
-            flex: 0 0 60px !important; /* ثابت تماماً لا يتمدد ولا يتقلص */
+            flex: 0 0 60px !important; 
             position: relative !important;
             width: 100% !important;
             background: #050505 !important;
-            display: flex !important;
+            display: flex; /* السحر هنا: تم إزالة important */
             justify-content: space-around !important;
             align-items: center !important;
             z-index: 200 !important;
@@ -3010,12 +3001,12 @@
         <!-- الهيدر -->
         <header class="app-header">
             <div class="header-left">
-                <span class="app-name" style="font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa771c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px;">Font Studio</span>
+                <span class="app-name">Font Studio</span>
             </div>
             
             <div class="header-center">
                 <div class="project-name">
-                    <input type="text" value="تصميم جديد" id="project-name-input">
+                    <input type="text" value="تصميم جديد" id="project-name-input" dir="auto">
                     <i class="fas fa-pen"></i>
                 </div>
             </div>
@@ -3023,7 +3014,7 @@
             <div class="header-right">
                 <button class="header-btn" id="undo-btn" title="تراجع"><i class="fas fa-undo"></i></button>
                 <button class="header-btn" id="redo-btn" title="إعادة"><i class="fas fa-redo"></i></button>
-                <button class="header-btn" id="export-btn" title="تصدير" style="color: #d4af37;"><i class="fas fa-download"></i></button>
+                <button class="header-btn" id="export-btn" title="تصدير"><i class="fas fa-download"></i></button>
             </div>
         </header>
 
@@ -3630,7 +3621,7 @@
         
         <!-- شريط التنقل السفلي للموبايل -->
         <nav class="bottom-nav">
-            <button class="nav-item active" data-panel="text">
+            <button class="nav-item" data-panel="text">
                 <i class="fas fa-font"></i>
                 <span>النص</span>
             </button>
