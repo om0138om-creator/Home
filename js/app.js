@@ -1791,7 +1791,13 @@ class FontStudioApp {
     }
     
     switchTab(tabName) {
-        // إظهار اللوحة المناسبة
+        // حماية فولاذية: إذا حاول أي كود فتح لوحة "النص" القديمة (الشبح)، امنعه وأغلق اللوحة فوراً!
+        if (tabName === 'text') {
+            this.closeBottomPanel();
+            return;
+        }
+
+        // إظهار اللوحة المناسبة للتبويبات الأخرى
         this.elements.sidebarPanels.forEach(panel => {
             panel.classList.toggle('active', panel.id === `panel-${tabName}`);
         });
@@ -1801,7 +1807,7 @@ class FontStudioApp {
             item.classList.toggle('active', item.dataset.panel === tabName);
         });
         
-        // رفع اللوحة من الأسفل (السحر الحقيقي!)
+        // رفع اللوحة من الأسفل
         this.elements.sidebar.classList.add('active');
     }
 
@@ -2373,6 +2379,9 @@ class FontStudioApp {
         
         // Initialize font list
         this.updateFontList();
+        
+        // الضربة القاضية للشبح: إجبار اللوحة السفلية على الإغلاق فوراً عند فتح التطبيق
+        this.closeBottomPanel();
         
         // Save initial history state
         this.saveHistory();
