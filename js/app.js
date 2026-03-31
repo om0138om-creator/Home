@@ -771,8 +771,11 @@ class FontStudioApp {
 
         // 3. زر "مساحة فارغة" - الدخول للوحة التصميم
         this.elements.startEmptyBtn.addEventListener('click', () => {
-            // السحر هنا: مسح أي مشروع قديم معلق في الذاكرة عشان ما يرجعش يفرض مقاسه عليك!
+            // السحر هنا: مسح أي مشروع قديم معلق
             localforage.removeItem(CONFIG.STORAGE.CURRENT_PROJECT);
+            
+            // الضربة القاضية: إغلاق أي لوحة فارغة "شبح" قد تظهر في البداية وإزالة التحديد
+            this.closeBottomPanel();
             
             this.state.layers = []; // تنظيف تام للطبقات القديمة
             this.state.selectedElement = null;
@@ -784,7 +787,6 @@ class FontStudioApp {
             this.elements.canvas.width = selectedWidth;
             this.elements.canvas.height = selectedHeight;
             
-            // ضبط أبعاد الغلاف الخارجي بقوة ليتطابق مع الاختيار بدون أي تشويه
             this.elements.canvasWrapper.style.width = `${selectedWidth}px`;
             this.elements.canvasWrapper.style.height = `${selectedHeight}px`;
             this.elements.canvasWrapper.style.aspectRatio = `${selectedWidth} / ${selectedHeight}`;
@@ -869,10 +871,12 @@ class FontStudioApp {
         const hammer = new Hammer.Manager(container);
         
         const pinch = new Hammer.Pinch();
-        const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 0 }); 
-        const tap = new Hammer.Tap({ taps: 1 }); // السحر: ضغطة واحدة للتحديد والتعديل
+        // السحر هنا: زيادة الحساسية إلى 10 لمنع سرقة الضغطة (Tap)
+        const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 }); 
+        const tap = new Hammer.Tap({ taps: 1 });
         
         hammer.add([pinch, pan, tap]);
+        pan.recognizeWith(tap); // السماح لهما بالعمل معاً بذكاء
         
         let isDraggingLayer = false;
         let draggedLayer = null;
@@ -989,17 +993,11 @@ class FontStudioApp {
         const ctx = this.elements.ctx;
         const canvas = this.elements.canvas;
         
-        // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw background
         this.drawBackground();
         
-        // Draw layers
+        // السحر هنا: تم حذف drawText() المزعجة، ونكتفي برسم الطبقات فقط لكي لا يتكرر النص!
         this.drawLayers();
-        
-        // Draw text
-        this.drawText();
     }
     
     drawBackground() {
@@ -1180,8 +1178,8 @@ class FontStudioApp {
             ctx.strokeStyle = 'white';
             ctx.lineWidth = 3;
             ctx.shadowColor = 'rgba(0,0,0,0.5)';
-            ctx.shadowBlur = 4;
-            ctx.setLineDash([0, 0]); // خط متصل وليس منقط
+            ctx.shadowBlur = 5;
+            ctx.setLineDash([]); // إرجاع الخط لحالته الطبيعية (متصل 100%)
             ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
 
             ctx.shadowColor = 'transparent';
@@ -2007,6 +2005,8 @@ class FontStudioApp {
         }
         
         this.updateLayersList();
+        // السحر هنا: إجبار الكانفاس على تحديث ورسم مربع التحديد فوراً عند اللمس!
+        this.render(); 
     }
     
     deleteSelectedLayer() {
