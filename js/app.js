@@ -187,22 +187,19 @@ class FontStudioApp {
             this.setupCanvas();
             this.setupEventListeners();
             this.setupTouchGestures();
-            await this.loadSavedData();
             this.generateStylisticSetsUI();
             
-            // Hide splash screen
+            // إخفاء شاشة التحميل فوراً لبدء الاستخدام بدون انتظار
             this.hideSplashScreen();
-            
-            // Initial render
             this.render();
             
-            this.showToast('مرحباً بك في فونت ستوديو!', 'success', 'تم تحميل التطبيق بنجاح');
+            // تحميل البيانات الثقيلة (مثل الخطوط المحفوظة) في الخلفية دون تعطيل التطبيق
+            this.loadSavedData().catch(e => console.error("Error loading background data:", e));
+            
             console.log('✅ App initialized successfully');
         } catch (error) {
             console.error('❌ Initialization error:', error);
-            // صمام الأمان: إخفاء الشاشة حتى لو حدث خطأ لكي لا يعلق المستخدم
             this.hideSplashScreen();
-            this.showToast('تنبيه', 'warning', 'حدث خطأ بسيط أثناء التحميل');
         }
     }
     
@@ -446,7 +443,20 @@ class FontStudioApp {
         
         // Bottom nav (mobile)
         this.elements.bottomNavItems.forEach(item => {
-            item.addEventListener('click', () => this.switchTab(item.dataset.panel));
+            item.addEventListener('click', () => {
+                if (item.dataset.panel === 'text') {
+                    // إذا ضغط على "النص" من الشريط السفلي، نفتح شريط إنشوت الجديد
+                    const activeLayer = this.state.layers.find(l => l.id === this.state.selectedElement);
+                    if (activeLayer && activeLayer.type === 'text') {
+                        this.openInShotEditor(); // تعديل النص الحالي
+                    } else {
+                        this.addTextLayer(); // إضافة نص جديد
+                    }
+                } else {
+                    // باقي الأزرار تفتح اللوحات السفلية العادية
+                    this.switchTab(item.dataset.panel);
+                }
+            });
         });
         
         // Text input (الإصدار الاحترافي النهائي)
@@ -1783,6 +1793,10 @@ class FontStudioApp {
         if (!this.elements.inshotToolbar) return;
         this.elements.inshotToolbar.classList.remove('hidden');
         document.querySelector('.bottom-nav').style.display = 'none';
+        
+        // السحر هنا: إغلاق اللوحة الكبيرة (الجانبية/السفلية) بالقوة حتى لا تظهر خلف الكيبورد
+        this.closeBottomPanel();
+        
         this.elements.inshotInput.value = this.textProperties.text || '';
         setTimeout(() => this.elements.inshotInput.focus(), 100);
     }
@@ -2296,9 +2310,10 @@ class FontStudioApp {
     // =====================================================
     
     hideSplashScreen() {
+        // تم تقليل الوقت من 1500 إلى 150 ملي ثانية فقط لفتح التطبيق كالصاروخ
         setTimeout(() => {
             this.elements.splashScreen.classList.add('hidden');
-        }, 1500);
+        }, 150);
     }
     
     // =====================================================
