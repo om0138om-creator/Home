@@ -145,7 +145,8 @@ class FontStudioApp {
         this.el.exportModal = document.getElementById('export-modal');
         this.el.modalClose = document.getElementById('modal-close');
         this.el.exportCancel = document.getElementById('export-cancel');
-        this.el.exportConfirm = document.getElementById('export-confirm');
+        this.el.exportSaveGallery = document.getElementById('export-save-gallery');
+        this.el.exportShare = document.getElementById('export-share');
         this.el.exportFormats = document.querySelectorAll('.export-format');
         this.el.qualityPresets = document.querySelectorAll('.quality-preset');
         this.el.qualitySlider = document.getElementById('quality-slider');
@@ -1304,7 +1305,9 @@ class FontStudioApp {
     setupExport() {
         this.el.modalClose?.addEventListener('click', () => this.closeExportModal());
         this.el.exportCancel?.addEventListener('click', () => this.closeExportModal());
-        this.el.exportConfirm?.addEventListener('click', () => this.doExport());
+        // الزرين الجداد كل واحد بيبعت أمر مختلف
+        this.el.exportSaveGallery?.addEventListener('click', () => this.doExport('save'));
+        this.el.exportShare?.addEventListener('click', () => this.doExport('share'));
 
         this.el.exportFormats?.forEach(f => {
             f.addEventListener('click', () => {
@@ -1332,7 +1335,7 @@ class FontStudioApp {
         this.el.exportModal?.classList.remove('active');
     }
 
-    async doExport() {
+    async doExport(action = 'save') {
         const prevSel = this.state.selectedLayer;
         this.state.selectedLayer = null;
         this.render();
@@ -1345,45 +1348,73 @@ class FontStudioApp {
 
         try {
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
-            const name = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
+            const name = (this.el.projectName?.value || 'design') + '_' + Date.now();
+            const fullName = name + '.' + ext;
 
-            // 1. الخطة الذهبية: هل نحن داخل الـ APK؟ (Cordova)
-            if (typeof window !== 'undefined' && window.plugins && window.plugins.socialsharing) {
-                // ده هيفتح قايمة الأندرويد الأصلية اللي فيها (حفظ الصورة في المعرض)
-                window.plugins.socialsharing.share(
-                    null, // رسالة
-                    name, // عنوان
-                    dataUrl, // الصورة
-                    null, // رابط
-                    () => { this.closeExportModal(); },
-                    (err) => { this.toast('تم الإلغاء', 'info'); }
-                );
-            } 
-            // 2. الخطة الفضية: هل نحن على متصفح الموبايل العادي؟ (ويب)
-            else if (navigator.canShare) {
-                const res = await fetch(dataUrl);
-                const blob = await res.blob();
-                const file = new File([blob], name, { type: mime });
+            // هل نحن داخل الـ APK؟ (Cordova)
+            if (typeof window !== 'undefined' && window.cordova) {
                 
-                if (navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: name });
-                    this.closeExportModal();
-                    this.toast('تم الإجراء بنجاح', 'success');
+                // خيار المشاركة
+                if (action === 'share' && window.plugins && window.plugins.socialsharing) {
+                    window.plugins.socialsharing.share(
+                        null, fullName, dataUrl, null,
+                        () => { this.closeExportModal(); },
+                        (err) => { this.toast('تم الإلغاء', 'info'); }
+                    );
+                } 
+                // خيار الحفظ الصامت في المعرض
+                else if (action === 'save' && cordova.base64ToGallery) {
+                    cordova.base64ToGallery(
+                        dataUrl, 
+                        { prefix: 'FontStudio_', mediaScanner: true },
+                        (path) => {
+                            this.toast('تم الحفظ في المعرض بنجاح', 'success');
+                            this.closeExportModal();
+                        },
+                        (err) => {
+                            console.error(err);
+                            this.toast('فشل الحفظ، تأكد من الصلاحيات', 'error');
+                        }
+                    );
                 } else {
-                    throw new Error('Share fallback');
+                    throw new Error('Cordova plugins not available');
                 }
             } 
-            // 3. الخطة النحاسية: للكمبيوتر والمتصفحات القديمة
+            // الخطة البديلة: إذا تم فتح التطبيق من متصفح الويب (PWA)
             else {
-                throw new Error('Download fallback');
+                if (action === 'share' && navigator.canShare) {
+                    const res = await fetch(dataUrl);
+                    const blob = await res.blob();
+                    const file = new File([blob], fullName, { type: mime });
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file], title: fullName });
+                        this.closeExportModal();
+                        this.toast('تم الإجراء بنجاح', 'success');
+                        this.state.selectedLayer = prevSel;
+                        this.render();
+                        return;
+                    }
+                }
+                
+                // تحميل عادي كملف إذا اختار "حفظ" من المتصفح أو إذا فشلت المشاركة
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = fullName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                this.closeExportModal();
+                this.toast('تم التنزيل لملفاتك', 'success');
             }
         } catch (error) {
-            // تنفيذ التحميل العادي كخطة بديلة أخيرة
+            console.error("Export Error:", error);
+            
+            // خطة الإنقاذ الأخيرة: تحميل إجباري
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
-            const name = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
+            const fullName = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
             const link = document.createElement('a');
             link.href = dataUrl;
-            link.download = name;
+            link.download = fullName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
