@@ -198,8 +198,9 @@ jobs:
           cd cordova-app
           cordova plugin add cordova-plugin-device || true
           cordova plugin add cordova-plugin-statusbar || true
-          # 💡 الإضافة السحرية اللي بتفتح المعرض والمشاركة في الأندرويد
           cordova plugin add cordova-plugin-x-socialsharing || true
+          # 💡 الإضافة المخصصة للحفظ الصامت في المعرض
+          cordova plugin add cordova-base64-to-gallery || true
           echo "✅ Plugins added"
 
       # =====================================================
