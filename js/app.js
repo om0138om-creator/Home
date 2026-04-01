@@ -1336,44 +1336,29 @@ class FontStudioApp {
         if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
         if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
 
-        this.el.canvas.toBlob(async (blob) => {
-            const name = (this.el.projectName?.value || 'design') + '.' + ext;
+        this.el.canvas.toBlob((blob) => {
+            // السحر هنا: إضافة رقم عشوائي (Date.now) لضمان حفظه كملف جديد يكتشفه المعرض فوراً
+            const name = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
             
-            // السحر الجديد: فتح نافذة الهاتف الأصلية (مثل إنشوت) لتختار "حفظ بالمعرض" أو "مشاركة"
-            if (navigator.canShare && navigator.canShare({ files: [new File([blob], name, { type: mime })] })) {
-                try {
-                    await navigator.share({
-                        files: [new File([blob], name, { type: mime })],
-                        title: name
-                    });
-                    this.toast('تم الإجراء بنجاح', 'success');
-                } catch (err) {
-                    // إذا ألغى المستخدم أو فشلت المشاركة، نعود للتحميل العادي في التنزيلات
-                    this.fallbackDownload(blob, name);
-                }
+            // أمر التحميل المباشر والصامت
+            if (typeof saveAs !== 'undefined') {
+                saveAs(blob, name);
             } else {
-                // للكمبيوتر أو المتصفحات القديمة التي لا تدعم المشاركة
-                this.fallbackDownload(blob, name);
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = name;
+                document.body.appendChild(link); // السطر ده مهم جداً عشان يشتغل جوه تطبيقات الـ APK
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
             }
             
             this.closeExportModal();
+            this.toast('تم الحفظ بنجاح', 'success');
+            
             this.state.selectedLayer = prevSel;
             this.render();
         }, mime, quality);
-    }
-
-    // دالة مساعدة للتحميل العادي (تعمل كخطة بديلة)
-    fallbackDownload(blob, name) {
-        if (typeof saveAs !== 'undefined') {
-            saveAs(blob, name);
-        } else {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = name;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }
-        this.toast('تم الحفظ في ملفاتك', 'success', name);
     }
 
     handleKeyboard(e) {
