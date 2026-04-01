@@ -1305,9 +1305,9 @@ class FontStudioApp {
     setupExport() {
         this.el.modalClose?.addEventListener('click', () => this.closeExportModal());
         this.el.exportCancel?.addEventListener('click', () => this.closeExportModal());
-        // الزرين الجداد كل واحد بيبعت أمر مختلف
-        this.el.exportSaveGallery?.addEventListener('click', () => this.doExport('save'));
-        this.el.exportShare?.addEventListener('click', () => this.doExport('share'));
+        
+        // زر المشاركة فقط هو الذي يعمل الآن لفتح لوحة المشاركة مباشرة
+        this.el.exportShare?.addEventListener('click', () => this.doExport());
 
         this.el.exportFormats?.forEach(f => {
             f.addEventListener('click', () => {
@@ -1335,28 +1335,8 @@ class FontStudioApp {
         this.el.exportModal?.classList.remove('active');
     }
 
-    // 1. دالة لطلب الصلاحيات من نظام أندرويد - بتخلي رسالة الموافقة تظهر للمستخدم
-    async requestAndroidPermissions() {
-        return new Promise((resolve) => {
-            if (typeof cordova === 'undefined' || !cordova.plugins || !cordova.plugins.permissions) {
-                resolve(true); // لو شغال من متصفح مش APK
-                return;
-            }
-            const permissions = cordova.plugins.permissions;
-            // طلب الصلاحيات اللازمة للصور والتخزين
-            const list = [
-                permissions.READ_MEDIA_IMAGES,
-                permissions.WRITE_EXTERNAL_STORAGE
-            ];
-
-            permissions.requestPermissions(list, (status) => {
-                resolve(status.hasPermission);
-            }, () => resolve(false));
-        });
-    }
-
-    // 2. دالة التصدير المحدثة والمحمية من أخطاء القفلات
-    async doExport(action = 'save') {
+    // دالة التصدير والمشاركة المباشرة
+    async doExport() {
         const prevSel = this.state.selectedLayer;
         this.state.selectedLayer = null;
         this.render();
@@ -1370,34 +1350,29 @@ class FontStudioApp {
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
             const fullName = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
 
+            // إذا كان التطبيق يعمل كـ APK (كوردوفا) يفتح لوحة المشاركة فوراً
             if (typeof window !== 'undefined' && window.cordova && window.plugins && window.plugins.socialsharing) {
-                if (action === 'share') {
-                    window.plugins.socialsharing.share(null, fullName, dataUrl, null, 
-                        () => this.closeExportModal(), 
-                        () => this.toast('تم الإلغاء', 'info')
-                    );
-                } 
-                else if (action === 'save') {
-                    // السطر السحري: نطلب الصلاحية الأول قبل الحفظ
-                    const hasPermission = await this.requestAndroidPermissions();
-                    if (!hasPermission) {
-                        this.toast('فشل الحفظ: التطبيق يحتاج صلاحية الوصول للصور', 'error');
-                        return;
-                    }
-
-                    window.plugins.socialsharing.saveToPhotoAlbum(dataUrl,
-                        () => {
-                            this.toast('تم الحفظ في المعرض بنجاح', 'success');
-                            this.closeExportModal();
-                        },
-                        (err) => {
-                            console.error("Save Error:", err);
-                            this.toast('تأكد من منح صلاحية الوصول للصور من إعدادات الهاتف', 'warning');
-                        }
-                    );
+                window.plugins.socialsharing.share(null, fullName, dataUrl, null, 
+                    () => {
+                        this.closeExportModal();
+                        this.toast('تم فتح لوحة المشاركة', 'success');
+                    }, 
+                    () => this.toast('تم الإلغاء', 'info')
+                );
+            } 
+            // إذا كان التطبيق يعمل في المتصفح (Web/PWA)
+            else if (navigator.share) {
+                const res = await fetch(dataUrl);
+                const blob = await res.blob();
+                const file = new File([blob], fullName, { type: mime });
+                try {
+                    await navigator.share({ files: [file], title: fullName });
+                    this.closeExportModal();
+                } catch (err) {
+                    console.log('Share cancelled', err);
                 }
             } else {
-                // نظام التحميل العادي للمتصفح
+                // حل أخير للمتصفحات التي لا تدعم المشاركة (تنزيل مباشر للكمبيوتر)
                 const link = document.createElement('a');
                 link.href = dataUrl;
                 link.download = fullName;
@@ -1405,7 +1380,7 @@ class FontStudioApp {
                 link.click();
                 document.body.removeChild(link);
                 this.closeExportModal();
-                this.toast('تم التنزيل كملف', 'success');
+                this.toast('تم تنزيل الملف', 'success');
             }
         } catch (error) {
             console.error("Export Error:", error);
