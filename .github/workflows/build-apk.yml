@@ -84,6 +84,9 @@ jobs:
           
           cp index.html cordova-app/www/
           
+          # 💡 السحر هنا: حقن ملف كوردوفا لربط الويب بالأندرويد
+          sed -i 's|</body>|<script src="cordova.js"></script></body>|' cordova-app/www/index.html
+          
           mkdir -p cordova-app/www/js
           if [ -d "js" ]; then
             cp -r js/* cordova-app/www/js/
@@ -195,6 +198,8 @@ jobs:
           cd cordova-app
           cordova plugin add cordova-plugin-device || true
           cordova plugin add cordova-plugin-statusbar || true
+          # 💡 الإضافة السحرية اللي بتفتح المعرض والمشاركة في الأندرويد
+          cordova plugin add cordova-plugin-x-socialsharing || true
           echo "✅ Plugins added"
 
       # =====================================================
