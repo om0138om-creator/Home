@@ -59,6 +59,10 @@ class FontStudioApp {
         this.generateStylisticSets();
         this.updateFontList();
         this.loadSavedFonts();
+        
+        // الضربة القاضية: استدعاء قسم "أعمالي" فور فتح التطبيق
+        this.loadProjectsList();
+
         setTimeout(() => {
             document.getElementById('splash-screen')?.classList.add('hidden');
         }, 800);
@@ -244,6 +248,35 @@ class FontStudioApp {
                     this.fitCanvasToViewport();
                 }
             }, 150);
+        });
+
+        // 💡 تفعيل زر معلومات التطبيق
+        document.getElementById('app-info-btn')?.addEventListener('click', () => {
+            this.toast('معلومات التطبيق', 'info', 'تم صنع وتطوير هذا التطبيق بالكامل من قبل: عمر سنجق و محمود سنجق');
+        });
+
+        // 💡 تفعيل زر الخروج (يظهر نافذة التأكيد)
+        document.getElementById('exit-btn')?.addEventListener('click', () => {
+            document.getElementById('exit-modal')?.classList.add('active');
+        });
+
+        // 💡 أزرار نافذة التأكيد
+        document.getElementById('exit-cancel')?.addEventListener('click', () => {
+            document.getElementById('exit-modal')?.classList.remove('active');
+        });
+
+        document.getElementById('exit-discard')?.addEventListener('click', () => {
+            document.getElementById('exit-modal')?.classList.remove('active');
+            this.el.app.classList.remove('active');
+            this.el.home.classList.remove('hidden');
+            this.toast('تم حذف التصميم والخروج', 'info');
+        });
+
+        document.getElementById('exit-save')?.addEventListener('click', () => {
+            document.getElementById('exit-modal')?.classList.remove('active');
+            this.saveCurrentProjectAsDraft(); // يحفظ في أعمالي
+            this.el.app.classList.remove('active');
+            this.el.home.classList.remove('hidden');
         });
     }
 
@@ -1092,6 +1125,8 @@ class FontStudioApp {
                 const tag = f.dataset.feature;
                 this.state.activeFeatures.has(tag) ? this.state.activeFeatures.delete(tag) : this.state.activeFeatures.add(tag);
                 this.updateOTCount();
+                this.updateSelectedLayer(); 
+                this.render(); // السحر هنا: أمر مباشر بإعادة رسم الكانفاس في نفس اللحظة!
             }
         });
     }
@@ -1110,6 +1145,8 @@ class FontStudioApp {
                 el.classList.toggle('active');
                 this.state.activeSS.has(tag) ? this.state.activeSS.delete(tag) : this.state.activeSS.add(tag);
                 this.updateOTCount();
+                this.updateSelectedLayer();
+                this.render(); // أمر مباشر بإعادة الرسم للمجموعات الأسلوبية
             });
             grid.appendChild(el);
         }
@@ -1299,22 +1336,44 @@ class FontStudioApp {
         if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
         if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
 
-        this.el.canvas.toBlob((blob) => {
+        this.el.canvas.toBlob(async (blob) => {
             const name = (this.el.projectName?.value || 'design') + '.' + ext;
-            if (typeof saveAs !== 'undefined') {
-                saveAs(blob, name);
+            
+            // السحر الجديد: فتح نافذة الهاتف الأصلية (مثل إنشوت) لتختار "حفظ بالمعرض" أو "مشاركة"
+            if (navigator.canShare && navigator.canShare({ files: [new File([blob], name, { type: mime })] })) {
+                try {
+                    await navigator.share({
+                        files: [new File([blob], name, { type: mime })],
+                        title: name
+                    });
+                    this.toast('تم الإجراء بنجاح', 'success');
+                } catch (err) {
+                    // إذا ألغى المستخدم أو فشلت المشاركة، نعود للتحميل العادي في التنزيلات
+                    this.fallbackDownload(blob, name);
+                }
             } else {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = name;
-                link.click();
-                URL.revokeObjectURL(link.href);
+                // للكمبيوتر أو المتصفحات القديمة التي لا تدعم المشاركة
+                this.fallbackDownload(blob, name);
             }
+            
             this.closeExportModal();
-            this.toast('تم التصدير', 'success', name);
             this.state.selectedLayer = prevSel;
             this.render();
         }, mime, quality);
+    }
+
+    // دالة مساعدة للتحميل العادي (تعمل كخطة بديلة)
+    fallbackDownload(blob, name) {
+        if (typeof saveAs !== 'undefined') {
+            saveAs(blob, name);
+        } else {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = name;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+        this.toast('تم الحفظ في ملفاتك', 'success', name);
     }
 
     handleKeyboard(e) {
@@ -1336,6 +1395,98 @@ class FontStudioApp {
             this.state.selectedLayer = null;
             this.render();
         }
+    }
+
+    // =====================================================
+    // 📁 نظام إدارة المشروعات (أعمالي)
+    // =====================================================
+    async loadProjectsList() {
+        try {
+            const projects = await localforage.getItem(CONFIG.STORAGE.PROJECTS) || [];
+            const container = document.getElementById('my-projects-section');
+            const list = document.getElementById('projects-list');
+            const homeContent = document.querySelector('.home-content');
+            
+            if (!container || !list || !homeContent) return;
+            
+            // نقل قسم أعمالي ليكون آخر شيء في الرئيسية
+            if(container.parentElement !== homeContent) {
+                homeContent.appendChild(container);
+            }
+            
+            if (projects.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            list.innerHTML = '';
+            
+            // عرض أحدث المشاريع أولاً
+            projects.slice().reverse().forEach((proj, index) => {
+                const realIndex = projects.length - 1 - index;
+                const el = document.createElement('div');
+                el.className = 'preset-card';
+                el.style.flex = '0 0 110px';
+                el.innerHTML = `
+                    <div class="preset-ratio ratio-1-1" style="background:#1e293b; border-color:var(--primary); display:flex; align-items:center; justify-content:center; color:white; font-size:1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3);"><i class="fas fa-paint-brush"></i></div>
+                    <span class="preset-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; padding:0 5px;">${proj.name}</span>
+                    <button class="layer-action-btn" style="width:100%; margin-top:5px; background:rgba(239, 68, 68, 0.1); color:var(--danger);" onclick="event.stopPropagation(); window.app.deleteProject(${realIndex})"><i class="fas fa-trash"></i> حذف</button>
+                `;
+                el.addEventListener('click', () => this.openProject(realIndex));
+                list.appendChild(el);
+            });
+        } catch (e) { console.error('خطأ في تحميل المشاريع:', e); }
+    }
+
+    async saveCurrentProjectAsDraft() {
+        try {
+            const projects = await localforage.getItem(CONFIG.STORAGE.PROJECTS) || [];
+            const projName = this.el.projectName?.value || 'تصميم جديد';
+            
+            projects.push({
+                id: Date.now(),
+                name: projName,
+                layers: this.state.layers,
+                canvas: this.canvas
+            });
+            
+            await localforage.setItem(CONFIG.STORAGE.PROJECTS, projects);
+            this.toast('تم حفظ العمل في أعمالي بنجاح', 'success');
+            this.loadProjectsList();
+        } catch (e) { console.error('خطأ في الحفظ:', e); }
+    }
+
+    async deleteProject(index) {
+        try {
+            const projects = await localforage.getItem(CONFIG.STORAGE.PROJECTS) || [];
+            projects.splice(index, 1);
+            await localforage.setItem(CONFIG.STORAGE.PROJECTS, projects);
+            this.toast('تم حذف العمل', 'success');
+            this.loadProjectsList();
+        } catch (e) { console.error('خطأ في الحذف:', e); }
+    }
+
+    async openProject(index) {
+        try {
+            const projects = await localforage.getItem(CONFIG.STORAGE.PROJECTS) || [];
+            const proj = projects[index];
+            if (!proj) return;
+            
+            // استرجاع أبعاد الكانفاس والطبقات
+            this.canvas = { ...proj.canvas };
+            this.state.layers = JSON.parse(JSON.stringify(proj.layers));
+            this.state.selectedLayer = null;
+            if (this.el.projectName) this.el.projectName.value = proj.name;
+            
+            this.el.canvas.width = this.canvas.width;
+            this.el.canvas.height = this.canvas.height;
+            this.el.canvasWrapper.style.width = this.canvas.width + 'px';
+            this.el.canvasWrapper.style.height = this.canvas.height + 'px';
+            
+            this.showApp();
+            this.toast('تم استرجاع العمل بنجاح', 'success');
+        } catch (e) { console.error('خطأ في الفتح:', e); }
     }
 
     toast(title, type = 'info', msg = '') {
