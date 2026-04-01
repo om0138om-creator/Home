@@ -9,7 +9,7 @@
 const CONFIG = {
     CANVAS: { DEFAULT_WIDTH: 1080, DEFAULT_HEIGHT: 1080, MIN_ZOOM: 0.1, MAX_ZOOM: 3, ZOOM_STEP: 0.1 },
     TEXT: { DEFAULT_SIZE: 48, MIN_SIZE: 12, MAX_SIZE: 300, DEFAULT_FONT: 'Cairo', DEFAULT_COLOR: '#000000' },
-    STORAGE: { FONTS: 'fs_fonts', PROJECT: 'fs_project' }
+    STORAGE: { FONTS: 'fs_fonts', PROJECTS: 'fs_projects' }
 };
 
 class FontStudioApp {
@@ -1344,41 +1344,53 @@ class FontStudioApp {
         if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
 
         try {
-            // 1. تحويل الكانفاس فوريًا لتجنب حظر المتصفح
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
             const name = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
 
-            // 2. تحويل البيانات إلى ملف حقيقي (File Object) مدعوم في الـ PWA
-            const res = await fetch(dataUrl);
-            const blob = await res.blob();
-            const file = new File([blob], name, { type: mime });
-
-            // 3. السحر لبيئة جيت هاب: فتح قائمة الهاتف الأصلية للمشاركة والحفظ
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: name
-                });
-                this.toast('تم الإجراء بنجاح', 'success');
-            } else {
-                // الخطة البديلة المضمونة لو المتصفح قديم
-                const link = document.createElement('a');
-                link.href = dataUrl;
-                link.download = name;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                this.toast('تم التنزيل في ملفات الهاتف', 'success');
+            // 1. الخطة الذهبية: هل نحن داخل الـ APK؟ (Cordova)
+            if (typeof window !== 'undefined' && window.plugins && window.plugins.socialsharing) {
+                // ده هيفتح قايمة الأندرويد الأصلية اللي فيها (حفظ الصورة في المعرض)
+                window.plugins.socialsharing.share(
+                    null, // رسالة
+                    name, // عنوان
+                    dataUrl, // الصورة
+                    null, // رابط
+                    () => { this.closeExportModal(); },
+                    (err) => { this.toast('تم الإلغاء', 'info'); }
+                );
+            } 
+            // 2. الخطة الفضية: هل نحن على متصفح الموبايل العادي؟ (ويب)
+            else if (navigator.canShare) {
+                const res = await fetch(dataUrl);
+                const blob = await res.blob();
+                const file = new File([blob], name, { type: mime });
+                
+                if (navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: name });
+                    this.closeExportModal();
+                    this.toast('تم الإجراء بنجاح', 'success');
+                } else {
+                    throw new Error('Share fallback');
+                }
+            } 
+            // 3. الخطة النحاسية: للكمبيوتر والمتصفحات القديمة
+            else {
+                throw new Error('Download fallback');
             }
         } catch (error) {
-            console.error("Export Error:", error);
-            // إذا ألغى المستخدم المشاركة، لا تظهر رسالة خطأ مزعجة
-            if (error.name !== 'AbortError') {
-                this.toast('حدث خطأ أثناء التصدير', 'error');
-            }
+            // تنفيذ التحميل العادي كخطة بديلة أخيرة
+            const dataUrl = this.el.canvas.toDataURL(mime, quality);
+            const name = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            this.closeExportModal();
+            this.toast('تم التنزيل لملفاتك', 'success');
         }
 
-        this.closeExportModal();
         this.state.selectedLayer = prevSel;
         this.render();
     }
