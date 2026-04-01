@@ -190,6 +190,16 @@ jobs:
           cordova platform add android@12.0.1
           echo "✅ Android platform added"
 
+      # =====================================================
+      # 🔌 Add Plugins
+      # =====================================================
+      - name: Add Cordova Plugins
+        run: |
+          cd cordova-app
+          cordova plugin add cordova-plugin-device || true
+          cordova plugin add cordova-plugin-x-socialsharing || true
+          echo "✅ Plugins added"
+
 
       # =====================================================
       # 🔨 Build Debug APK
