@@ -1123,10 +1123,14 @@ class FontStudioApp {
             if (f && !f.classList.contains('unavailable')) {
                 f.classList.toggle('active');
                 const tag = f.dataset.feature;
-                this.state.activeFeatures.has(tag) ? this.state.activeFeatures.delete(tag) : this.state.activeFeatures.add(tag);
+                if (this.state.activeFeatures.has(tag)) {
+                    this.state.activeFeatures.delete(tag);
+                } else {
+                    this.state.activeFeatures.add(tag);
+                }
                 this.updateOTCount();
-                this.updateSelectedLayer(); 
-                this.render(); // السحر هنا: أمر مباشر بإعادة رسم الكانفاس في نفس اللحظة!
+                // تحديث لحظي فائق السرعة وبدون تهنيج
+                requestAnimationFrame(() => this.render());
             }
         });
     }
@@ -1143,10 +1147,14 @@ class FontStudioApp {
             el.textContent = 'SS' + String(i).padStart(2, '0');
             el.addEventListener('click', () => {
                 el.classList.toggle('active');
-                this.state.activeSS.has(tag) ? this.state.activeSS.delete(tag) : this.state.activeSS.add(tag);
+                if (this.state.activeSS.has(tag)) {
+                    this.state.activeSS.delete(tag);
+                } else {
+                    this.state.activeSS.add(tag);
+                }
                 this.updateOTCount();
-                this.updateSelectedLayer();
-                this.render(); // أمر مباشر بإعادة الرسم للمجموعات الأسلوبية
+                // تحديث لحظي فائق السرعة
+                requestAnimationFrame(() => this.render());
             });
             grid.appendChild(el);
         }
@@ -1331,33 +1339,50 @@ class FontStudioApp {
 
         const format = document.querySelector('.export-format.active')?.dataset.format || 'png';
         const quality = parseInt(this.el.qualitySlider?.value || 90) / 100;
+        let mime = 'image/png';
+        if (format === 'jpg') { mime = 'image/jpeg'; }
+        if (format === 'webp') { mime = 'image/webp'; }
 
-        let mime = 'image/png', ext = 'png';
-        if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
-        if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
-
-        // الطريقة الاحترافية العالمية: تحويل الكانفاس إلى Data URL لتخطي حظر تطبيقات الويب (WebView)
         try {
+            // تحويل التصميم لصورة
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
-            const name = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
-            
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = name;
-            
-            // إجبار النظام على النقر (يعمل بكفاءة داخل الـ APK)
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
+
+            // 💡 الخدعة العبقرية لتخطي حظر الـ APK: إنشاء نافذة عرض مباشرة
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;';
+
+            // زر الإغلاق
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '<i class="fas fa-times"></i> إغلاق';
+            closeBtn.style.cssText = 'position:absolute;top:30px;right:20px;background:#ef4444;color:white;border:none;padding:8px 15px;border-radius:10px;font-family:inherit;font-weight:bold;font-size:14px;cursor:pointer;';
+            closeBtn.onclick = () => document.body.removeChild(overlay);
+
+            // رسالة التوجيه للمستخدم
+            const title = document.createElement('p');
+            title.innerHTML = '<i class="fas fa-hand-pointer" style="color:#22c55e; margin-bottom:10px; font-size:2rem; display:block;"></i> اضغط مطولاً على الصورة لحفظها في المعرض';
+            title.style.cssText = 'color:white;font-weight:bold;margin-bottom:25px;font-size:1.1rem;text-align:center;line-height:1.5;';
+
+            // الصورة النهائية مع تفعيل خيار الحفظ المباشر
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            // السطر ده بيضمن إن نظام الأندرويد يطلّع قائمة (حفظ الصورة) لما المستخدم يضغط مطولاً
+            img.style.cssText = 'max-width:100%;max-height:65vh;border-radius:12px;box-shadow:0 10px 30px rgba(99, 102, 241, 0.4);-webkit-touch-callout:default;';
+
+            // تجميع العناصر وعرضها
+            overlay.appendChild(closeBtn);
+            overlay.appendChild(title);
+            overlay.appendChild(img);
+            document.body.appendChild(overlay);
+
             this.closeExportModal();
-            this.toast('تم التصدير لملفاتك بنجاح', 'success');
-            
+            this.toast('تم تجهيز التصميم بنجاح', 'success');
+
         } catch (error) {
-            console.error("Export Error: ", error);
+            console.error("Export Error:", error);
             this.toast('حدث خطأ أثناء التصدير', 'error');
         }
 
+        // إرجاع التحديد للطبقة
         this.state.selectedLayer = prevSel;
         this.render();
     }
