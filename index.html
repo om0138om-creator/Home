@@ -914,30 +914,20 @@
 
     <div class="modal-overlay" id="export-modal">
         <div class="modal">
-            <div class="modal-header"><h2 class="modal-title"><i class="fas fa-download"></i> تصدير</h2><button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button></div>
-            <div class="modal-body">
-                <div class="export-format-grid">
-                    <div class="export-format active" data-format="png"><div class="export-format-icon"><i class="fas fa-image"></i></div><div class="export-format-name">PNG</div><div class="export-format-ext">شفاف</div></div>
-                    <div class="export-format" data-format="jpg"><div class="export-format-icon"><i class="fas fa-file-image"></i></div><div class="export-format-name">JPG</div><div class="export-format-ext">مضغوط</div></div>
-                    <div class="export-format" data-format="webp"><div class="export-format-icon"><i class="fas fa-globe"></i></div><div class="export-format-name">WebP</div><div class="export-format-ext">ويب</div></div>
-                </div>
-                <div class="quality-presets">
-                    <button class="quality-preset" data-q="50">منخفضة</button>
-                    <button class="quality-preset" data-q="75">متوسطة</button>
-                    <button class="quality-preset active" data-q="90">عالية</button>
-                    <button class="quality-preset" data-q="100">قصوى</button>
-                </div>
-                <div class="slider-wrapper"><input type="range" class="slider" id="quality-slider" min="10" max="100" value="90"></div>
-                <div class="export-size-info">
-                    <div class="size-info-item"><div class="size-info-value" id="exp-w">1080</div><div class="size-info-label">العرض</div></div>
-                    <div class="size-info-item"><div class="size-info-value">×</div><div class="size-info-label"></div></div>
-                    <div class="size-info-item"><div class="size-info-value" id="exp-h">1080</div><div class="size-info-label">الارتفاع</div></div>
-                </div>
+            <div class="modal-header"><h2 class="modal-title"><i class="fas fa-download"></i> مشاركة التصميم</h2><button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button></div>
+            
+            <div class="modal-body" style="text-align: center; padding: 40px 20px;">
+                <i class="fas fa-share-square" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 20px;"></i>
+                <p style="font-size: 1.1rem; font-weight: 700; color: var(--text-white); line-height: 1.6;">
+                    اضغط على الزر أسفله لتصدير إبداعاتك
+                </p>
             </div>
-            <div class="modal-footer" style="gap: 8px;">
-                <button class="btn btn-secondary" id="export-cancel" style="padding: 10px;">إلغاء</button>
-                <button class="btn btn-primary" id="export-save-gallery" style="flex: 1; background: var(--success);"><i class="fas fa-image"></i> المعرض</button>
-                <button class="btn btn-primary" id="export-share" style="flex: 1;"><i class="fas fa-share-alt"></i> مشاركة</button>
+
+            <div class="modal-footer" style="gap: 10px;">
+                <button class="btn btn-secondary" id="export-cancel" style="flex: 1; padding: 12px;">إلغاء</button>
+                <button class="btn btn-primary" id="export-share" style="flex: 2; background: var(--primary); padding: 12px; font-size: 1rem;">
+                    <i class="fas fa-share-alt"></i> تصدير عملك
+                </button>
             </div>
         </div>
     </div>
