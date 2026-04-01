@@ -1351,37 +1351,10 @@ class FontStudioApp {
             const name = (this.el.projectName?.value || 'design') + '_' + Date.now();
             const fullName = name + '.' + ext;
 
-            // هل نحن داخل الـ APK؟ (Cordova)
-            if (typeof window !== 'undefined' && window.cordova) {
-                
-                // خيار المشاركة
-                if (action === 'share' && window.plugins && window.plugins.socialsharing) {
-                    window.plugins.socialsharing.share(
-                        null, fullName, dataUrl, null,
-                        () => { this.closeExportModal(); },
-                        (err) => { this.toast('تم الإلغاء', 'info'); }
-                    );
-                } 
-    async doExport(action = 'save') {
-        const prevSel = this.state.selectedLayer;
-        this.state.selectedLayer = null;
-        this.render();
-
-        const format = document.querySelector('.export-format.active')?.dataset.format || 'png';
-        const quality = parseInt(this.el.qualitySlider?.value || 90) / 100;
-        let mime = 'image/png', ext = 'png';
-        if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
-        if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
-
-        try {
-            const dataUrl = this.el.canvas.toDataURL(mime, quality);
-            const name = (this.el.projectName?.value || 'design') + '_' + Date.now();
-            const fullName = name + '.' + ext;
-
-            // هل نحن داخل الـ APK؟ (Cordova)
+            // التحقق من العمل داخل بيئة APK (Cordova)
             if (typeof window !== 'undefined' && window.cordova && window.plugins && window.plugins.socialsharing) {
                 
-                // خيار المشاركة
+                // خيار المشاركة الأصلية
                 if (action === 'share') {
                     window.plugins.socialsharing.share(
                         null, fullName, dataUrl, null,
@@ -1389,7 +1362,7 @@ class FontStudioApp {
                         (err) => { this.toast('تم الإلغاء', 'info'); }
                     );
                 } 
-                // خيار الحفظ الصامت في المعرض (باستخدام المحرك الحديث المتوافق مع أندرويد 13)
+                // خيار الحفظ المباشر في المعرض (متوافق مع أندرويد 13+)
                 else if (action === 'save') {
                     window.plugins.socialsharing.saveToPhotoAlbum(
                         dataUrl,
@@ -1399,13 +1372,12 @@ class FontStudioApp {
                         },
                         (err) => {
                             console.error("Save Error:", err);
-                            // لو المستخدم رفض الصلاحية أو حصل خطأ
                             this.toast('تم رفض الصلاحية أو فشل الحفظ', 'error');
                         }
                     );
                 }
             } 
-            // الخطة البديلة: إذا تم فتح التطبيق من متصفح الويب (PWA)
+            // الخطة البديلة لمتصفحات الويب و PWA
             else {
                 if (action === 'share' && navigator.canShare) {
                     const res = await fetch(dataUrl);
@@ -1421,7 +1393,7 @@ class FontStudioApp {
                     }
                 }
                 
-                // تحميل عادي كملف إذا اختار "حفظ" من المتصفح أو إذا فشلت المشاركة
+                // التنزيل المباشر كملف في حال عدم توفر خيارات المشاركة
                 const link = document.createElement('a');
                 link.href = dataUrl;
                 link.download = fullName;
@@ -1433,14 +1405,22 @@ class FontStudioApp {
             }
         } catch (error) {
             console.error("Export Error:", error);
-            
-            // خطة الإنقاذ الأخيرة: تحميل إجباري
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
             const fullName = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
             const link = document.createElement('a');
             link.href = dataUrl;
             link.download = fullName;
             document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            this.closeExportModal();
+            this.toast('تم التنزيل لملفاتك', 'success');
+        }
+
+        this.state.selectedLayer = prevSel;
+        this.render();
+    }
+ody.appendChild(link);
             link.click();
             document.body.removeChild(link);
             this.closeExportModal();
