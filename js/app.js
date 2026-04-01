@@ -1335,6 +1335,27 @@ class FontStudioApp {
         this.el.exportModal?.classList.remove('active');
     }
 
+    // 1. دالة لطلب الصلاحيات من نظام أندرويد - بتخلي رسالة الموافقة تظهر للمستخدم
+    async requestAndroidPermissions() {
+        return new Promise((resolve) => {
+            if (typeof cordova === 'undefined' || !cordova.plugins || !cordova.plugins.permissions) {
+                resolve(true); // لو شغال من متصفح مش APK
+                return;
+            }
+            const permissions = cordova.plugins.permissions;
+            // طلب الصلاحيات اللازمة للصور والتخزين
+            const list = [
+                permissions.READ_MEDIA_IMAGES,
+                permissions.WRITE_EXTERNAL_STORAGE
+            ];
+
+            permissions.requestPermissions(list, (status) => {
+                resolve(status.hasPermission);
+            }, () => resolve(false));
+        });
+    }
+
+    // 2. دالة التصدير المحدثة والمحمية من أخطاء القفلات
     async doExport(action = 'save') {
         const prevSel = this.state.selectedLayer;
         this.state.selectedLayer = null;
@@ -1342,24 +1363,28 @@ class FontStudioApp {
 
         const format = document.querySelector('.export-format.active')?.dataset.format || 'png';
         const quality = parseInt(this.el.qualitySlider?.value || 90) / 100;
-        let mime = 'image/png', ext = 'png';
-        if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
-        if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
+        let mime = (format === 'jpg') ? 'image/jpeg' : (format === 'webp' ? 'image/webp' : 'image/png');
+        let ext = format;
 
         try {
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
-            const name = (this.el.projectName?.value || 'design') + '_' + Date.now();
-            const fullName = name + '.' + ext;
+            const fullName = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
 
-            // المحرك المحدث للـ APK (Cordova)
             if (typeof window !== 'undefined' && window.cordova && window.plugins && window.plugins.socialsharing) {
                 if (action === 'share') {
                     window.plugins.socialsharing.share(null, fullName, dataUrl, null, 
-                        () => { this.closeExportModal(); }, 
-                        (err) => { this.toast('تم الإلغاء', 'info'); }
+                        () => this.closeExportModal(), 
+                        () => this.toast('تم الإلغاء', 'info')
                     );
                 } 
                 else if (action === 'save') {
+                    // السطر السحري: نطلب الصلاحية الأول قبل الحفظ
+                    const hasPermission = await this.requestAndroidPermissions();
+                    if (!hasPermission) {
+                        this.toast('فشل الحفظ: التطبيق يحتاج صلاحية الوصول للصور', 'error');
+                        return;
+                    }
+
                     window.plugins.socialsharing.saveToPhotoAlbum(dataUrl,
                         () => {
                             this.toast('تم الحفظ في المعرض بنجاح', 'success');
@@ -1367,31 +1392,20 @@ class FontStudioApp {
                         },
                         (err) => {
                             console.error("Save Error:", err);
-                            this.toast('فشل الحفظ، تفقد الصلاحيات', 'error');
+                            this.toast('تأكد من منح صلاحية الوصول للصور من إعدادات الهاتف', 'warning');
                         }
                     );
                 }
-            } 
-            else {
-                // الخطة البديلة للمتصفح
-                if (action === 'share' && navigator.share) {
-                    const res = await fetch(dataUrl);
-                    const blob = await res.blob();
-                    const file = new File([blob], fullName, { type: mime });
-                    try {
-                        await navigator.share({ files: [file], title: fullName });
-                        this.closeExportModal();
-                    } catch(e) { console.log('Share cancelled'); }
-                } else {
-                    const link = document.createElement('a');
-                    link.href = dataUrl;
-                    link.download = fullName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    this.closeExportModal();
-                    this.toast('تم التنزيل لملفاتك', 'success');
-                }
+            } else {
+                // نظام التحميل العادي للمتصفح
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = fullName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                this.closeExportModal();
+                this.toast('تم التنزيل كملف', 'success');
             }
         } catch (error) {
             console.error("Export Error:", error);
@@ -1402,6 +1416,7 @@ class FontStudioApp {
         this.render();
     }
 
+    // 3. دالة التحكم في لوحة المفاتيح
     handleKeyboard(e) {
         if (e.ctrlKey || e.metaKey) {
             switch (e.key.toLowerCase()) {
