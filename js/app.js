@@ -43,7 +43,9 @@ class FontStudioApp {
             letterSpacing: 0,
             lineHeight: 1.5,
             shadow: { enabled: false, x: 2, y: 2, blur: 4, color: '#000000' },
-            stroke: { enabled: false, width: 1, color: '#000000' }
+            stroke: { enabled: false, width: 1, color: '#000000' },
+            otFeatures: [],
+            ssFeatures: []
         };
 
         this.el = {};
@@ -418,10 +420,10 @@ class FontStudioApp {
         const p = layer.props;
         if (!p.text) return;
 
-        // --- 🪄 سحر الأوبن تايب: تطبيق الخصائص على الكانفاس ---
+        // --- 🪄 سحر الأوبن تايب: تطبيق الخصائص المخصصة لهذه الطبقة فقط ---
         let otFeatures = [];
-        this.state.activeFeatures.forEach(f => otFeatures.push(`"${f}" 1`));
-        this.state.activeSS.forEach(f => otFeatures.push(`"${f}" 1`));
+        if (p.otFeatures) p.otFeatures.forEach(f => otFeatures.push(`"${f}" 1`));
+        if (p.ssFeatures) p.ssFeatures.forEach(f => otFeatures.push(`"${f}" 1`));
         const featureString = otFeatures.length > 0 ? otFeatures.join(', ') : 'normal';
         this.el.canvas.style.fontFeatureSettings = featureString;
         this.el.canvas.style.fontVariantLigatures = 'normal';
@@ -464,9 +466,6 @@ class FontStudioApp {
         if (layer.id === this.state.selectedLayer) {
             this.drawSelectionBox(ctx, layer, lines, lineHeight, totalHeight);
         }
-        
-        // إغلاق التأثير بعد رسم الطبقة لكي لا يؤثر على باقي الطبقات
-        this.el.canvas.style.fontFeatureSettings = 'normal';
     }
 
     drawTextLine(ctx, text, x, y, spacing, isStroke) {
@@ -564,7 +563,9 @@ class FontStudioApp {
                 letterSpacing: 0,
                 lineHeight: 1.5,
                 shadow: { enabled: false, x: 2, y: 2, blur: 4, color: '#000000' },
-                stroke: { enabled: false, width: 1, color: '#000000' }
+                stroke: { enabled: false, width: 1, color: '#000000' },
+                otFeatures: [...(this.textProps.otFeatures || [])],
+                ssFeatures: [...(this.textProps.ssFeatures || [])]
             }
         };
 
@@ -617,6 +618,14 @@ class FontStudioApp {
         this.el.alignRight?.classList.toggle('active', p.textAlign === 'right');
         this.el.alignCenter?.classList.toggle('active', p.textAlign === 'center');
         this.el.alignLeft?.classList.toggle('active', p.textAlign === 'left');
+
+        document.querySelectorAll('.opentype-feature').forEach(el => {
+            el.classList.toggle('active', (p.otFeatures || []).includes(el.dataset.feature));
+        });
+        document.querySelectorAll('.stylistic-set').forEach(el => {
+            el.classList.toggle('active', (p.ssFeatures || []).includes(el.dataset.ss));
+        });
+        this.updateOTCount();
     }
 
     updateSelectedLayer() {
@@ -1032,7 +1041,9 @@ class FontStudioApp {
         const fontInfo = this.fonts.get(family);
         const available = fontInfo && fontInfo.features ? fontInfo.features : new Set();
         
-        // تظليم/إضاءة الخصائص الأساسية (Swash, Ligatures...)
+        this.textProps.otFeatures = this.textProps.otFeatures || [];
+        this.textProps.ssFeatures = this.textProps.ssFeatures || [];
+
         document.querySelectorAll('.opentype-feature').forEach(el => {
             const tag = el.dataset.feature;
             if (available.has(tag)) {
@@ -1040,11 +1051,11 @@ class FontStudioApp {
             } else {
                 el.classList.add('unavailable');
                 el.classList.remove('active');
-                this.state.activeFeatures.delete(tag);
+                const idx = this.textProps.otFeatures.indexOf(tag);
+                if (idx > -1) this.textProps.otFeatures.splice(idx, 1);
             }
         });
         
-        // تظليم/إضاءة المجموعات الأسلوبية (SS01-SS20)
         document.querySelectorAll('.stylistic-set').forEach(el => {
             const tag = el.dataset.ss;
             if (available.has(tag)) {
@@ -1052,7 +1063,8 @@ class FontStudioApp {
             } else {
                 el.classList.add('unavailable');
                 el.classList.remove('active');
-                this.state.activeSS.delete(tag);
+                const idx = this.textProps.ssFeatures.indexOf(tag);
+                if (idx > -1) this.textProps.ssFeatures.splice(idx, 1);
             }
         });
         
@@ -1122,16 +1134,19 @@ class FontStudioApp {
         this.el.otFeatures?.addEventListener('click', (e) => {
             const f = e.target.closest('.opentype-feature');
             if (f && !f.classList.contains('unavailable')) {
-                f.classList.toggle('active');
                 const tag = f.dataset.feature;
-                if (this.state.activeFeatures.has(tag)) {
-                    this.state.activeFeatures.delete(tag);
+                this.textProps.otFeatures = this.textProps.otFeatures || [];
+                const idx = this.textProps.otFeatures.indexOf(tag);
+                
+                if (idx > -1) {
+                    this.textProps.otFeatures.splice(idx, 1);
+                    f.classList.remove('active');
                 } else {
-                    this.state.activeFeatures.add(tag);
+                    this.textProps.otFeatures.push(tag);
+                    f.classList.add('active');
                 }
                 this.updateOTCount();
-                // تحديث لحظي فائق السرعة وبدون تهنيج
-                requestAnimationFrame(() => this.render());
+                this.updateSelectedLayer(); // تحديث فوري وحفظ بالطبقة
             }
         });
     }
@@ -1147,22 +1162,27 @@ class FontStudioApp {
             el.dataset.ss = tag;
             el.textContent = 'SS' + String(i).padStart(2, '0');
             el.addEventListener('click', () => {
-                el.classList.toggle('active');
-                if (this.state.activeSS.has(tag)) {
-                    this.state.activeSS.delete(tag);
+                if (el.classList.contains('unavailable')) return;
+                
+                this.textProps.ssFeatures = this.textProps.ssFeatures || [];
+                const idx = this.textProps.ssFeatures.indexOf(tag);
+                
+                if (idx > -1) {
+                    this.textProps.ssFeatures.splice(idx, 1);
+                    el.classList.remove('active');
                 } else {
-                    this.state.activeSS.add(tag);
+                    this.textProps.ssFeatures.push(tag);
+                    el.classList.add('active');
                 }
                 this.updateOTCount();
-                // تحديث لحظي فائق السرعة
-                requestAnimationFrame(() => this.render());
+                this.updateSelectedLayer(); // تحديث فوري وحفظ بالطبقة
             });
             grid.appendChild(el);
         }
     }
 
     updateOTCount() {
-        const count = this.state.activeFeatures.size + this.state.activeSS.size;
+        const count = (this.textProps.otFeatures?.length || 0) + (this.textProps.ssFeatures?.length || 0);
         if (this.el.otCount) this.el.otCount.textContent = count;
     }
 
@@ -1305,29 +1325,11 @@ class FontStudioApp {
     setupExport() {
         this.el.modalClose?.addEventListener('click', () => this.closeExportModal());
         this.el.exportCancel?.addEventListener('click', () => this.closeExportModal());
-        
-        // زر المشاركة فقط هو الذي يعمل الآن لفتح لوحة المشاركة مباشرة
+        // ربط زر المشاركة والتصدير الجديد
         this.el.exportShare?.addEventListener('click', () => this.doExport());
-
-        this.el.exportFormats?.forEach(f => {
-            f.addEventListener('click', () => {
-                this.el.exportFormats.forEach(x => x.classList.remove('active'));
-                f.classList.add('active');
-            });
-        });
-
-        this.el.qualityPresets?.forEach(p => {
-            p.addEventListener('click', () => {
-                this.el.qualityPresets.forEach(x => x.classList.remove('active'));
-                p.classList.add('active');
-                if (this.el.qualitySlider) this.el.qualitySlider.value = p.dataset.q;
-            });
-        });
     }
 
     openExportModal() {
-        if (this.el.expW) this.el.expW.textContent = this.canvas.width;
-        if (this.el.expH) this.el.expH.textContent = this.canvas.height;
         this.el.exportModal?.classList.add('active');
     }
 
@@ -1335,16 +1337,16 @@ class FontStudioApp {
         this.el.exportModal?.classList.remove('active');
     }
 
-    // دالة التصدير والمشاركة المباشرة
+    // دالة التصدير والمشاركة بأعلى جودة (PNG 100%)
     async doExport() {
         const prevSel = this.state.selectedLayer;
         this.state.selectedLayer = null;
         this.render();
 
-        const format = document.querySelector('.export-format.active')?.dataset.format || 'png';
-        const quality = parseInt(this.el.qualitySlider?.value || 90) / 100;
-        let mime = (format === 'jpg') ? 'image/jpeg' : (format === 'webp' ? 'image/webp' : 'image/png');
-        let ext = format;
+        // إجبار التطبيق على التصدير بأعلى جودة ممكنة بصيغة PNG
+        const quality = 1.0; 
+        const mime = 'image/png';
+        const ext = 'png';
 
         try {
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
@@ -1380,7 +1382,7 @@ class FontStudioApp {
                 link.click();
                 document.body.removeChild(link);
                 this.closeExportModal();
-                this.toast('تم تنزيل الملف', 'success');
+                this.toast('تم تنزيل التصميم بأعلى جودة', 'success');
             }
         } catch (error) {
             console.error("Export Error:", error);
