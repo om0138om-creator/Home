@@ -159,14 +159,19 @@ jobs:
               <allow-intent href="https://*/*" />
               <allow-navigation href="*" />
               
-              <preference name="Orientation" value="default" />
+              <preference name="Orientation" value="portrait" />
               <preference name="BackgroundColor" value="#030712" />
               <preference name="AndroidLaunchMode" value="singleTop" />
               <preference name="android-minSdkVersion" value="24" />
               <preference name="android-targetSdkVersion" value="33" />
-              <preference name="GradlePluginGoogleServicesEnabled" value="false" />
               
               <platform name="android">
+                  <config-file target="AndroidManifest.xml" parent="/*">
+                      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+                      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+                      <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+                  </config-file>
+
                   <icon src="www/icons/icon-72.png" density="ldpi" />
                   <icon src="www/icons/icon-96.png" density="mdpi" />
                   <icon src="www/icons/icon-144.png" density="hdpi" />
@@ -179,7 +184,7 @@ jobs:
               </platform>
           </widget>
           CONFIGEOF
-          echo "✅ Config created"
+          echo "✅ Config created with Permissions"
 
       # =====================================================
       # 📱 Add Android Platform
@@ -199,7 +204,7 @@ jobs:
           cordova plugin add cordova-plugin-device || true
           cordova plugin add cordova-plugin-statusbar || true
           cordova plugin add cordova-plugin-x-socialsharing || true
-          # 💡 الإضافة المخصصة للحفظ الصامت في المعرض
+          cordova plugin add cordova-plugin-android-permissions || true
           cordova plugin add cordova-base64-to-gallery || true
           echo "✅ Plugins added"
 
