@@ -993,8 +993,8 @@ class FontStudioApp {
 
         el.innerHTML = `
             <div style="flex:1">
-                <div class="font-item-preview" style="font-family:'${family}'">أبجد هوز</div>
-                <div class="font-item-name">${displayName}</div>
+                <div class="font-item-preview" style="font-family:'${family}'">${displayName}</div>
+                <div class="font-item-name">${isSystem ? 'خط أساسي' : 'خط مخصص'}</div>
             </div>
             ${!isSystem ? '<button class="section-btn" style="color:var(--danger)"><i class="fas fa-trash"></i></button>' : ''}
         `;
@@ -1362,21 +1362,94 @@ class FontStudioApp {
                         (err) => { this.toast('تم الإلغاء', 'info'); }
                     );
                 } 
-                // خيار الحفظ الصامت في المعرض
-                else if (action === 'save' && cordova.base64ToGallery) {
-                    cordova.base64ToGallery(
-                        dataUrl, 
-                        { prefix: 'FontStudio_', mediaScanner: true },
-                        (path) => {
+    async doExport(action = 'save') {
+        const prevSel = this.state.selectedLayer;
+        this.state.selectedLayer = null;
+        this.render();
+
+        const format = document.querySelector('.export-format.active')?.dataset.format || 'png';
+        const quality = parseInt(this.el.qualitySlider?.value || 90) / 100;
+        let mime = 'image/png', ext = 'png';
+        if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
+        if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
+
+        try {
+            const dataUrl = this.el.canvas.toDataURL(mime, quality);
+            const name = (this.el.projectName?.value || 'design') + '_' + Date.now();
+            const fullName = name + '.' + ext;
+
+            // هل نحن داخل الـ APK؟ (Cordova)
+            if (typeof window !== 'undefined' && window.cordova && window.plugins && window.plugins.socialsharing) {
+                
+                // خيار المشاركة
+                if (action === 'share') {
+                    window.plugins.socialsharing.share(
+                        null, fullName, dataUrl, null,
+                        () => { this.closeExportModal(); },
+                        (err) => { this.toast('تم الإلغاء', 'info'); }
+                    );
+                } 
+                // خيار الحفظ الصامت في المعرض (باستخدام المحرك الحديث المتوافق مع أندرويد 13)
+                else if (action === 'save') {
+                    window.plugins.socialsharing.saveToPhotoAlbum(
+                        dataUrl,
+                        () => {
                             this.toast('تم الحفظ في المعرض بنجاح', 'success');
                             this.closeExportModal();
                         },
                         (err) => {
-                            console.error(err);
-                            this.toast('فشل الحفظ، تأكد من الصلاحيات', 'error');
+                            console.error("Save Error:", err);
+                            // لو المستخدم رفض الصلاحية أو حصل خطأ
+                            this.toast('تم رفض الصلاحية أو فشل الحفظ', 'error');
                         }
                     );
-                } else {
+                }
+            } 
+            // الخطة البديلة: إذا تم فتح التطبيق من متصفح الويب (PWA)
+            else {
+                if (action === 'share' && navigator.canShare) {
+                    const res = await fetch(dataUrl);
+                    const blob = await res.blob();
+                    const file = new File([blob], fullName, { type: mime });
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file], title: fullName });
+                        this.closeExportModal();
+                        this.toast('تم الإجراء بنجاح', 'success');
+                        this.state.selectedLayer = prevSel;
+                        this.render();
+                        return;
+                    }
+                }
+                
+                // تحميل عادي كملف إذا اختار "حفظ" من المتصفح أو إذا فشلت المشاركة
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = fullName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                this.closeExportModal();
+                this.toast('تم التنزيل لملفاتك', 'success');
+            }
+        } catch (error) {
+            console.error("Export Error:", error);
+            
+            // خطة الإنقاذ الأخيرة: تحميل إجباري
+            const dataUrl = this.el.canvas.toDataURL(mime, quality);
+            const fullName = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = fullName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            this.closeExportModal();
+            this.toast('تم التنزيل لملفاتك', 'success');
+        }
+
+        this.state.selectedLayer = prevSel;
+        this.render();
+    }
                     throw new Error('Cordova plugins not available');
                 }
             } 
