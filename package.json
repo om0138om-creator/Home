@@ -10,6 +10,8 @@
         "lint": "echo 'No linting configured'",
         "cordova:create": "cordova create cordova-app com.fontstudio.app 'Font Studio'",
         "cordova:android": "cd cordova-app && cordova platform add android",
+        "cordova:plugins": "cd cordova-app && cordova plugin add cordova-plugin-android-permissions && cordova plugin add cordova-plugin-x-socialsharing",
+        "cordova:full-build": "npm run cordova:create && npm run cordova:android && npm run cordova:plugins && npm run cordova:build",
         "cordova:build": "cd cordova-app && cordova build android",
         "cordova:run": "cd cordova-app && cordova run android"
     },
@@ -32,7 +34,9 @@
     "license": "MIT",
     "devDependencies": {
         "cordova": "^12.0.0",
-        "serve": "^14.2.1"
+        "serve": "^14.2.1",
+        "cordova-plugin-android-permissions": "^1.1.5",
+        "cordova-plugin-x-socialsharing": "^6.0.4"
     },
     "engines": {
         "node": ">=18.0.0"
