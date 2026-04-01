@@ -1332,57 +1332,53 @@ class FontStudioApp {
         this.el.exportModal?.classList.remove('active');
     }
 
-    doExport() {
+    async doExport() {
         const prevSel = this.state.selectedLayer;
         this.state.selectedLayer = null;
         this.render();
 
         const format = document.querySelector('.export-format.active')?.dataset.format || 'png';
         const quality = parseInt(this.el.qualitySlider?.value || 90) / 100;
-        let mime = 'image/png';
-        if (format === 'jpg') { mime = 'image/jpeg'; }
-        if (format === 'webp') { mime = 'image/webp'; }
+        let mime = 'image/png', ext = 'png';
+        if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
+        if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
 
         try {
-            // تحويل التصميم لصورة
+            // 1. تحويل الكانفاس فوريًا لتجنب حظر المتصفح
             const dataUrl = this.el.canvas.toDataURL(mime, quality);
+            const name = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
 
-            // 💡 الخدعة العبقرية لتخطي حظر الـ APK: إنشاء نافذة عرض مباشرة
-            const overlay = document.createElement('div');
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;';
+            // 2. تحويل البيانات إلى ملف حقيقي (File Object) مدعوم في الـ PWA
+            const res = await fetch(dataUrl);
+            const blob = await res.blob();
+            const file = new File([blob], name, { type: mime });
 
-            // زر الإغلاق
-            const closeBtn = document.createElement('button');
-            closeBtn.innerHTML = '<i class="fas fa-times"></i> إغلاق';
-            closeBtn.style.cssText = 'position:absolute;top:30px;right:20px;background:#ef4444;color:white;border:none;padding:8px 15px;border-radius:10px;font-family:inherit;font-weight:bold;font-size:14px;cursor:pointer;';
-            closeBtn.onclick = () => document.body.removeChild(overlay);
-
-            // رسالة التوجيه للمستخدم
-            const title = document.createElement('p');
-            title.innerHTML = '<i class="fas fa-hand-pointer" style="color:#22c55e; margin-bottom:10px; font-size:2rem; display:block;"></i> اضغط مطولاً على الصورة لحفظها في المعرض';
-            title.style.cssText = 'color:white;font-weight:bold;margin-bottom:25px;font-size:1.1rem;text-align:center;line-height:1.5;';
-
-            // الصورة النهائية مع تفعيل خيار الحفظ المباشر
-            const img = document.createElement('img');
-            img.src = dataUrl;
-            // السطر ده بيضمن إن نظام الأندرويد يطلّع قائمة (حفظ الصورة) لما المستخدم يضغط مطولاً
-            img.style.cssText = 'max-width:100%;max-height:65vh;border-radius:12px;box-shadow:0 10px 30px rgba(99, 102, 241, 0.4);-webkit-touch-callout:default;';
-
-            // تجميع العناصر وعرضها
-            overlay.appendChild(closeBtn);
-            overlay.appendChild(title);
-            overlay.appendChild(img);
-            document.body.appendChild(overlay);
-
-            this.closeExportModal();
-            this.toast('تم تجهيز التصميم بنجاح', 'success');
-
+            // 3. السحر لبيئة جيت هاب: فتح قائمة الهاتف الأصلية للمشاركة والحفظ
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: name
+                });
+                this.toast('تم الإجراء بنجاح', 'success');
+            } else {
+                // الخطة البديلة المضمونة لو المتصفح قديم
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                this.toast('تم التنزيل في ملفات الهاتف', 'success');
+            }
         } catch (error) {
             console.error("Export Error:", error);
-            this.toast('حدث خطأ أثناء التصدير', 'error');
+            // إذا ألغى المستخدم المشاركة، لا تظهر رسالة خطأ مزعجة
+            if (error.name !== 'AbortError') {
+                this.toast('حدث خطأ أثناء التصدير', 'error');
+            }
         }
 
-        // إرجاع التحديد للطبقة
+        this.closeExportModal();
         this.state.selectedLayer = prevSel;
         this.render();
     }
