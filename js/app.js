@@ -1353,15 +1353,12 @@ class FontStudioApp {
 
             // المحرك المحدث للـ APK (Cordova)
             if (typeof window !== 'undefined' && window.cordova && window.plugins && window.plugins.socialsharing) {
-                
-                // أولاً: خيار المشاركة الأصلية
                 if (action === 'share') {
                     window.plugins.socialsharing.share(null, fullName, dataUrl, null, 
                         () => { this.closeExportModal(); }, 
                         (err) => { this.toast('تم الإلغاء', 'info'); }
                     );
                 } 
-                // ثانياً: خيار الحفظ المباشر في المعرض (متوافق مع أندرويد 13+)
                 else if (action === 'save') {
                     window.plugins.socialsharing.saveToPhotoAlbum(dataUrl,
                         () => {
@@ -1375,66 +1372,30 @@ class FontStudioApp {
                     );
                 }
             } 
-            // الخطة البديلة لمتصفحات الويب ونسخة الـ PWA
             else {
-                if (action === 'share' && navigator.canShare) {
+                // الخطة البديلة للمتصفح
+                if (action === 'share' && navigator.share) {
                     const res = await fetch(dataUrl);
                     const blob = await res.blob();
                     const file = new File([blob], fullName, { type: mime });
-                    if (navigator.canShare({ files: [file] })) {
+                    try {
                         await navigator.share({ files: [file], title: fullName });
                         this.closeExportModal();
-                        this.toast('تم الإجراء بنجاح', 'success');
-                        this.state.selectedLayer = prevSel;
-                        this.render();
-                        return;
-                    }
+                    } catch(e) { console.log('Share cancelled'); }
+                } else {
+                    const link = document.createElement('a');
+                    link.href = dataUrl;
+                    link.download = fullName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    this.closeExportModal();
+                    this.toast('تم التنزيل لملفاتك', 'success');
                 }
-                
-                // التنزيل المباشر كملف في حال عدم توفر خيارات المشاركة (للكمبيوتر)
-                const link = document.createElement('a');
-                link.href = dataUrl;
-                link.download = fullName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                this.closeExportModal();
-                this.toast('تم التنزيل لملفاتك', 'success');
             }
         } catch (error) {
             console.error("Export Error:", error);
             this.toast('حدث خطأ أثناء التصدير', 'error');
-        }
-
-        this.state.selectedLayer = prevSel;
-        this.render();
-    }
-
-                
-                // تحميل عادي كملف إذا اختار "حفظ" من المتصفح أو إذا فشلت المشاركة
-                const link = document.createElement('a');
-                link.href = dataUrl;
-                link.download = fullName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                this.closeExportModal();
-                this.toast('تم التنزيل لملفاتك', 'success');
-            }
-        } catch (error) {
-            console.error("Export Error:", error);
-            
-            // خطة الإنقاذ الأخيرة: تحميل إجباري
-            const dataUrl = this.el.canvas.toDataURL(mime, quality);
-            const fullName = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = fullName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            this.closeExportModal();
-            this.toast('تم التنزيل لملفاتك', 'success');
         }
 
         this.state.selectedLayer = prevSel;
