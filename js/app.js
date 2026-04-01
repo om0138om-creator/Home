@@ -1336,29 +1336,30 @@ class FontStudioApp {
         if (format === 'jpg') { mime = 'image/jpeg'; ext = 'jpg'; }
         if (format === 'webp') { mime = 'image/webp'; ext = 'webp'; }
 
-        this.el.canvas.toBlob((blob) => {
-            // السحر هنا: إضافة رقم عشوائي (Date.now) لضمان حفظه كملف جديد يكتشفه المعرض فوراً
+        // الطريقة الاحترافية العالمية: تحويل الكانفاس إلى Data URL لتخطي حظر تطبيقات الويب (WebView)
+        try {
+            const dataUrl = this.el.canvas.toDataURL(mime, quality);
             const name = (this.el.projectName?.value || 'design') + '_' + Date.now() + '.' + ext;
             
-            // أمر التحميل المباشر والصامت
-            if (typeof saveAs !== 'undefined') {
-                saveAs(blob, name);
-            } else {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = name;
-                document.body.appendChild(link); // السطر ده مهم جداً عشان يشتغل جوه تطبيقات الـ APK
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
-            }
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = name;
+            
+            // إجبار النظام على النقر (يعمل بكفاءة داخل الـ APK)
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             
             this.closeExportModal();
-            this.toast('تم الحفظ بنجاح', 'success');
+            this.toast('تم التصدير لملفاتك بنجاح', 'success');
             
-            this.state.selectedLayer = prevSel;
-            this.render();
-        }, mime, quality);
+        } catch (error) {
+            console.error("Export Error: ", error);
+            this.toast('حدث خطأ أثناء التصدير', 'error');
+        }
+
+        this.state.selectedLayer = prevSel;
+        this.render();
     }
 
     handleKeyboard(e) {
